@@ -38,6 +38,10 @@ export class CommentProcessor {
             return false
         }
 
+        if(await opConfirmationComments[0].author.id === await comment.author.id) {
+            return false
+        }
+
         this.submitterConfirmationComment = opConfirmationComments[0]
 
         return true

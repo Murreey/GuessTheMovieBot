@@ -20,7 +20,7 @@ describe('CommentProcessor', () =>{
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(true)])
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, true))
         })
@@ -29,7 +29,7 @@ describe('CommentProcessor', () =>{
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve('identified')
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
@@ -39,7 +39,7 @@ describe('CommentProcessor', () =>{
             const validFlairs = ['easy', 'hard']
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve('meta')
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
@@ -51,7 +51,7 @@ describe('CommentProcessor', () =>{
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, true))
         })
@@ -62,7 +62,7 @@ describe('CommentProcessor', () =>{
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([])
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
@@ -73,7 +73,7 @@ describe('CommentProcessor', () =>{
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false)])
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
@@ -84,7 +84,7 @@ describe('CommentProcessor', () =>{
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(false)])
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
@@ -95,9 +95,24 @@ describe('CommentProcessor', () =>{
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(true), getOPReply(false)])
 
-            const fakeComment = td.object({} as any)
+            const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, true))
+        })
+
+        it('should return false if the reported comment was posted by the OP', () => {
+            const fakeBot = td.object(new RedditBot())
+            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+
+            const userID = randomString()
+            const fakeOPReply = getOPReply(true)
+            fakeOPReply.author = { id: userID } as any
+
+            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([fakeOPReply])
+
+            const fakeComment = getFakeGuessComment(userID)
+            return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, false))
         })
     })
 
@@ -215,8 +230,14 @@ function getOPReply(valid: boolean = true): Comment {
     }
 
     fakeOPComment.body = bodies[Math.floor(Math.random() * bodies.length)]
-
+    fakeOPComment.author = { id: randomString() } as any
     return fakeOPComment
+}
+
+function getFakeGuessComment(userID: string = randomString()): Comment {
+    const fakeComment = td.object({} as any)
+    fakeComment.author = { id: userID }
+    return fakeComment
 }
 
 function getFlairTemplates(): FlairTemplate[] {
