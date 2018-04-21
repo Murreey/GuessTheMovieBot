@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "mocha -r ts-node/register test/**/*.ts"
+    "test": "nyc mocha -r ts-node/register test/**/*.ts"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +17,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "mocha": "^5.1.1",
+    "nyc": "^11.7.1",
     "testdouble": "^3.7.0",
     "ts-node": "^6.0.0",
     "typescript": "^2.8.3"
@@ -26,5 +27,15 @@
     "@types/snoowrap": "^1.14.3",
     "bluebird": "^3.5.1",
     "snoowrap": "^1.15.2"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "all": true  
   }
 }
