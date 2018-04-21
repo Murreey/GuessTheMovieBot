@@ -2,6 +2,9 @@ import * as Bluebird from 'bluebird'
 import { Comment, Submission } from 'snoowrap';
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 import { RedditBot } from './RedditBot'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as Mustache from 'mustache'
 
 export class CommentProcessor {
     bot: RedditBot
@@ -90,5 +93,21 @@ export class CommentProcessor {
         const currentPoints = await this.bot.getUserPoints(username)
         await this.bot.setUserPoints(username, currentPoints + points)
         console.log(`added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points}`)
+    }
+
+    async replyWithBotMessage(opComment: Comment, winningComment: Comment) {
+        console.log(path.resolve(__dirname, "../reply_template.md"))
+        const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
+        const templateValues = {
+            guesser: await winningComment.author.name,
+            guesser_points: 6,
+            poster: await opComment.author.name,
+            poster_points: 3,
+            subreddit: require('../config.json').subreddit
+        }
+
+        const reply = Mustache.render(replyTemplate, templateValues)
+
+        opComment.reply(reply).then((comment: Comment) => comment.distinguish())
     }
 }

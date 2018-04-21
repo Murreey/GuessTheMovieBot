@@ -2,6 +2,10 @@
   "name": "GTMBot",
   "version": "1.0.0",
   "description": "test thing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Murreey/GuessTheMovieBot"
+  },
   "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
@@ -24,8 +28,10 @@
   },
   "dependencies": {
     "@types/bluebird": "^3.5.20",
+    "@types/mustache": "^0.8.30",
     "@types/snoowrap": "^1.14.3",
     "bluebird": "^3.5.1",
+    "mustache": "^2.3.0",
     "snoowrap": "^1.15.2"
   },
   "nyc": {
@@ -36,6 +42,6 @@
     "exclude": [
       "**/*.d.ts"
     ],
-    "all": true  
+    "all": true
   }
 }
