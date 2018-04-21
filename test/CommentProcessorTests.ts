@@ -12,7 +12,7 @@ import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 // chai.use(chaiAsPromised)
 // chai.should()
 
-describe('CommentProcessor', () =>{
+describe('CommentProcessor', () => {
     describe('checkCommentIsValidWin', () => {
         it('should return true if comment matches criteria', () => {
             const fakeBot = td.object(new RedditBot())

@@ -7,9 +7,17 @@ export class RedditBot {
     r: snoowrap
     config: Object
 
-    constructor() {
+    constructor(snoowrap?: snoowrap) {
         this.config = require('../config.json')
-        this.r = new snoowrap({
+        if(snoowrap) {
+            this.r = snoowrap
+        } else {
+            this.r = this.getNewSnoowrap()
+        }
+    }
+
+    getNewSnoowrap(): snoowrap {
+        return new snoowrap({
             userAgent: this.config['userAgent'],
             refreshToken: this.config['refreshToken'],
             clientId: this.config['clientId'],
@@ -58,13 +66,14 @@ export class RedditBot {
     }
 
     getUserPoints(username: string): Bluebird<number> {
-        return Bluebird.resolve(this.r.getSubreddit(this.config['subreddit']).getUserFlair(username))
+        return Bluebird.resolve(this.r.getSubreddit(this.config['subreddit']))
+            .then((subreddit) => subreddit.getUserFlair(username))
             .then(flair => +flair.flair_text)
     }
 
     getFlairTypes(linkId: string): Bluebird<FlairTemplate[]> {
         return Bluebird.resolve(this.r.getSubmission(linkId))
-        .then((submission) => submission.getLinkFlairTemplates())
+            .then((submission) => submission.getLinkFlairTemplates())
     }
 
     getLinkFlair(linkId: string): Bluebird<string> {
