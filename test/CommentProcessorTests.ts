@@ -128,7 +128,7 @@ describe('CommentProcessor', () => {
             assert.equal(valid, false)
         })
 
-        it.skip('should return false if the comment contains a valid confirmation, but as part of another word', () => {
+        it('should return false if the comment contains a valid confirmation, but as part of another word', () => {
             const fakeBot = td.object(new RedditBot())
 
             const valid = new CommentProcessor(fakeBot).commentContainsConfirmation('No, it is not Eyes Wide Shut.')

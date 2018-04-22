@@ -49,7 +49,7 @@ export class CommentProcessor {
     }
 
     commentContainsConfirmation(comment: string) {
-        return comment.toLowerCase().includes("yes")
+        return /\byes\b/i.test(comment)
     }
     
     async processWin(comment: Comment) {
