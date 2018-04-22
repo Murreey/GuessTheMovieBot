@@ -48,6 +48,23 @@ describe('RedditBot', () => {
             new RedditBot(fakeSnoowrap).getOPReplies(fakeComment)
                 .then((replies) => assert.equal(replies.length, 0))
         })
+
+        it('should return an empty array if nobody has replied', () => {
+            const fakeSnoowrap = mockSnoowrap()
+            const fakeSubmission: Submission = td.object({} as any)
+            td.when(fakeSnoowrap.getSubmission(td.matchers.anything())).thenResolve(fakeSubmission)
+
+            const fakeComment = mockComment()
+
+            const replies = []
+            const fakeOP = td.object({} as any)
+            fakeOP.id = randomString()
+            fakeSubmission.author = fakeOP
+            td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
+
+            new RedditBot(fakeSnoowrap).getOPReplies(fakeComment)
+                .then((replies) => assert.equal(replies.length, 0))
+        })
     })
 
     describe('getUserPoints', () => {

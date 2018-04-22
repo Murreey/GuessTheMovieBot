@@ -16,10 +16,9 @@ export class CommentProcessor {
 
     async processComment(comment: Comment) {
         this.guesserComment = comment
-        const bodyText = await this.guesserComment.body
-        console.log(`processing comment ${bodyText}`)
+        console.log(`processing comment ${this.guesserComment.body}`)
         if(await this.checkCommentIsValidWin(this.guesserComment)) {
-            console.log(`${bodyText} is a valid win!`)
+            console.log(`${this.guesserComment.body} is a valid win!`)
             this.processWin(this.guesserComment)
         }
     }

@@ -52,7 +52,7 @@ export class RedditBot {
     }
 
     getPostFromComment(comment: Comment): Promise<Submission> {
-        return Promise.resolve(this.r.getSubmission(comment.parent_id))
+        return Promise.resolve(this.r.getSubmission(comment.link_id))
     }
 
     setUserPoints(username: string, points: number) {
