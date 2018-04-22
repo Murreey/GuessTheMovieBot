@@ -5,9 +5,12 @@ import * as assert from 'assert'
 import * as td from 'testdouble'
 import { RedditBot } from '../src/RedditBot'
 import { CommentProcessor } from '../src/CommentProcessor'
-import { Comment, Submission } from 'snoowrap'
+import { Comment, Submission, RedditUser } from 'snoowrap'
 import * as Bluebird from 'bluebird'
-import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
+import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as Mustache from 'mustache'
 
 // chai.use(chaiAsPromised)
 // chai.should()
@@ -34,7 +37,7 @@ describe('CommentProcessor', () => {
                 .then((valid) => assert.equal(valid, false))
         })
 
-        it('should return false the post is flaired as meta', () => {
+        it('should return false if post is flaired as meta', () => {
             const fakeBot = td.object(new RedditBot())
             const validFlairs = ['easy', 'hard']
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve('meta')
@@ -214,9 +217,60 @@ describe('CommentProcessor', () => {
             td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
 
             new CommentProcessor(fakeBot).addPoints(username, -newPoints)
-                .then(() => {
-                    td.verify(fakeBot.setUserPoints(username, currentPoints - newPoints))
-                })
+                .then(() => td.verify(fakeBot.setUserPoints(username, currentPoints - newPoints)))
+        })
+    })
+
+    describe('replyWithBotMessage', () => {
+        it('should render the template with the right values', () => {
+            const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
+
+            const guesser = randomString()
+            const poster = randomString()
+
+            const templateValues = {
+                guesser,
+                guesser_points: 6,
+                poster,
+                poster_points: 3,
+                subreddit: require('../config.json').subreddit
+            }
+
+            const expectedTemplate = Mustache.render(replyTemplate, templateValues)
+
+            const mockWinningComment = td.object({} as any)
+            const mockOPComment = td.object({} as any)
+
+            const mockGuesser: RedditUser = td.object({} as any)
+            const mockPoster: RedditUser = td.object({} as any)
+            mockGuesser.name = guesser
+            mockPoster.name = poster
+
+            mockWinningComment.author = mockGuesser
+            mockOPComment.author = mockPoster
+            mockOPComment.reply = td.func('reply')
+
+            return new CommentProcessor(null).replyWithBotMessage(mockOPComment, mockWinningComment)
+                .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
+        })
+
+        it('should distinguish the posted comment', () => {
+            const mockWinningComment = td.object({} as any)
+            const mockOPComment = td.object({} as any)
+            const mockPostedComment = td.object({} as any)
+            const mockGuesser = td.object({} as any)
+            const mockPoster = td.object({} as any)
+            mockGuesser.name = randomString()
+            mockPoster.name = randomString()
+
+            mockWinningComment.author = mockGuesser
+            mockOPComment.author = mockPoster
+            mockOPComment.reply = td.func('reply')
+            mockPostedComment.distinguish = td.func('distinguish')
+            td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
+
+            return new CommentProcessor(null).replyWithBotMessage(mockOPComment, mockWinningComment)
+                .then(() => td.verify(mockPostedComment.distinguish()))
         })
     })
 })

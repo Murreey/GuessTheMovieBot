@@ -1,5 +1,5 @@
 import * as Bluebird from 'bluebird'
-import { Comment, Submission } from 'snoowrap';
+import { Comment, Submission, ReplyableContent } from 'snoowrap';
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 import { RedditBot } from './RedditBot'
 import * as fs from 'fs'
@@ -96,7 +96,6 @@ export class CommentProcessor {
     }
 
     async replyWithBotMessage(opComment: Comment, winningComment: Comment) {
-        console.log(path.resolve(__dirname, "../reply_template.md"))
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
             guesser: await winningComment.author.name,
@@ -107,7 +106,7 @@ export class CommentProcessor {
         }
 
         const reply = Mustache.render(replyTemplate, templateValues)
-
-        opComment.reply(reply).then((comment: Comment) => comment.distinguish())
+        const postedComment: Comment = await opComment.reply(reply) as Comment
+        if(postedComment) postedComment.distinguish()
     }
 }
