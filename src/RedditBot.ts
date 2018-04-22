@@ -1,5 +1,4 @@
 import * as snoowrap from 'snoowrap'
-import * as Bluebird from 'bluebird'
 import { Listing, Comment, Submission } from 'snoowrap'
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 
@@ -31,31 +30,29 @@ export class RedditBot {
             .getReports({ only: "comments" }) as Comment[]
     }
 
-    async getOPReplies(comment: Comment): Bluebird<Comment[]> {
+    async getOPReplies(comment: Comment): Promise<Comment[]> {
         const submitter = await this.getPostFromComment(comment).then(post => post.author.id)
         var replies: Comment[] = await comment.replies.fetchAll()
         
-        const repliesWithIDs = await Bluebird.resolve(replies)
-            .map(async (reply: Comment) => {
-                return {
-                    reply,
-                    replier: await reply.author.id
-                }
-            })
-
+        const repliesWithIDs = await Promise.all(replies.map(async (reply: Comment) => {
+            return {
+                reply,
+                replier: await reply.author.id
+            }
+        }))
 
         replies = repliesWithIDs.filter((reply) => reply.replier === submitter)
             .map((reply) => reply.reply)
 
-        return Bluebird.resolve(replies)
+        return Promise.resolve(replies)
     }
 
-    getCommentFromID(id: string): Bluebird<Comment> {
-        return Bluebird.resolve(this.r.getComment(id))
+    getCommentFromID(id: string): Promise<Comment> {
+        return Promise.resolve(this.r.getComment(id))
     }
 
-    getPostFromComment(comment: Comment): Bluebird<Submission> {
-        return Bluebird.resolve(this.r.getSubmission(comment.parent_id))
+    getPostFromComment(comment: Comment): Promise<Submission> {
+        return Promise.resolve(this.r.getSubmission(comment.parent_id))
     }
 
     setUserPoints(username: string, points: number) {
@@ -65,19 +62,19 @@ export class RedditBot {
         })
     }
 
-    getUserPoints(username: string): Bluebird<number> {
-        return Bluebird.resolve(this.r.getSubreddit(this.config['subreddit']))
+    getUserPoints(username: string): Promise<number> {
+        return Promise.resolve(this.r.getSubreddit(this.config['subreddit']))
             .then((subreddit) => subreddit.getUserFlair(username))
             .then(flair => +flair.flair_text)
     }
 
-    getFlairTypes(linkId: string): Bluebird<FlairTemplate[]> {
-        return Bluebird.resolve(this.r.getSubmission(linkId))
+    getFlairTypes(linkId: string): Promise<FlairTemplate[]> {
+        return Promise.resolve(this.r.getSubmission(linkId))
             .then((submission) => submission.getLinkFlairTemplates())
     }
 
-    getLinkFlair(linkId: string): Bluebird<string> {
-        return Bluebird.resolve(this.r.getSubmission(linkId))
+    getLinkFlair(linkId: string): Promise<string> {
+        return Promise.resolve(this.r.getSubmission(linkId))
             .then((submission) => submission.link_flair_text)
     }
 

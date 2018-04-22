@@ -1,4 +1,3 @@
-import * as Bluebird from 'bluebird'
 import { Comment, Submission } from 'snoowrap';
 import { RedditBot } from './RedditBot'
 import { CommentProcessor } from './CommentProcessor'

@@ -1,4 +1,3 @@
-import * as Bluebird from 'bluebird'
 import { Comment, Submission, ReplyableContent } from 'snoowrap';
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 import { RedditBot } from './RedditBot'
@@ -25,7 +24,7 @@ export class CommentProcessor {
         }
     }
 
-    async checkCommentIsValidWin(comment: Comment): Bluebird<boolean> {
+    async checkCommentIsValidWin(comment: Comment): Promise<boolean> {
         const currentFlair: string = await this.bot.getLinkFlair(await comment.link_id)
         if(currentFlair && (currentFlair.toLowerCase().includes("identified") || currentFlair.toLowerCase().includes("meta"))) {
             return false
@@ -63,7 +62,7 @@ export class CommentProcessor {
 
         this.addIdentifiedFlair(post)
 
-        this.submitterConfirmationComment.reply("Guess confirmed!").then((comment: Comment) => comment.distinguish())
+        this.replyWithBotMessage(this.submitterConfirmationComment, comment)
 
         this.addPoints(winner, 6)
         this.addPoints(submitter, 3)

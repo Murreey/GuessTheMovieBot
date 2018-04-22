@@ -1,13 +1,10 @@
 import 'mocha'
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
 import * as assert from 'assert'
 import * as td from 'testdouble'
 import { RedditBot } from '../src/RedditBot'
 import { CommentProcessor } from '../src/CommentProcessor'
 import * as snoowrap from 'snoowrap'
 import { Comment, Submission, Listing, RedditUser, Subreddit } from 'snoowrap'
-import * as Bluebird from 'bluebird'
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 
 describe('RedditBot', () => {

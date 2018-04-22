@@ -1,4 +1,3 @@
-import * as Bluebird from 'bluebird'
 import { RedditBot } from './RedditBot';
 import { GTMBot } from './GTMBot'
 import * as scheduler from 'node-cron'
