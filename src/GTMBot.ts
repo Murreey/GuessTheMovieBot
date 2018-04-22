@@ -10,10 +10,7 @@ export class GTMBot {
     }
 
     processComments() {
-        const commentsToProcess: Comment[] = this.bot.getReportedComments()
-            .filter(comment => comment.link_id === comment.parent_id)
-        
-        commentsToProcess.forEach((comment) => {
+        this.bot.getReportedComments().forEach((comment) => {
             new CommentProcessor(this.bot).processComment(comment)
         })
     }
