@@ -1,8 +1,15 @@
 import * as Bluebird from 'bluebird'
+import { RedditBot } from './RedditBot';
+import { GTMBot } from './GTMBot'
+import * as scheduler from 'node-cron'
 
-var GTMBot = require('./GTMBot')
+const bot = new GTMBot(new RedditBot())
 
-const bot = new GTMBot()
-
-bot.processComments()
+if(process.argv.indexOf("once") > -1) {
+    bot.processComments()
+} else {
+    scheduler.schedule("*/1 * * * *", () => {
+        bot.processComments()
+    })
+}
 
