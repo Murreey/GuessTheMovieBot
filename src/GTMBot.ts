@@ -9,10 +9,11 @@ export class GTMBot {
         this.bot = bot
     }
 
-    processComments() {
-        this.bot.getReportedComments().forEach((comment) => {
+    async processComments() {
+        const reportedComments = await this.bot.getReportedComments()
+        for(let comment of reportedComments){
             new CommentProcessor(this.bot).processComment(comment)
-        })
+        }
     }
 
     

@@ -14,13 +14,15 @@ export class CommentProcessor {
         this.bot = bot
     }
 
-    async processComment(comment: Comment) {
+    async processComment(comment: Comment): Promise<boolean> {
         this.guesserComment = comment
         console.log(`processing comment ${this.guesserComment.body}`)
         if(await this.checkCommentIsValidWin(this.guesserComment)) {
             console.log(`${this.guesserComment.body} is a valid win!`)
-            this.processWin(this.guesserComment)
+            return this.processWin(this.guesserComment)
         }
+
+        return false
     }
 
     async checkCommentIsValidWin(comment: Comment): Promise<boolean> {
