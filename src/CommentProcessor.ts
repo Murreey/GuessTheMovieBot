@@ -132,9 +132,9 @@ export class CommentProcessor {
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
             guesser: await winningComment.author.name,
-            guesser_points: this.points['winner'][foundOnGoogle ? 'google' : 'normal'],
+            guesser_points: this.points ? this.points['winner'][foundOnGoogle ? 'google' : 'normal']: 6,
             poster: await opComment.author.name,
-            poster_points: this.points['submitter'][foundOnGoogle ? 'google' : 'normal'],
+            poster_points: this.points ? this.points['submitter'][foundOnGoogle ? 'google' : 'normal']: 3,
             subreddit: require('../config.json').subreddit
         }
 

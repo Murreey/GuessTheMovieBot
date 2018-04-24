@@ -256,7 +256,7 @@ describe('CommentProcessor', () => {
             mockOPComment.author = mockPoster
             mockOPComment.reply = td.func('reply')
 
-            return new CommentProcessor(null).replyWithBotMessage(mockOPComment, mockWinningComment)
+            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, mockWinningComment)
                 .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
         })
 
@@ -275,7 +275,7 @@ describe('CommentProcessor', () => {
             mockPostedComment.distinguish = td.func('distinguish')
             td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-            return new CommentProcessor(null).replyWithBotMessage(mockOPComment, mockWinningComment)
+            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, mockWinningComment)
                 .then(() => td.verify(mockPostedComment.distinguish()))
         })
     })
