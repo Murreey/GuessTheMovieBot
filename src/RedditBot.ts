@@ -92,11 +92,6 @@ export class RedditBot {
             .then((submission) => submission.getLinkFlairTemplates())
     }
 
-    getLinkFlair(linkId: string): Promise<string> {
-        return Promise.resolve(this.r.getSubmission(linkId))
-            .then((submission) => submission.link_flair_text)
-    }
-
     removeReports(comment: Comment) {
         comment.approve()
     }

@@ -12,20 +12,27 @@ import * as Mustache from 'mustache'
 describe('CommentProcessor', () => {
     describe('checkCommentIsValidWin', () => {
         it('should return true if comment matches criteria', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
-
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(true)])
-
+            const fakeBot = getFakeBot()
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, true))
         })
 
+        it('should return false if the post is a self post', () => {
+            const fakeSubmission = getFakeSubmission()
+            fakeSubmission.is_self = true
+            const fakeBot = getFakeBot(fakeSubmission)
+
+            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
+
+            const fakeComment = getFakeGuessComment()
+            return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, false))
+        })
+
         it('should return false if post already has identified flair', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve('identified')
+            const fakeSubmission = getFakeSubmission('identified')
+            const fakeBot = getFakeBot(fakeSubmission)
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
@@ -33,9 +40,8 @@ describe('CommentProcessor', () => {
         })
 
         it('should return false if post is flaired as meta', () => {
-            const fakeBot = td.object(new RedditBot())
-            const validFlairs = ['easy', 'hard']
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve('meta')
+            const fakeSubmission = getFakeSubmission('meta')
+            const fakeBot = getFakeBot(fakeSubmission)
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
@@ -43,9 +49,9 @@ describe('CommentProcessor', () => {
         })
 
         it('should return true if post has a difficulty flair', () => {
-            const fakeBot = td.object(new RedditBot())
             const validFlairs = ['easy', 'hard']
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(validFlairs[Math.floor(Math.random() * validFlairs.length)])
+            const fakeSubmission = getFakeSubmission(validFlairs[Math.floor(Math.random() * validFlairs.length)])
+            const fakeBot = getFakeBot(fakeSubmission)
 
             td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
@@ -56,10 +62,7 @@ describe('CommentProcessor', () => {
         })
 
         it('should return false if it has no replies from OP', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
-
+            const fakeBot = getFakeBot()
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([])
 
             const fakeComment = getFakeGuessComment()
@@ -68,9 +71,7 @@ describe('CommentProcessor', () => {
         })
 
         it('should return false if it has OP has replied but not with a confirmation', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
+            const fakeBot = getFakeBot()
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false)])
 
@@ -80,9 +81,7 @@ describe('CommentProcessor', () => {
         })
 
         it('should return false if comment has multiple replies with no confirmation', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
+            const fakeBot = getFakeBot()
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(false)])
 
@@ -92,9 +91,7 @@ describe('CommentProcessor', () => {
         })
 
         it('should return true if comment has multiple replies with one confirming', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
+            const fakeBot = getFakeBot()
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(true), getOPReply(false)])
 
@@ -104,9 +101,7 @@ describe('CommentProcessor', () => {
         })
 
         it('should return false if the reported comment was posted by the OP', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
+            const fakeBot = getFakeBot()
 
             const userID = randomString()
             const fakeOPReply = getOPReply(true)
@@ -120,8 +115,7 @@ describe('CommentProcessor', () => {
         })
 
         it('should return false if the bot has already posted a comment in the thread', () => {
-            const fakeBot = td.object(new RedditBot())
-            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            const fakeBot = getFakeBot()
             const botName = randomString()
             td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([randomString(), randomString(), botName, randomString()])
 
@@ -286,6 +280,24 @@ describe('CommentProcessor', () => {
         })
     })
 })
+
+function getFakeBot(submission?: Submission): RedditBot {
+    // This bot will return a valid, unsolved submission that confirms any comment
+    const fakeBot = td.object(new RedditBot())
+    const fakeSubmission = submission ? submission : td.object({} as Submission)
+    td.when(fakeBot.getPostFromComment(td.matchers.anything())).thenResolve(fakeSubmission)
+    td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
+    td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
+
+    return fakeBot
+}
+
+function getFakeSubmission(flair?: string): Submission {
+    const fakeSubmission = td.object({} as Submission)
+    fakeSubmission.link_flair_text = flair ? flair : null
+
+    return fakeSubmission
+}
 
 function getOPReply(valid: boolean = true): Comment {
     const fakeOPComment: Comment = td.object({} as any)

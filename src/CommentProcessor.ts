@@ -32,7 +32,12 @@ export class CommentProcessor {
     }
 
     async checkCommentIsValidWin(comment: Comment): Promise<boolean> {
-        const currentFlair: string = await this.bot.getLinkFlair(await comment.link_id)
+        const submission = await this.bot.getPostFromComment(comment)
+        if(submission.is_self) {
+            return false
+        }
+
+        const currentFlair: string = submission.link_flair_text
         if(currentFlair && (currentFlair.toLowerCase().includes("identified") || currentFlair.toLowerCase().includes("meta"))) {
             return false
         }
