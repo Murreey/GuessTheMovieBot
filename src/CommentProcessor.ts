@@ -4,12 +4,24 @@ import { RedditBot } from './RedditBot'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as Mustache from 'mustache'
+import { GoogleImageSearcher } from './GoogleImageSearcher';
 
 export class CommentProcessor {
     bot: RedditBot
     config: Object
     guesserComment: Comment
     submitterConfirmationComment: Comment
+
+    points: {
+        winner: {
+            normal: 6,
+            google: 2
+        },
+        submitter: {
+            normal: 3,
+            google: 1
+        }
+    }
 
     constructor(bot, config?) {
         this.bot = bot
@@ -79,12 +91,15 @@ export class CommentProcessor {
 
         this.addIdentifiedFlair(post)
 
-        this.replyWithBotMessage(this.submitterConfirmationComment, comment)
+        const foundOnGoogle = await new GoogleImageSearcher().foundImageResults(post.url)
 
-        this.addPoints(winner, 6)
-        this.addPoints(submitter, 3)
+        this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, comment)
 
-        this.bot.removeReports(comment)
+        // TODO: This is messy, will move to a point-distribution class.
+        this.addPoints(winner, this.points['winner'][foundOnGoogle ? 'google' : 'normal'])
+        this.addPoints(submitter, this.points['submitter'][foundOnGoogle ? 'google' : 'normal'])
+
+        // this.bot.removeReports(comment)
 
         return true
     }
@@ -113,13 +128,13 @@ export class CommentProcessor {
         console.log(`added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points}`)
     }
 
-    async replyWithBotMessage(opComment: Comment, winningComment: Comment) {
+    async replyWithBotMessage(foundOnGoogle: boolean, opComment: Comment, winningComment: Comment) {
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
             guesser: await winningComment.author.name,
-            guesser_points: 6,
+            guesser_points: this.points['winner'][foundOnGoogle ? 'google' : 'normal'],
             poster: await opComment.author.name,
-            poster_points: 3,
+            poster_points: this.points['submitter'][foundOnGoogle ? 'google' : 'normal'],
             subreddit: require('../config.json').subreddit
         }
 
