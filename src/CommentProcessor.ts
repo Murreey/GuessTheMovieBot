@@ -69,7 +69,12 @@ export class CommentProcessor {
             return false
         }
 
-        if(await opConfirmationComments[0].author.id === await comment.author.id) {
+        const guesser = await comment.author
+        if(await opConfirmationComments[0].author.id === guesser.id) {
+            return false
+        }
+
+        if(currentFlair && currentFlair.toLowerCase().includes("easy") && await this.bot.getUserPoints(guesser.name) >= 10) {
             return false
         }
 

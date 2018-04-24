@@ -53,9 +53,6 @@ describe('CommentProcessor', () => {
             const fakeSubmission = getFakeSubmission(validFlairs[Math.floor(Math.random() * validFlairs.length)])
             const fakeBot = getFakeBot(fakeSubmission)
 
-            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
-
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, true))
@@ -121,6 +118,32 @@ describe('CommentProcessor', () => {
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot, { bot_username: botName }).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, false))
+        })
+
+        it('should return true if the post is flaired easy and the guesser has < 10 points', () => {
+            const fakeSubmission = getFakeSubmission('easy')
+            const fakeBot = getFakeBot(fakeSubmission)
+
+            const username = randomString()
+            td.when(fakeBot.getUserPoints(td.matchers.not(username))).thenResolve(Math.floor(Math.random()*10) + 10)
+            td.when(fakeBot.getUserPoints(username)).thenResolve(Math.floor(Math.random()*9))
+            const fakeComment = getFakeGuessComment(null, username)
+
+            return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, true))
+        })
+
+        it('should return false if the post is flaired easy and the guesser has >= 10 points', () => {
+            const fakeSubmission = getFakeSubmission('easy')
+            const fakeBot = getFakeBot(fakeSubmission)
+
+            const username = randomString()
+            td.when(fakeBot.getUserPoints(username)).thenResolve(Math.floor(Math.random()*10) + 10)
+            td.when(fakeBot.getUserPoints(td.matchers.not(username))).thenResolve(Math.floor(Math.random()*9))
+            const fakeComment = getFakeGuessComment(null, username)
+
+            return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
     })
@@ -312,9 +335,9 @@ function getOPReply(valid: boolean = true): Comment {
     return fakeOPComment
 }
 
-function getFakeGuessComment(userID: string = randomString()): Comment {
+function getFakeGuessComment(id: string = randomString(), name: string = randomString()): Comment {
     const fakeComment = td.object({} as any)
-    fakeComment.author = { id: userID }
+    fakeComment.author = { id, name }
     return fakeComment
 }
 
