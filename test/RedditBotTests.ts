@@ -67,6 +67,58 @@ describe('RedditBot', () => {
         })
     })
 
+    describe('getAllRepliers', () => {
+        it('should return an array of all usernames who have replied to the post', () => {
+            const fakeSnoowrap = mockSnoowrap()
+            const fakeSubmission: Submission = td.object({} as any)
+            fakeSubmission.expandReplies = td.func('expandReplies') as any
+            td.when(fakeSnoowrap.getSubmission(td.matchers.anything())).thenResolve(fakeSubmission)
+
+            const expectedUsernames = []
+            const replies = []
+            for(let i = 0; i < 10; i++) {
+                const comment = mockComment()
+                if(Math.round(Math.random()) === 1) {
+                    const nestedComment = mockComment()
+                    expectedUsernames.push(nestedComment.author.name)
+                    comment.replies = [nestedComment] as Listing<Comment>
+                }
+                expectedUsernames.push(comment.author.name)
+                replies.push(comment)
+            }
+            fakeSubmission.comments = replies as Listing<Comment>
+            td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
+
+            return new RedditBot(fakeSnoowrap).getAllRepliers(fakeSubmission)
+                .then((repliers) => repliers.forEach((replier) => assert.notEqual(expectedUsernames.indexOf(replier), -1)))
+        })
+
+        it('should only return each username once', () => {
+            const fakeSnoowrap = mockSnoowrap()
+            const fakeSubmission: Submission = td.object({} as any)
+            fakeSubmission.expandReplies = td.func('expandReplies') as any
+            td.when(fakeSnoowrap.getSubmission(td.matchers.anything())).thenResolve(fakeSubmission)
+
+            const expectedUsernames = []
+            const replies = []
+            const duplicateName = randomString()
+            for(let i = 0; i < 10; i++) {
+                const comment = mockComment()
+                expectedUsernames.push(comment.author.name)
+                replies.push(comment)
+
+                replies.push(mockComment({ author: { name: duplicateName } } as any))
+            }
+
+            expectedUsernames.push(duplicateName)
+            fakeSubmission.comments = replies as Listing<Comment>
+            td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
+
+            return new RedditBot(fakeSnoowrap).getAllRepliers(fakeSubmission)
+                .then((repliers) => assert.equal(repliers.length, expectedUsernames.length))
+        })
+    })
+
     describe('getUserPoints', () => {
         it('should convert user flair text into a points value', () => {
             const fakeSnoowrap = mockSnoowrap()
@@ -121,6 +173,8 @@ describe('RedditBot', () => {
 function mockComment(author?: RedditUser): Comment {
     if(!author) {
         author = td.object({} as any)
+        author.name = randomString()
+        author.id = randomString()
     }
 
     const comment = td.object({} as any)

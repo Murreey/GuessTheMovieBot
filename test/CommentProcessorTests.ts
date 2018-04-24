@@ -14,6 +14,7 @@ describe('CommentProcessor', () => {
         it('should return true if comment matches criteria', () => {
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(true)])
 
@@ -46,6 +47,7 @@ describe('CommentProcessor', () => {
             const validFlairs = ['easy', 'hard']
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(validFlairs[Math.floor(Math.random() * validFlairs.length)])
 
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
 
             const fakeComment = getFakeGuessComment()
@@ -56,6 +58,7 @@ describe('CommentProcessor', () => {
         it('should return false if it has no replies from OP', () => {
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([])
 
@@ -67,6 +70,7 @@ describe('CommentProcessor', () => {
         it('should return false if it has OP has replied but not with a confirmation', () => {
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false)])
 
@@ -78,6 +82,7 @@ describe('CommentProcessor', () => {
         it('should return false if comment has multiple replies with no confirmation', () => {
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(false)])
 
@@ -89,6 +94,7 @@ describe('CommentProcessor', () => {
         it('should return true if comment has multiple replies with one confirming', () => {
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
 
             td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(true), getOPReply(false)])
 
@@ -100,6 +106,7 @@ describe('CommentProcessor', () => {
         it('should return false if the reported comment was posted by the OP', () => {
             const fakeBot = td.object(new RedditBot())
             td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
 
             const userID = randomString()
             const fakeOPReply = getOPReply(true)
@@ -109,6 +116,17 @@ describe('CommentProcessor', () => {
 
             const fakeComment = getFakeGuessComment(userID)
             return new CommentProcessor(fakeBot).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, false))
+        })
+
+        it('should return false if the bot has already posted a comment in the thread', () => {
+            const fakeBot = td.object(new RedditBot())
+            td.when(fakeBot.getLinkFlair(td.matchers.anything())).thenResolve(null)
+            const botName = randomString()
+            td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([randomString(), randomString(), botName, randomString()])
+
+            const fakeComment = getFakeGuessComment()
+            return new CommentProcessor(fakeBot, { bot_username: botName }).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
     })
