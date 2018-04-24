@@ -1,5 +1,5 @@
 import * as snoowrap from 'snoowrap'
-import { Listing, Comment, Submission } from 'snoowrap'
+import { Listing, Comment, Submission, RedditUser } from 'snoowrap'
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 
 export class RedditBot {
@@ -45,6 +45,25 @@ export class RedditBot {
             .map((reply) => reply.reply)
 
         return Promise.resolve(replies)
+    }
+
+    async getAllRepliers(content: Submission | Comment): Promise<string[]> {
+        const repliers: string[] = []
+
+        let replies: Comment[] = []
+        if((content as Submission).comments) {
+            const postWithReplies: Submission = await content.expandReplies() as Submission
+            replies = postWithReplies.comments
+        } else {
+            replies = (content as Comment).replies
+        }
+
+        for(let comment of replies) {
+            repliers.push(await comment.author.name)
+            repliers.push(... await this.getAllRepliers(comment))
+        }
+
+        return Promise.resolve(repliers.filter((elem, index, self) => index === self.indexOf(elem)))
     }
 
     getCommentFromID(id: string): Promise<Comment> {

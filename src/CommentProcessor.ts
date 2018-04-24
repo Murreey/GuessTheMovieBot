@@ -7,11 +7,17 @@ import * as Mustache from 'mustache'
 
 export class CommentProcessor {
     bot: RedditBot
+    config: Object
     guesserComment: Comment
     submitterConfirmationComment: Comment
 
-    constructor(bot) {
+    constructor(bot, config?) {
         this.bot = bot
+        if(config) {
+            this.config = config
+        } else {
+            this.config = require('../config.json')
+        }
     }
 
     async processComment(comment: Comment): Promise<boolean> {
@@ -28,6 +34,11 @@ export class CommentProcessor {
     async checkCommentIsValidWin(comment: Comment): Promise<boolean> {
         const currentFlair: string = await this.bot.getLinkFlair(await comment.link_id)
         if(currentFlair && (currentFlair.toLowerCase().includes("identified") || currentFlair.toLowerCase().includes("meta"))) {
+            return false
+        }
+
+        const repliers = await this.bot.getAllRepliers(await this.bot.getPostFromComment(comment))
+        if(repliers.indexOf(this.config['bot_username']) > -1) {
             return false
         }
 
@@ -54,7 +65,7 @@ export class CommentProcessor {
         return /\byes\b/i.test(comment)
     }
     
-    async processWin(comment: Comment) {
+    async processWin(comment: Comment): Promise<boolean> {
         const winner = await comment.author.name
         const winnerPoints = await this.bot.getUserPoints(comment.author.name)
 
@@ -69,6 +80,8 @@ export class CommentProcessor {
         this.addPoints(submitter, 3)
 
         this.bot.removeReports(comment)
+
+        return true
     }
 
     async addIdentifiedFlair(post: Submission) {
