@@ -15,7 +15,7 @@ export class GTMBot {
         for(let comment of reportedComments){
             logger.verbose(`\n`)
             logger.debug(`Dispatching comment '${comment.body}' to processor...`)
-            await new CommentProcessor(this.bot, null, logger).processComment(comment)
+            await new CommentProcessor(this.bot, logger).processComment(comment)
         }
     }
 

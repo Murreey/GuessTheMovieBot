@@ -10,7 +10,6 @@ export class Logger {
         this.logFileTransport = new DailyRotateFile({
             filename: '%DATE%.log',
             dirname: 'logs',
-            maxFiles: '14d',
             level: 'info',
             datePattern:'YYYY-MM-[week]-w',
             format: winston.format.combine(

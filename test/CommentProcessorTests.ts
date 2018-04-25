@@ -117,7 +117,7 @@ describe('CommentProcessor', () => {
             td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([randomString(), randomString(), botName, randomString()])
 
             const fakeComment = getFakeGuessComment()
-            return new CommentProcessor(fakeBot, { bot_username: botName }).checkCommentIsValidWin(fakeComment)
+            return new CommentProcessor(fakeBot, undefined, { bot_username: botName }).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
         })
 
@@ -220,36 +220,6 @@ describe('CommentProcessor', () => {
         })
     })
 
-    describe('addPoints', () => {
-        it('should set user points to the new total', () => {
-            const fakeBot = td.object(new RedditBot())
-            const username = randomString()
-
-            const currentPoints = Math.floor(Math.random() * 50)
-            const newPoints = Math.ceil((Math.random() + 1) * 3)
-
-            td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
-
-            new CommentProcessor(fakeBot).addPoints(username, newPoints)
-                .then(() => {
-                    td.verify(fakeBot.setUserPoints(username, currentPoints + newPoints))
-                })
-        })
-
-        it('should add negative points', () => {
-            const fakeBot = td.object(new RedditBot())
-            const username = randomString()
-
-            const currentPoints = Math.floor(Math.random() * 50)
-            const newPoints = Math.ceil((Math.random() + 1) * 3)
-
-            td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
-
-            new CommentProcessor(fakeBot).addPoints(username, -newPoints)
-                .then(() => td.verify(fakeBot.setUserPoints(username, currentPoints - newPoints)))
-        })
-    })
-
     describe('replyWithBotMessage', () => {
         it('should render the template with the right values', () => {
             const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
@@ -267,19 +237,10 @@ describe('CommentProcessor', () => {
 
             const expectedTemplate = Mustache.render(replyTemplate, templateValues)
 
-            const mockWinningComment = td.object({} as any)
             const mockOPComment = td.object({} as any)
-
-            const mockGuesser: RedditUser = td.object({} as any)
-            const mockPoster: RedditUser = td.object({} as any)
-            mockGuesser.name = guesser
-            mockPoster.name = poster
-
-            mockWinningComment.author = mockGuesser
-            mockOPComment.author = mockPoster
             mockOPComment.reply = td.func('reply')
 
-            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, mockWinningComment)
+            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, guesser, poster)
                 .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
         })
 
@@ -287,18 +248,14 @@ describe('CommentProcessor', () => {
             const mockWinningComment = td.object({} as any)
             const mockOPComment = td.object({} as any)
             const mockPostedComment = td.object({} as any)
-            const mockGuesser = td.object({} as any)
-            const mockPoster = td.object({} as any)
-            mockGuesser.name = randomString()
-            mockPoster.name = randomString()
+            const guesser = randomString()
+            const poster = randomString()
 
-            mockWinningComment.author = mockGuesser
-            mockOPComment.author = mockPoster
             mockOPComment.reply = td.func('reply')
             mockPostedComment.distinguish = td.func('distinguish')
             td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, mockWinningComment)
+            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, guesser, poster)
                 .then(() => td.verify(mockPostedComment.distinguish()))
         })
     })

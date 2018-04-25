@@ -6,6 +6,7 @@ import * as path from 'path'
 import * as Mustache from 'mustache'
 import { GoogleImageSearcher } from './GoogleImageSearcher';
 import { Logger } from './Logger'
+import { ScoreProcessor, WinType } from './ScoreProcessor';
 
 export class CommentProcessor {
     bot: RedditBot
@@ -16,25 +17,10 @@ export class CommentProcessor {
 
     points
 
-    constructor(bot, config?, logger = Logger.safeLogger()) {
+    constructor(bot, logger = Logger.safeLogger(), config?) {
         this.bot = bot
         this.logger = logger
-        if(config) {
-            this.config = config
-        } else {
-            this.config = require('../config.json')
-        }
-
-        this.points =  {
-            winner: {
-                normal: 6,
-                google: 2
-            },
-            submitter: {
-                normal: 3,
-                google: 1
-            }
-        }
+        this.config = config ? config : this.config = require('../config.json')
     }
 
     async processComment(comment: Comment): Promise<boolean> {
@@ -100,13 +86,13 @@ export class CommentProcessor {
     }
     
     async processWin(comment: Comment): Promise<boolean> {
-        const winner = await comment.author.name
+        const guesser = await comment.author.name
 
         const post: Submission = await this.bot.getPostFromComment(comment)
         const submitter = await post.author.name
 
         this.logger.info(`'${comment.body}' has won post '${await post.title}'!`)
-        this.logger.info(`- winner is ${winner} (${await this.bot.getUserPoints(winner)} points)`)
+        this.logger.info(`- winner is ${guesser} (${await this.bot.getUserPoints(guesser)} points)`)
         this.logger.info(`- submitter is ${submitter} (${await this.bot.getUserPoints(submitter)} points)`)
 
         this.logger.verbose(`Adding identified flair...`)
@@ -117,14 +103,13 @@ export class CommentProcessor {
             this.logger.info(`- was found on Google Image Search!`)
         }
 
-        this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, comment)
-        this.logger.verbose(`Replying with bot message...`)
-
         this.logger.verbose(`Awarding points...`)
-        // TODO: This is messy, will move to a point-distribution class.
-        await this.addPoints(winner, this.points['winner'][foundOnGoogle ? 'google' : 'normal'])
-        await this.addPoints(submitter, this.points['submitter'][foundOnGoogle ? 'google' : 'normal'])
+        const scoreProcessor = new ScoreProcessor(this.bot, this.logger)
+        scoreProcessor.processWin(guesser, WinType.GUESSER, foundOnGoogle)
+        scoreProcessor.processWin(submitter, WinType.SUBMITTER, foundOnGoogle)
 
+        this.logger.verbose(`Replying with bot message...`)
+        // this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
 
         // this.bot.removeReports(comment)
         this.logger.info(`- https://redd.it/${await post.id}/`)
@@ -150,19 +135,13 @@ export class CommentProcessor {
         }
     }
 
-    async addPoints(username: string, points: number) {
-        const currentPoints = await this.bot.getUserPoints(username)
-        await this.bot.setUserPoints(username, currentPoints + points)
-        this.logger.verbose(`Added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points}`)
-    }
-
-    async replyWithBotMessage(foundOnGoogle: boolean, opComment: Comment, winningComment: Comment) {
+    async replyWithBotMessage(foundOnGoogle: boolean, opComment: Comment, guesser: string, submitter: string) {
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
-            guesser: await winningComment.author.name,
-            guesser_points: this.points ? this.points['winner'][foundOnGoogle ? 'google' : 'normal']: 6,
-            poster: await opComment.author.name,
-            poster_points: this.points ? this.points['submitter'][foundOnGoogle ? 'google' : 'normal']: 3,
+            guesser,
+            guesser_points: await new ScoreProcessor(this.bot).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
+            poster: submitter,
+            poster_points: await new ScoreProcessor(this.bot).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
             subreddit: require('../config.json').subreddit
         }
 
