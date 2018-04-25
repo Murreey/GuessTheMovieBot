@@ -1,6 +1,7 @@
 import { Comment, Submission } from 'snoowrap';
 import { RedditBot } from './RedditBot'
 import { CommentProcessor } from './CommentProcessor'
+import { Logger } from './Logger';
  
 export class GTMBot {
     bot: RedditBot
@@ -9,10 +10,12 @@ export class GTMBot {
         this.bot = bot
     }
 
-    async processComments() {
+    async processComments(logger = Logger.safeLogger()) {
         const reportedComments = await this.bot.getReportedComments()
         for(let comment of reportedComments){
-            new CommentProcessor(this.bot).processComment(comment)
+            logger.verbose(`\n`)
+            logger.debug(`Dispatching comment '${comment.body}' to processor...`)
+            await new CommentProcessor(this.bot, null, logger).processComment(comment)
         }
     }
 

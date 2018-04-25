@@ -11,6 +11,8 @@ export class GoogleImageSearcher {
     }
 
     foundImageResults(url: string): Promise<boolean> {
+        url = url.split('?')[0]
+
         if(!this.isImageURL(url)){
             return Promise.resolve(false)
         }
