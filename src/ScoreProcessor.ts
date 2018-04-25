@@ -31,17 +31,16 @@ export class ScoreProcessor {
         }
     }
 
-    async processWin(username: string, type: WinType, foundOnGoogle: boolean): Promise<number> {
+    async processWin(username: string, type: WinType, foundOnGoogle: boolean) {
         const pointsToAward = this.winTypeToPoints(type, foundOnGoogle)
         await this.addPoints(username, pointsToAward)
-        return Promise.resolve(pointsToAward)
     }
 
     async addPoints(username: string, points: number) {
         const currentPoints = await this.bot.getUserPoints(username)
         const newPoints = currentPoints + points
         await this.bot.setUserFlair(username, newPoints, this.getCssClass(newPoints))
-        this.logger.verbose(`Added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points}`)
+        this.logger.verbose(`Added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points} (css class ${this.getCssClass(newPoints)})`)
     }
 
     getCssClass(points: number): string {
