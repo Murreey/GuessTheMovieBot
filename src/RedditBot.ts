@@ -74,10 +74,11 @@ export class RedditBot {
         return Promise.resolve(this.r.getSubmission(comment.link_id))
     }
 
-    setUserPoints(username: string, points: number) {
+    setUserFlair(username: string, points: number, cssClass: string = "") {
         this.r.getUser(username).assignFlair({
             subredditName: this.config['subreddit'],
-            text: points
+            text: points,
+            cssClass
         })
     }
 
