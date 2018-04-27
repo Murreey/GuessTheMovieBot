@@ -10,6 +10,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "once": "ts-node src/index.ts -- once",
+    "readonly": "ts-node src/index.ts -- readonly",
     "test": "nyc mocha -r ts-node/register test/**/*.ts"
   },
   "author": "",

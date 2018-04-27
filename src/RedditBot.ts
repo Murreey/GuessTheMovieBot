@@ -5,14 +5,12 @@ import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 export class RedditBot {
     r: snoowrap
     config: Object
+    readonly: boolean
 
-    constructor(snoowrap?: snoowrap) {
+    constructor(snoowrap?: snoowrap, readonly: boolean = false) {
         this.config = require('../config.json')
-        if(snoowrap) {
-            this.r = snoowrap
-        } else {
-            this.r = this.getNewSnoowrap()
-        }
+        snoowrap ? this.r = snoowrap : this.r = this.getNewSnoowrap()
+        this.readonly = readonly
     }
 
     getNewSnoowrap(): snoowrap {
@@ -75,11 +73,13 @@ export class RedditBot {
     }
 
     setUserFlair(username: string, points: number, cssClass: string = "") {
-        this.r.getUser(username).assignFlair({
-            subredditName: this.config['subreddit'],
-            text: points,
-            cssClass
-        })
+        if(!this.readonly) {
+            this.r.getUser(username).assignFlair({
+                subredditName: this.config['subreddit'],
+                text: points,
+                cssClass
+            })
+        }
     }
 
     getUserPoints(username: string): Promise<number> {
@@ -94,6 +94,8 @@ export class RedditBot {
     }
 
     removeReports(comment: Comment) {
-        comment.approve()
+        if(!this.readonly) {
+            comment.approve()
+        }
     }
 }

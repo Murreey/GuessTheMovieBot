@@ -105,13 +105,13 @@ export class CommentProcessor {
 
         this.logger.verbose(`Awarding points...`)
         const scoreProcessor = new ScoreProcessor(this.bot, this.logger)
-        scoreProcessor.processWin(guesser, WinType.GUESSER, foundOnGoogle)
-        scoreProcessor.processWin(submitter, WinType.SUBMITTER, foundOnGoogle)
+        await scoreProcessor.processWin(guesser, WinType.GUESSER, foundOnGoogle)
+        await scoreProcessor.processWin(submitter, WinType.SUBMITTER, foundOnGoogle)
 
         this.logger.verbose(`Replying with bot message...`)
-        // this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
+        this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
 
-        // this.bot.removeReports(comment)
+        this.bot.removeReports(comment)
         this.logger.info(`- https://redd.it/${await post.id}/`)
 
         return true
@@ -130,7 +130,7 @@ export class CommentProcessor {
             return newFlair === template.flair_text
         })
 
-        if(flairTemplate) {  
+        if(flairTemplate && !this.bot.readonly) {
             post.selectFlair(flairTemplate)
         }
     }
@@ -146,7 +146,10 @@ export class CommentProcessor {
         }
 
         const reply = Mustache.render(replyTemplate, templateValues)
-        const postedComment: Comment = await opComment.reply(reply) as Comment
-        if(postedComment) postedComment.distinguish()
+
+        if(!this.bot.readonly) {
+            const postedComment: Comment = await opComment.reply(reply) as Comment
+            if(postedComment) postedComment.distinguish()
+        }
     }
 }
