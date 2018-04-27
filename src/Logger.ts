@@ -14,7 +14,7 @@ export class Logger {
             datePattern:'YYYY-MM-[week]-w',
             format: winston.format.combine(
                 winston.format.timestamp({
-                    format: 'HH:mm:ss'
+                    format: 'YYYY-MM-DD HH:mm:ss'
                 }),
                 winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
             )
