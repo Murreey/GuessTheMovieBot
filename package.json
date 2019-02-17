@@ -15,23 +15,22 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/mocha": "^5.2.0",
-    "@types/mustache": "^0.8.30",
-    "@types/node": "^8.10.9",
-    "@types/node-cron": "^1.2.0",
-    "@types/snoowrap": "^1.14.3",
-    "mocha": "^5.1.1",
-    "nyc": "^11.7.1",
-    "testdouble": "^3.7.0",
-    "ts-node": "^6.0.0",
-    "typescript": "^2.8.3",
-    "yesno": "0.0.1"
+    "@types/mocha": "^5.2.6",
+    "@types/mustache": "^0.8.32",
+    "@types/node": "^11.9.4",
+    "@types/node-cron": "^2.0.1",
+    "@types/snoowrap": "^1.15.3",
+    "mocha": "^5.2.0",
+    "nyc": "^13.3.0",
+    "testdouble": "^3.10.0",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3",
+    "yesno": "^0.2.0"
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "mustache": "^2.3.0",
-    "node-cron": "^1.2.1",
-    "npm": "^5.8.0",
+    "mustache": "^3.0.1",
+    "node-cron": "^2.0.3",
     "snoowrap": "^1.15.2"
   },
   "nyc": {
