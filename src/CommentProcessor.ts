@@ -9,7 +9,7 @@ import { Logger } from './Logger'
 import { ScoreProcessor, WinType } from './ScoreProcessor';
 
 export class CommentProcessor {
-    bot: RedditBot
+    bot: any
     config: Object
     logger: any
     guesserComment: Comment
@@ -34,7 +34,7 @@ export class CommentProcessor {
         return false
     }
 
-    async checkCommentIsValidWin(comment: Comment): Promise<boolean> {
+    async checkCommentIsValidWin(comment: any): Promise<boolean> {
         const submission = await this.bot.getPostFromComment(comment)
         if(await submission.is_self) {
             this.logger.verbose(`'${comment.body}' rejected as it's on a self post`)
@@ -84,7 +84,7 @@ export class CommentProcessor {
     commentContainsConfirmation(comment: string) {
         return /\byes\b/i.test(comment)
     }
-    
+
     async processWin(comment: Comment): Promise<boolean> {
         const guesser = await comment.author.name
 
@@ -135,7 +135,7 @@ export class CommentProcessor {
         }
     }
 
-    async replyWithBotMessage(foundOnGoogle: boolean, opComment: Comment, guesser: string, submitter: string) {
+    async replyWithBotMessage(foundOnGoogle: boolean, opComment: any, guesser: string, submitter: string) {
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
             guesser,

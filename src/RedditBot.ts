@@ -22,8 +22,8 @@ export class RedditBot {
         })
     }
 
-    getReportedComments(): Comment[] {
-        return this.r
+    async getReportedComments(): Promise<Comment[]> {
+        return await this.r
             .getSubreddit(this.config['subreddit'])
             .getReports({ only: "comments" }) as Comment[]
     }
@@ -31,7 +31,7 @@ export class RedditBot {
     async getOPReplies(comment: Comment): Promise<Comment[]> {
         const submitter = await this.getPostFromComment(comment).then(post => post.author.id)
         var replies: Comment[] = await comment.replies.fetchAll()
-        
+
         const repliesWithIDs = await Promise.all(replies.map(async (reply: Comment) => {
             return {
                 reply,
@@ -45,7 +45,7 @@ export class RedditBot {
         return Promise.resolve(replies)
     }
 
-    async getAllRepliers(content: Submission | Comment): Promise<string[]> {
+    async getAllRepliers(content: any): Promise<string[]> {
         const repliers: string[] = []
 
         let replies: Comment[] = []

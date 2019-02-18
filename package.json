@@ -24,8 +24,8 @@
     "mocha": "^5.2.0",
     "nyc": "^13.3.0",
     "testdouble": "^3.10.0",
-    "ts-node": "6.0.0",
-    "typescript": "2.8.3"
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3"
   },
   "dependencies": {
     "axios": "^0.18.0",
