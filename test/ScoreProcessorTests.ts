@@ -16,7 +16,7 @@ describe('ScoreProcessor', () => {
             td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
 
             return new ScoreProcessor(fakeBot).addPoints(username, newPoints)
-                .then(() => td.verify(fakeBot.setUserPoints(username, currentPoints + newPoints)))
+                .then(() => td.verify(fakeBot.setUserFlair(username, currentPoints + newPoints, td.matchers.anything())))
         })
 
         it('should add negative points', () => {
@@ -29,7 +29,7 @@ describe('ScoreProcessor', () => {
             td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
 
             return new ScoreProcessor(fakeBot).addPoints(username, -newPoints)
-                .then(() => td.verify(fakeBot.setUserPoints(username, currentPoints - newPoints)))
+                .then(() => td.verify(fakeBot.setUserFlair(username, currentPoints - newPoints, td.matchers.anything())))
         })
     })
 

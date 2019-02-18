@@ -222,6 +222,7 @@ describe('CommentProcessor', () => {
 
     describe('replyWithBotMessage', () => {
         it('should render the template with the right values', () => {
+            const fakeBot = td.object(new RedditBot())
             const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
 
             const guesser = randomString()
@@ -240,11 +241,12 @@ describe('CommentProcessor', () => {
             const mockOPComment = td.object({} as any)
             mockOPComment.reply = td.func('reply')
 
-            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, guesser, poster)
+            return new CommentProcessor(fakeBot).replyWithBotMessage(false, mockOPComment, guesser, poster)
                 .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
         })
 
         it('should distinguish the posted comment', () => {
+            const fakeBot = td.object(new RedditBot())
             const mockWinningComment = td.object({} as any)
             const mockOPComment = td.object({} as any)
             const mockPostedComment = td.object({} as any)
@@ -255,7 +257,7 @@ describe('CommentProcessor', () => {
             mockPostedComment.distinguish = td.func('distinguish')
             td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-            return new CommentProcessor(null).replyWithBotMessage(false, mockOPComment, guesser, poster)
+            return new CommentProcessor(fakeBot).replyWithBotMessage(false, mockOPComment, guesser, poster)
                 .then(() => td.verify(mockPostedComment.distinguish()))
         })
     })
@@ -282,7 +284,7 @@ function getFakeSubmission(flair?: string): Submission {
 function getOPReply(valid: boolean = true): Comment {
     const fakeOPComment: Comment = td.object({} as any)
     let bodies = ["Yes!", "yes", "That's right, yes", "YES"]
-    
+
     if(!valid) {
         bodies = ["No", "incorrect", "wrong", "No but this film also stars Tommy Wiseau"]
     }
