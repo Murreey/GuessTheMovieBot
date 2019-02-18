@@ -104,7 +104,7 @@ export class CommentProcessor {
         }
 
         this.logger.verbose(`Awarding points...`)
-        const scoreProcessor = new ScoreProcessor(this.bot, this.logger)
+        const scoreProcessor = new ScoreProcessor(this.bot, this.logger, this.config)
         await scoreProcessor.processWin(guesser, WinType.GUESSER, foundOnGoogle)
         await scoreProcessor.processWin(submitter, WinType.SUBMITTER, foundOnGoogle)
 
@@ -139,10 +139,10 @@ export class CommentProcessor {
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
             guesser,
-            guesser_points: await new ScoreProcessor(this.bot).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
+            guesser_points: await new ScoreProcessor(this.bot, this.logger, this.config).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
             poster: submitter,
-            poster_points: await new ScoreProcessor(this.bot).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
-            subreddit: require('../config.json').subreddit
+            poster_points: await new ScoreProcessor(this.bot, this.logger, this.config).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
+            subreddit: (this.config as any).subreddit
         }
 
         const reply = Mustache.render(replyTemplate, templateValues)

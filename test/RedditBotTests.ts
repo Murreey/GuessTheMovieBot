@@ -13,9 +13,9 @@ describe('RedditBot', () => {
             const fakeSnoowrap = mockSnoowrap()
             const fakeSubmission: Submission = td.object({} as any)
             td.when(fakeSnoowrap.getSubmission(td.matchers.anything())).thenResolve(fakeSubmission)
-            
+
             const fakeComment = mockComment()
-            
+
             const replies = []
             const fakeOP = td.object({} as any)
             fakeOP.id = randomString()
@@ -23,7 +23,7 @@ describe('RedditBot', () => {
             replies.push(mockComment(), mockComment(fakeOP), mockComment())
             td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
 
-            new RedditBot(fakeSnoowrap).getOPReplies(fakeComment)
+            new RedditBot(fakeSnoowrap, false, {}).getOPReplies(fakeComment)
                 .then((replies) => {
                     replies.forEach((reply) => {
                         assert.equal(reply.author.id, fakeOP.id)
@@ -35,9 +35,9 @@ describe('RedditBot', () => {
             const fakeSnoowrap = mockSnoowrap()
             const fakeSubmission: Submission = td.object({} as any)
             td.when(fakeSnoowrap.getSubmission(td.matchers.anything())).thenResolve(fakeSubmission)
-            
+
             const fakeComment = mockComment()
-            
+
             const replies = []
             const fakeOP = td.object({} as any)
             fakeOP.id = randomString()
@@ -45,7 +45,7 @@ describe('RedditBot', () => {
             replies.push(mockComment(), mockComment(), mockComment())
             td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
 
-            new RedditBot(fakeSnoowrap).getOPReplies(fakeComment)
+            new RedditBot(fakeSnoowrap, false, {}).getOPReplies(fakeComment)
                 .then((replies) => assert.equal(replies.length, 0))
         })
 
@@ -62,7 +62,7 @@ describe('RedditBot', () => {
             fakeSubmission.author = fakeOP
             td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
 
-            new RedditBot(fakeSnoowrap).getOPReplies(fakeComment)
+            new RedditBot(fakeSnoowrap, false, {}).getOPReplies(fakeComment)
                 .then((replies) => assert.equal(replies.length, 0))
         })
     })
@@ -89,7 +89,7 @@ describe('RedditBot', () => {
             fakeSubmission.comments = replies as Listing<Comment>
             td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
 
-            return new RedditBot(fakeSnoowrap).getAllRepliers(fakeSubmission)
+            return new RedditBot(fakeSnoowrap, false, {}).getAllRepliers(fakeSubmission)
                 .then((repliers) => repliers.forEach((replier) => assert.notEqual(expectedUsernames.indexOf(replier), -1)))
         })
 
@@ -114,7 +114,7 @@ describe('RedditBot', () => {
             fakeSubmission.comments = replies as Listing<Comment>
             td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
 
-            return new RedditBot(fakeSnoowrap).getAllRepliers(fakeSubmission)
+            return new RedditBot(fakeSnoowrap, false, {}).getAllRepliers(fakeSubmission)
                 .then((repliers) => assert.equal(repliers.length, expectedUsernames.length))
         })
     })
@@ -125,7 +125,7 @@ describe('RedditBot', () => {
             const fakeSubreddit: Subreddit = td.object({} as Subreddit)
             fakeSubreddit.getUserFlair = td.func('getUserFlair') as any
             td.when(fakeSnoowrap.getSubreddit(td.matchers.anything())).thenResolve(fakeSubreddit)
-            
+
             const username = randomString()
             const points = Math.round(Math.random() * 10)
 
@@ -135,8 +135,8 @@ describe('RedditBot', () => {
                 flair_text: `${points}`,
                 flair_position: 'right'
             })
-            
-            return new RedditBot(fakeSnoowrap).getUserPoints(username)
+
+            return new RedditBot(fakeSnoowrap, false, {}).getUserPoints(username)
                 .then((value) => assert.equal (value, points))
         })
 
@@ -145,7 +145,7 @@ describe('RedditBot', () => {
             const fakeSubreddit: Subreddit = td.object({} as Subreddit)
             fakeSubreddit.getUserFlair = td.func('getUserFlair') as any
             td.when(fakeSnoowrap.getSubreddit(td.matchers.anything())).thenResolve(fakeSubreddit)
-            
+
             const username = randomString()
 
             td.when(fakeSubreddit.getUserFlair(td.matchers.anything())).thenResolve({
@@ -154,8 +154,8 @@ describe('RedditBot', () => {
                 flair_text: null,
                 flair_position: 'right'
             })
-            
-            return new RedditBot(fakeSnoowrap).getUserPoints(username)
+
+            return new RedditBot(fakeSnoowrap, false, {}).getUserPoints(username)
                 .then((value) => assert.equal (value, 0))
         })
     })

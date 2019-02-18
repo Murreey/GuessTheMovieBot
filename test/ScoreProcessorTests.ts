@@ -7,7 +7,7 @@ import { RedditBot } from '../src/RedditBot'
 describe('ScoreProcessor', () => {
     describe('addPoints', () => {
         it('should set user points to the new total', () => {
-            const fakeBot = td.object(new RedditBot())
+            const fakeBot = td.object(new RedditBot({} as any, false, {}))
             const username = randomString()
 
             const currentPoints = Math.floor(Math.random() * 50)
@@ -15,12 +15,12 @@ describe('ScoreProcessor', () => {
 
             td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
 
-            return new ScoreProcessor(fakeBot).addPoints(username, newPoints)
+            return new ScoreProcessor(fakeBot, undefined, {}).addPoints(username, newPoints)
                 .then(() => td.verify(fakeBot.setUserFlair(username, currentPoints + newPoints, td.matchers.anything())))
         })
 
         it('should add negative points', () => {
-            const fakeBot = td.object(new RedditBot())
+            const fakeBot = td.object(new RedditBot({} as any, false, {}))
             const username = randomString()
 
             const currentPoints = Math.floor(Math.random() * 50)
@@ -28,7 +28,7 @@ describe('ScoreProcessor', () => {
 
             td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
 
-            return new ScoreProcessor(fakeBot).addPoints(username, -newPoints)
+            return new ScoreProcessor(fakeBot, undefined, {}).addPoints(username, -newPoints)
                 .then(() => td.verify(fakeBot.setUserFlair(username, currentPoints - newPoints, td.matchers.anything())))
         })
     })

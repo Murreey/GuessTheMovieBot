@@ -7,9 +7,9 @@ export class RedditBot {
     config: Object
     readonly: boolean
 
-    constructor(snoowrap?: snoowrap, readonly: boolean = false) {
-        this.config = require('../config.json')
-        snoowrap ? this.r = snoowrap : this.r = this.getNewSnoowrap()
+    constructor(snoowrap?: snoowrap, readonly: boolean = false, config?) {
+        this.config = config ? config : require('../config.json')
+        this.r = snoowrap ? snoowrap : this.getNewSnoowrap()
         this.readonly = readonly
     }
 
