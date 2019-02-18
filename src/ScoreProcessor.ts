@@ -1,11 +1,5 @@
-import { Comment, Submission, ReplyableContent } from 'snoowrap';
-import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
-import { RedditBot } from './RedditBot'
-import * as fs from 'fs'
-import * as path from 'path'
-import * as Mustache from 'mustache'
-import { GoogleImageSearcher } from './GoogleImageSearcher';
-import { Logger } from './Logger'
+import { Logger } from './Logger';
+import { RedditBot } from './RedditBot';
 
 export class ScoreProcessor {
     bot: RedditBot

@@ -1,8 +1,7 @@
-import { Comment, Submission } from 'snoowrap';
-import { RedditBot } from './RedditBot'
-import { CommentProcessor } from './CommentProcessor'
+import { CommentProcessor } from './CommentProcessor';
 import { Logger } from './Logger';
- 
+import { RedditBot } from './RedditBot';
+
 export class GTMBot {
     bot: RedditBot
 
@@ -19,5 +18,5 @@ export class GTMBot {
         }
     }
 
-    
+
 }

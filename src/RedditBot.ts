@@ -1,5 +1,5 @@
-import * as snoowrap from 'snoowrap'
-import { Listing, Comment, Submission, RedditUser } from 'snoowrap'
+import * as snoowrap from 'snoowrap';
+import { Comment, Submission } from 'snoowrap';
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 
 export class RedditBot {

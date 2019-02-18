@@ -29,7 +29,7 @@ export class Logger {
         this.logger.enableFileLogging = () => this.logger.add(this.logFileTransport)
         this.logger.disableFileLogging = () => this.logger.remove(this.logFileTransport)
 
-        this.logger.enableConsoleLogging = (level: string = 'silly') => { 
+        this.logger.enableConsoleLogging = (level: string = 'silly') => {
             this.consoleTransport.level = level
             this.logger.add(this.consoleTransport)
         }

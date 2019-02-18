@@ -1,8 +1,7 @@
-import { RedditBot } from './RedditBot';
-import { GTMBot } from './GTMBot'
-import * as scheduler from 'node-cron'
-import { GoogleImageSearcher } from './GoogleImageSearcher';
+import * as scheduler from 'node-cron';
+import { GTMBot } from './GTMBot';
 import { Logger } from './Logger';
+import { RedditBot } from './RedditBot';
 
 let bot = new GTMBot(new RedditBot())
 const logger = new Logger().getLogger()
