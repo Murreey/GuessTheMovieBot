@@ -24,15 +24,16 @@
     "mocha": "^5.2.0",
     "nyc": "^13.3.0",
     "testdouble": "^3.10.0",
-    "ts-node": "^8.0.2",
-    "typescript": "^3.3.3",
-    "yesno": "^0.2.0"
+    "ts-node": "6.0.0",
+    "typescript": "2.8.3"
   },
   "dependencies": {
     "axios": "^0.18.0",
     "mustache": "^3.0.1",
     "node-cron": "^2.0.3",
-    "snoowrap": "^1.15.2"
+    "snoowrap": "^1.15.2",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.7.0"
   },
   "nyc": {
     "extension": [
