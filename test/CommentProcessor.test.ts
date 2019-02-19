@@ -221,44 +221,72 @@ describe('CommentProcessor', () => {
     })
 
     describe('replyWithBotMessage', () => {
-        it('should render the template with the right values', () => {
-            const fakeBot = getFakeBot()
-            const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
+        let fakeBot, guesser, poster
 
-            const guesser = randomString()
-            const poster = randomString()
-
-            const templateValues = {
-                guesser,
-                guesser_points: 6,
-                poster,
-                poster_points: 3,
-                subreddit: ''
-            }
-
-            const expectedTemplate = Mustache.render(replyTemplate, templateValues)
-
-            const mockOPComment = td.object({} as any)
-            mockOPComment.reply = td.func('reply')
-
-            return new CommentProcessor(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
-                .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
+        beforeEach(() => {
+            fakeBot = getFakeBot()
+            guesser = randomString()
+            poster = randomString()
         })
 
-        it('should distinguish the posted comment', () => {
-            const fakeBot = getFakeBot()
-            const mockWinningComment = td.object({} as any)
-            const mockOPComment = td.object({} as any)
-            const mockPostedComment = td.object({} as any)
-            const guesser = randomString()
-            const poster = randomString()
+        describe('when read only mode is not enabled', () => {
+            it('should render the template with the right values', () => {
+                const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
 
-            mockOPComment.reply = td.func('reply')
-            mockPostedComment.distinguish = td.func('distinguish')
-            td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
+                const templateValues = {
+                    guesser,
+                    guesser_points: 6,
+                    poster,
+                    poster_points: 3,
+                    subreddit: ''
+                }
 
-            return new CommentProcessor(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
-                .then(() => td.verify(mockPostedComment.distinguish()))
+                const expectedTemplate = Mustache.render(replyTemplate, templateValues)
+
+                const mockOPComment = td.object({} as any)
+                mockOPComment.reply = td.func('reply')
+
+                return new CommentProcessor(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                    .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
+            })
+
+            it('should distinguish the posted comment', () => {
+                const mockOPComment = td.object({} as any)
+                const mockPostedComment = td.object({} as any)
+
+                mockOPComment.reply = td.func('reply')
+                mockPostedComment.distinguish = td.func('distinguish')
+                td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
+
+                return new CommentProcessor(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                    .then(() => td.verify(mockPostedComment.distinguish()))
+            })
+        })
+
+        describe('when read only mode is enabled', () => {
+            beforeEach(() => {
+                fakeBot.readonly = true
+            })
+
+            it('should render the template with the right values', () => {
+                const mockOPComment = td.object({} as any)
+                mockOPComment.reply = td.func('reply')
+
+                return new CommentProcessor(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                    .then(() => td.verify(mockOPComment.reply(), { times: 0 }))
+            })
+
+            it('should distinguish the posted comment', () => {
+                const mockOPComment = td.object({} as any)
+                const mockPostedComment = td.object({} as any)
+
+                mockOPComment.reply = td.func('reply')
+                mockPostedComment.distinguish = td.func('distinguish')
+                td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
+
+                return new CommentProcessor(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                    .then(() => td.verify(mockPostedComment.distinguish(), { times: 0 }))
+            })
         })
     })
 })
