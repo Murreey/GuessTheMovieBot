@@ -6,25 +6,22 @@ import { ConfigLoader } from './ConfigLoader';
 
 const logger = new Logger().getLogger()
 const config = new ConfigLoader(logger).getConfig()
-let bot = new GTMBot(new RedditBot(config), config)
+let redditBot = new RedditBot(config)
 
+const runOnce = process.argv.indexOf("once") > -1
+const readOnly = process.argv.indexOf("readonly") > -1
 
-if(process.argv.indexOf("once") > -1) {
-    bot = new GTMBot(new RedditBot(config, undefined, true), config)
+if(runOnce || readOnly) {
+    redditBot = new RedditBot(config, undefined, true)
     logger.enableConsoleLogging('silly')
-    bot.processComments(logger)
-} else if(process.argv.indexOf("readonly") > -1) {
-    bot = new GTMBot(new RedditBot(config, undefined, true), config)
-    logger.enableConsoleLogging('silly')
-    startTask(() => {
-        bot.processComments(logger)
-    })
-} else {
-    startTask(() => {
-        bot.processComments(logger)
-    })
 }
 
-function startTask(task) {
-    scheduler.schedule("*/1 * * * *", task)
+let gtmBot = new GTMBot(redditBot, config)
+
+if(runOnce) {
+    gtmBot.processComments(logger)
+} else {
+    scheduler.schedule("*/1 * * * *", () => {
+        gtmBot.processComments(logger)
+    })
 }
