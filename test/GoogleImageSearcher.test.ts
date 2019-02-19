@@ -11,7 +11,7 @@ describe('GoogleImageSearcher', () => {
             assert.equal(new GoogleImageSearcher().isImageURL(url), true)
         })
 
-        it('should return true if the URL does not end with a valid extension', () => {
+        it('should return false if the URL does not end with a valid extension', () => {
             assert.equal(new GoogleImageSearcher().isImageURL(randomString()), false)
         })
     })
