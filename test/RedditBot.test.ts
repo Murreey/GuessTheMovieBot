@@ -2,10 +2,8 @@ import 'mocha'
 import * as assert from 'assert'
 import * as td from 'testdouble'
 import { RedditBot } from '../src/RedditBot'
-import { CommentProcessor } from '../src/CommentProcessor'
 import * as snoowrap from 'snoowrap'
 import { Comment, Submission, Listing, RedditUser, Subreddit } from 'snoowrap'
-import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 
 describe('RedditBot', () => {
     describe('getOPReplies', () => {
@@ -23,7 +21,7 @@ describe('RedditBot', () => {
             replies.push(mockComment(), mockComment(fakeOP), mockComment())
             td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
 
-            new RedditBot(fakeSnoowrap, false, {}).getOPReplies(fakeComment)
+            new RedditBot({}, fakeSnoowrap, false).getOPReplies(fakeComment)
                 .then((replies) => {
                     replies.forEach((reply) => {
                         assert.equal(reply.author.id, fakeOP.id)
@@ -45,7 +43,7 @@ describe('RedditBot', () => {
             replies.push(mockComment(), mockComment(), mockComment())
             td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
 
-            new RedditBot(fakeSnoowrap, false, {}).getOPReplies(fakeComment)
+            new RedditBot({}, fakeSnoowrap, false).getOPReplies(fakeComment)
                 .then((replies) => assert.equal(replies.length, 0))
         })
 
@@ -62,7 +60,7 @@ describe('RedditBot', () => {
             fakeSubmission.author = fakeOP
             td.when(fakeComment.replies.fetchAll()).thenResolve(replies)
 
-            new RedditBot(fakeSnoowrap, false, {}).getOPReplies(fakeComment)
+            new RedditBot({}, fakeSnoowrap, false).getOPReplies(fakeComment)
                 .then((replies) => assert.equal(replies.length, 0))
         })
     })
@@ -89,7 +87,7 @@ describe('RedditBot', () => {
             fakeSubmission.comments = replies as Listing<Comment>
             td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
 
-            return new RedditBot(fakeSnoowrap, false, {}).getAllRepliers(fakeSubmission)
+            return new RedditBot({}, fakeSnoowrap, false).getAllRepliers(fakeSubmission)
                 .then((repliers) => repliers.forEach((replier) => assert.notEqual(expectedUsernames.indexOf(replier), -1)))
         })
 
@@ -114,7 +112,7 @@ describe('RedditBot', () => {
             fakeSubmission.comments = replies as Listing<Comment>
             td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
 
-            return new RedditBot(fakeSnoowrap, false, {}).getAllRepliers(fakeSubmission)
+            return new RedditBot({}, fakeSnoowrap, false).getAllRepliers(fakeSubmission)
                 .then((repliers) => assert.equal(repliers.length, expectedUsernames.length))
         })
     })
@@ -136,7 +134,7 @@ describe('RedditBot', () => {
                 flair_position: 'right'
             })
 
-            return new RedditBot(fakeSnoowrap, false, {}).getUserPoints(username)
+            return new RedditBot({}, fakeSnoowrap, false).getUserPoints(username)
                 .then((value) => assert.equal (value, points))
         })
 
@@ -155,7 +153,7 @@ describe('RedditBot', () => {
                 flair_position: 'right'
             })
 
-            return new RedditBot(fakeSnoowrap, false, {}).getUserPoints(username)
+            return new RedditBot({}, fakeSnoowrap, false).getUserPoints(username)
                 .then((value) => assert.equal (value, 0))
         })
     })

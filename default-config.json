@@ -1,0 +1,18 @@
+{
+    "userAgent": "<>",
+    "refreshToken": "<>",
+    "clientId": "<>",
+    "clientSecret": "<>",
+    "subreddit": "GuessTheMovie",
+    "bot_username": "GTMBot",
+    "points": {
+        "guesser": {
+            "normal": 6,
+            "google": 1
+        },
+        "submitter": {
+            "normal": 3,
+            "google": 2
+        }
+    }
+}

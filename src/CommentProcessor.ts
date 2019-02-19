@@ -16,10 +16,10 @@ export class CommentProcessor {
 
     points
 
-    constructor(bot, logger = Logger.safeLogger(), config?) {
+    constructor(bot, config, logger = Logger.safeLogger()) {
         this.bot = bot
+        this.config = config
         this.logger = logger
-        this.config = config ? config : this.config = require('../config.json')
     }
 
     async processComment(comment: Comment): Promise<boolean> {
@@ -103,7 +103,7 @@ export class CommentProcessor {
         }
 
         this.logger.verbose(`Awarding points...`)
-        const scoreProcessor = new ScoreProcessor(this.bot, this.logger, this.config)
+        const scoreProcessor = new ScoreProcessor(this.bot, this.config, this.logger)
         await scoreProcessor.processWin(guesser, WinType.GUESSER, foundOnGoogle)
         await scoreProcessor.processWin(submitter, WinType.SUBMITTER, foundOnGoogle)
 
@@ -138,9 +138,9 @@ export class CommentProcessor {
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
         const templateValues = {
             guesser,
-            guesser_points: await new ScoreProcessor(this.bot, this.logger, this.config).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
+            guesser_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
             poster: submitter,
-            poster_points: await new ScoreProcessor(this.bot, this.logger, this.config).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
+            poster_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
             subreddit: (this.config as any).subreddit
         }
 

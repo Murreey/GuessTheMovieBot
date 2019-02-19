@@ -8,10 +8,10 @@ export class ScoreProcessor {
 
     defaultPoints
 
-    constructor(bot, logger = Logger.safeLogger(), config?) {
+    constructor(bot, config, logger = Logger.safeLogger()) {
         this.bot = bot
+        this.config = config
         this.logger = logger
-        this.config = config ? config : this.config = require('../config.json')
 
         this.defaultPoints =  {
             guesser: {
