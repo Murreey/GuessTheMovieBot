@@ -40,7 +40,8 @@
       ".tsx"
     ],
     "exclude": [
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "dist/**/*"
     ],
     "all": true
   }
