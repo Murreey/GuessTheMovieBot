@@ -1,5 +1,5 @@
 # GuessTheMovieBot
-![Travis](https://img.shields.io/travis/com/Murreey/GuessTheMovieBot.svg?logo=travis)
+[![Travis](https://img.shields.io/travis/com/Murreey/GuessTheMovieBot.svg?logo=travis)](https://travis-ci.com/Murreey/GuessTheMovieBot/)
 [![GitHub issues](https://img.shields.io/github/issues/Murreey/GuessTheMovieBot.svg?style=flat)](https://github.com/Murreey/GuessTheMovieBot/issues)
 
 A Reddit Bot for managing the [/r/GuessTheMovie](https://www.reddit.com/r/GuessTheMovie) subreddit, where players post screenshots from movies and others try to guess which film it's from. 
