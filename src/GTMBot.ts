@@ -13,10 +13,13 @@ export class GTMBot {
 
     async processComments(logger = Logger.safeLogger(), runOnce = false) {
         const reportedComments = await this.bot.getReportedComments()
-        for(let comment of reportedComments){
-            logger.verbose(`\n`)
-            logger.debug(`Dispatching comment '${comment.body}' to processor...`)
-            await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
+        for (let comment of reportedComments) {
+            logger.verbose(this.bot.getRateLimitInfo())
+            const result = await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
+            logger.verbose(this.bot.getRateLimitInfo())
+
+            result ? logger.info(`\n`) : logger.verbose(`\n`)
+            if (runOnce) return;
         }
     }
 

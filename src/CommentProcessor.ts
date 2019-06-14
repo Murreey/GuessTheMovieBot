@@ -13,6 +13,7 @@ export class CommentProcessor {
     logger: any
     guesserComment: Comment
     submitterConfirmationComment: Comment
+    submission: Submission
 
     points
 
@@ -24,7 +25,8 @@ export class CommentProcessor {
 
     async processComment(comment: Comment): Promise<boolean> {
         this.guesserComment = comment
-        this.logger.verbose(`Processing comment '${this.guesserComment.body}'`)
+        this.submission = await this.bot.getPostFromComment(this.guesserComment)
+        this.logger.verbose(`* Processing ${await this.submission.id} - '${this.guesserComment.body.substr(0, 10)}'`)
         if(await this.checkCommentIsValidWin(this.guesserComment)) {
             this.logger.verbose(`${this.guesserComment.body} is a valid win!`)
             return this.processWin(this.guesserComment)
@@ -34,25 +36,24 @@ export class CommentProcessor {
     }
 
     async checkCommentIsValidWin(comment: any): Promise<boolean> {
-        const submission = await this.bot.getPostFromComment(comment)
-        if(await submission.is_self) {
+        if(await this.submission.is_self) {
             this.logger.verbose(`'${comment.body}' rejected as it's on a self post`)
             return false
         }
 
-        const currentFlair: string = await submission.link_flair_text
+        const currentFlair: string = await this.submission.link_flair_text
         if(currentFlair && (currentFlair.toLowerCase().includes("identified") || currentFlair.toLowerCase().includes("meta"))) {
             this.logger.verbose(`'${comment.body}' rejected as the post has '${currentFlair}' flair`)
             return false
         }
 
-        const repliers = await this.bot.getAllRepliers(await this.bot.getPostFromComment(comment))
+        const repliers = await this.bot.getAllRepliers(this.submission)
         if(repliers.indexOf(this.config['bot_username']) > -1) {
             this.logger.verbose(`'${comment.body}' rejected as the bot has already replied to that post`)
             return false
         }
 
-        const opReplies = await this.bot.getOPReplies(comment)
+        const opReplies = await this.bot.getOPReplies(comment, this.submission)
         if(opReplies.length === 0) {
             this.logger.verbose(`'${comment.body}' rejected as OP hasn't replied`)
             return false
@@ -81,23 +82,21 @@ export class CommentProcessor {
     }
 
     commentContainsConfirmation(comment: string) {
-        return /\byes\b/i.test(comment)
+        return /\b(yes|yep|correct)\b/i.test(comment)
     }
 
     async processWin(comment: Comment): Promise<boolean> {
         const guesser = await comment.author.name
+        const submitter = await this.submission.author.name
 
-        const post: Submission = await this.bot.getPostFromComment(comment)
-        const submitter = await post.author.name
-
-        this.logger.info(`'${comment.body}' has won post '${await post.title}'!`)
+        this.logger.info(`'${comment.body}' has won post '${await this.submission.title}'!`)
         this.logger.info(`- winner is ${guesser} (${await this.bot.getUserPoints(guesser)} points)`)
         this.logger.info(`- submitter is ${submitter} (${await this.bot.getUserPoints(submitter)} points)`)
 
         this.logger.verbose(`Adding identified flair...`)
-        this.addIdentifiedFlair(post)
+        this.addIdentifiedFlair(this.submission)
 
-        const foundOnGoogle = await new GoogleImageSearcher().foundImageResults(await post.url)
+        const foundOnGoogle = await new GoogleImageSearcher().foundImageResults(await this.submission.url)
         if(foundOnGoogle) {
             this.logger.info(`- was found on Google Image Search!`)
         }
@@ -111,7 +110,7 @@ export class CommentProcessor {
         this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
 
         this.bot.removeReports(comment)
-        this.logger.info(`- https://redd.it/${await post.id}/`)
+        this.logger.info(`- https://redd.it/${await this.submission.id}/`)
 
         return true
     }

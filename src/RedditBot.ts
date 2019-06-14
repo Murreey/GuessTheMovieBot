@@ -28,8 +28,8 @@ export class RedditBot {
             .getReports({ only: "comments" }) as Comment[]
     }
 
-    async getOPReplies(comment: Comment): Promise<Comment[]> {
-        const submitter = await this.getPostFromComment(comment).then(post => post.author.id)
+    async getOPReplies(comment: Comment, submission?: Submission): Promise<Comment[]> {
+        const submitter = await (submission.author.id || this.getPostFromComment(comment).then(post => post.author.id))
         var replies: Comment[] = await comment.replies.fetchAll()
 
         const repliesWithIDs = await Promise.all(replies.map(async (reply: Comment) => {
@@ -97,5 +97,9 @@ export class RedditBot {
         if(!this.readonly) {
             comment.approve()
         }
+    }
+
+    getRateLimitInfo(): string {
+        return `Rate Limit: ${this.r.ratelimitRemaining} remaining, expires ${new Date(this.r.ratelimitExpiration)}`
     }
 }
