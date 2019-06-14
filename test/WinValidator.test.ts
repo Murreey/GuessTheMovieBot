@@ -231,7 +231,7 @@ describe('WinValidator', () => {
 
         describe('when read only mode is not enabled', () => {
             it('should render the template with the right values', () => {
-                const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
+                const replyTemplate = fs.readFileSync(path.resolve(__dirname, "test_reply_template.md"), "UTF-8")
 
                 const templateValues = {
                     guesser,
@@ -246,7 +246,7 @@ describe('WinValidator', () => {
                 const mockOPComment = td.object({} as any)
                 mockOPComment.reply = td.func('reply')
 
-                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
             })
 
@@ -258,7 +258,7 @@ describe('WinValidator', () => {
                 mockPostedComment.distinguish = td.func('distinguish')
                 td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockPostedComment.distinguish()))
             })
         })
@@ -272,7 +272,7 @@ describe('WinValidator', () => {
                 const mockOPComment = td.object({} as any)
                 mockOPComment.reply = td.func('reply')
 
-                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockOPComment.reply(), { times: 0 }))
             })
 
@@ -284,7 +284,7 @@ describe('WinValidator', () => {
                 mockPostedComment.distinguish = td.func('distinguish')
                 td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockPostedComment.distinguish(), { times: 0 }))
             })
         })

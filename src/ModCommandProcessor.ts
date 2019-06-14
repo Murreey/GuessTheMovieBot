@@ -38,7 +38,7 @@ export class ModCommandProcessor {
         scoreProcessor = scoreProcessor || new ScoreProcessor(this.bot, this.config, this.logger)
         await scoreProcessor.correctGIS(comment, guesser, submitter)
 
-        const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
+        const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../${this.config['replyTemplate']}`), "UTF-8")
         const templateValues = {
             guesser,
             guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, false),

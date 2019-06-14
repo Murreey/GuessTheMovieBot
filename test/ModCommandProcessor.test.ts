@@ -43,12 +43,12 @@ describe('ModCommandProcessor', () => {
         it('should call the ScoreProcessor with the correct values in the correct order', () => {
             const fakeScoreProcessor = getFakeScoreProcessor()
 
-            return new ModCommandProcessor(fakeBot, {}).correctGISError(fakeBotComment, fakeScoreProcessor)
+            return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, fakeScoreProcessor)
                 .then(() => td.verify(fakeScoreProcessor.correctGIS(fakeBotComment, guesser, submitter)))
         })
 
         it('should edit the bot comment with the correct message', () => {
-            const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
+            const replyTemplate = fs.readFileSync(path.resolve(__dirname, "test_reply_template.md"), "UTF-8")
 
             const templateValues = {
                 guesser,
@@ -59,7 +59,7 @@ describe('ModCommandProcessor', () => {
             }
 
             const expectedTemplate = Mustache.render(replyTemplate, templateValues)
-            return new ModCommandProcessor(fakeBot, {}).correctGISError(fakeBotComment, getFakeScoreProcessor())
+            return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, getFakeScoreProcessor())
                 .then(() => td.verify(fakeBotComment.edit(expectedTemplate)))
         })
     })

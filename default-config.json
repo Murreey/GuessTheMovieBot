@@ -5,6 +5,7 @@
     "clientSecret": "<>",
     "subreddit": "GuessTheMovie",
     "bot_username": "GTMBot",
+    "replyTemplate": "reply_template_beta.md",
     "points": {
         "guesser": {
             "normal": 6,
