@@ -19,9 +19,23 @@ export class GTMBot {
             logger.verbose(this.bot.getRateLimitInfo())
 
             result ? logger.info(`\n`) : logger.verbose(`\n`)
-            if (runOnce) return;
+            if (runOnce) {
+                if(await waitForInput('Process another? (y/n) ') !== 'y') return
+            };
         }
     }
 
 
 }
+
+function waitForInput (text) {
+    return new Promise((resolve, reject) => {
+      process.stdin.resume()
+      process.stdout.write(text)
+      process.stdin.once('data', data => resolve(data.toString().trim()))
+    })
+    .then((result) => {
+        process.stdin.pause()
+        return result
+    })
+  }
