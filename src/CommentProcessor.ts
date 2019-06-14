@@ -26,7 +26,7 @@ export class CommentProcessor {
     async processComment(comment: Comment): Promise<boolean> {
         this.guesserComment = comment
         this.submission = await this.bot.getPostFromComment(this.guesserComment)
-        this.logger.verbose(`* Processing ${await this.submission.id} - '${this.guesserComment.body.substr(0, 10)}'`)
+        this.logger.verbose(`* Processing https://redd.it/${await this.submission.id}/ - '${this.guesserComment.body.substr(0, 50)}'`)
         if(await this.checkCommentIsValidWin(this.guesserComment)) {
             this.logger.verbose(`${this.guesserComment.body} is a valid win!`)
             return this.processWin(this.guesserComment)
@@ -48,7 +48,7 @@ export class CommentProcessor {
         const currentFlair: string = await this.submission.link_flair_text
         if(currentFlair && (currentFlair.toLowerCase().includes("identified") || currentFlair.toLowerCase().includes("meta"))) {
             this.logger.verbose(`'${comment.body}' rejected as the post has '${currentFlair}' flair`)
-            return false
+            // return false
         }
 
         const repliers = await this.bot.getAllRepliers(this.submission)
@@ -93,9 +93,9 @@ export class CommentProcessor {
         const guesser = await comment.author.name
         const submitter = await this.submission.author.name
 
-        this.logger.info(`'${comment.body}' has won post '${await this.submission.title}'!`)
-        this.logger.info(`- winner is ${guesser} (${await this.bot.getUserPoints(guesser)} points)`)
-        this.logger.info(`- submitter is ${submitter} (${await this.bot.getUserPoints(submitter)} points)`)
+        this.logger.info(`'${await this.submission.title}' confirmed as '${comment.body}'! (https://redd.it/${await this.submission.id}/)`)
+        this.logger.info(`- winner is ${guesser}`)
+        this.logger.info(`- submitter is ${submitter}`)
 
         this.logger.verbose(`Adding identified flair...`)
         this.addIdentifiedFlair(this.submission)
@@ -114,7 +114,6 @@ export class CommentProcessor {
         this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
 
         this.bot.removeReports(comment)
-        this.logger.info(`- https://redd.it/${await this.submission.id}/`)
 
         return true
     }
