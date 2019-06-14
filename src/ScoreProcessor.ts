@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as Mustache from 'mustache';
-import * as path from 'path';
 import { Logger } from './Logger';
 import { RedditBot } from './RedditBot';
 import { Comment } from 'snoowrap'
@@ -34,7 +31,6 @@ export class ScoreProcessor {
         await this.addPoints(username, pointsToAward)
     }
 
-    // TODO: refactor and make nice
     async correctGIS(botReply: any, guesser: string, submitter: string) {
         this.logger.verbose(`- Guesser ${guesser} has ${await this.bot.getUserPoints(guesser)}`)
         this.logger.verbose(`- Submitter ${submitter} has ${await this.bot.getUserPoints(submitter)}`)
@@ -45,23 +41,6 @@ export class ScoreProcessor {
         this.logger.verbose(`- Submitter +${submitterCorrection} points`)
         await this.addPoints(guesser, guesserCorrection)
         await this.addPoints(submitter, submitterCorrection)
-
-        const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
-        const templateValues = {
-            guesser,
-            guesser_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.GUESSER, false),
-            poster: submitter,
-            poster_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.SUBMITTER, false),
-            subreddit: (this.config as any).subreddit
-        }
-
-        const updatedReply = Mustache.render(replyTemplate, templateValues)
-
-        if(!this.bot.readonly) {
-            botReply.edit(updatedReply)
-        }
-
-        this.bot.removeReports(botReply)
 
         return true
     }

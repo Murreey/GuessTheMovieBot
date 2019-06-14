@@ -7,6 +7,7 @@ import { GoogleImageSearcher } from './GoogleImageSearcher';
 import { Logger } from './Logger';
 import { ScoreProcessor, WinType } from './ScoreProcessor';
 import { WinValidator } from './WinValidator'
+import { ModCommandProcessor } from './ModCommandProcessor';
 
 export class CommentProcessor {
     bot: any
@@ -29,20 +30,10 @@ export class CommentProcessor {
         this.submission = await this.bot.getPostFromComment(this.reportedComment)
         this.logger.verbose(`* Processing https://redd.it/${await this.submission.id}/ - '${this.reportedComment.body.substr(0, 50)}'`)
 
-        // TODO: Refactor this nicely, move logic to better places
         if(await this.reportedComment.author.name === this.config['bot_username']) {
             const reports = this.reportedComment.mod_reports
-            for(let report of reports) {
-                const reason = report[0].toLowerCase()
-                if(reason.includes('gis')) {
-                    this.logger.info(`GIS correction requested for this post, updating points`)
-                    const confirmationComment: Comment = await this.bot.getParentComment(this.reportedComment)
-                    const submitter = await confirmationComment.author.name
-                    const guessComment =  await this.bot.getParentComment(confirmationComment)
-                    const guesser = await guessComment.author.name
-                    await new ScoreProcessor(this.bot, this.config, this.logger).correctGIS(this.reportedComment, guesser, submitter)
-                }
-            }
+            const modCommandProcessor = new ModCommandProcessor(this.bot, this.config, this.logger)
+            reports.forEach(report => modCommandProcessor.processReport(this.reportedComment, report))
             return true
         }
 
