@@ -72,6 +72,10 @@ export class RedditBot {
         return Promise.resolve(this.r.getSubmission(comment.link_id))
     }
 
+    async getParentComment(comment: Comment): Promise<any> {
+        return Promise.resolve(this.r.getComment(await comment.parent_id)) as any
+    }
+
     setUserFlair(username: string, points: number, cssClass: string = "") {
         if(!this.readonly) {
             this.r.getUser(username).assignFlair({
