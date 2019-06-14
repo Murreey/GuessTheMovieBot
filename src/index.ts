@@ -11,7 +11,7 @@ let redditBot = new RedditBot(config)
 const runOnce = process.argv.indexOf("once") > -1
 const readOnly = process.argv.indexOf("readonly") > -1
 
-if(runOnce || readOnly) {
+if(readOnly) {
     redditBot = new RedditBot(config, undefined, true)
     logger.enableConsoleLogging('silly')
 }
@@ -19,8 +19,10 @@ if(runOnce || readOnly) {
 let gtmBot = new GTMBot(redditBot, config)
 
 if(runOnce) {
-    gtmBot.processComments(logger)
+    logger.enableConsoleLogging('silly')
+    gtmBot.processComments(logger, true)
 } else {
+    logger.enableConsoleLogging('info')
     scheduler.schedule("*/1 * * * *", () => {
         gtmBot.processComments(logger)
     })

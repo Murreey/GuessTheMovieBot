@@ -11,7 +11,7 @@ export class GTMBot {
         this.config = config
     }
 
-    async processComments(logger = Logger.safeLogger()) {
+    async processComments(logger = Logger.safeLogger(), runOnce = false) {
         const reportedComments = await this.bot.getReportedComments()
         for(let comment of reportedComments){
             logger.verbose(`\n`)
