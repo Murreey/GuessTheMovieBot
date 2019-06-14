@@ -40,7 +40,7 @@ export class CommentProcessor {
                     const submitter = await confirmationComment.author.name
                     const guessComment =  await this.bot.getParentComment(confirmationComment)
                     const guesser = await guessComment.author.name
-                    new ScoreProcessor(this.bot, this.config, this.logger).correctGIS(this.reportedComment, guesser, submitter)
+                    await new ScoreProcessor(this.bot, this.config, this.logger).correctGIS(this.reportedComment, guesser, submitter)
                 }
             }
             return true

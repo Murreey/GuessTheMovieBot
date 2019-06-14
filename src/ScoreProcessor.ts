@@ -43,8 +43,8 @@ export class ScoreProcessor {
         this.logger.verbose(`- Correction required is: `)
         this.logger.verbose(`- Guesser +${guesserCorrection} points`)
         this.logger.verbose(`- Submitter +${submitterCorrection} points`)
-        this.addPoints(guesser, guesserCorrection)
-        this.addPoints(guesser, submitterCorrection)
+        await this.addPoints(guesser, guesserCorrection)
+        await this.addPoints(submitter, submitterCorrection)
 
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
         const templateValues = {
