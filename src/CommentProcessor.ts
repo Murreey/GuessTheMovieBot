@@ -36,6 +36,10 @@ export class CommentProcessor {
     }
 
     async checkCommentIsValidWin(comment: any): Promise<boolean> {
+        if (!this.submission) {
+            this.submission = await this.bot.getPostFromComment(comment)
+        }
+
         if(await this.submission.is_self) {
             this.logger.verbose(`'${comment.body}' rejected as it's on a self post`)
             return false

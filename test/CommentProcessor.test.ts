@@ -60,7 +60,7 @@ describe('CommentProcessor', () => {
 
         it('should return false if it has no replies from OP', () => {
             const fakeBot = getFakeBot()
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([])
+            td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([])
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
@@ -70,7 +70,7 @@ describe('CommentProcessor', () => {
         it('should return false if it has OP has replied but not with a confirmation', () => {
             const fakeBot = getFakeBot()
 
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false)])
+            td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([getOPReply(false)])
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
@@ -80,7 +80,7 @@ describe('CommentProcessor', () => {
         it('should return false if comment has multiple replies with no confirmation', () => {
             const fakeBot = getFakeBot()
 
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(false)])
+            td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(false)])
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
@@ -90,7 +90,7 @@ describe('CommentProcessor', () => {
         it('should return true if comment has multiple replies with one confirming', () => {
             const fakeBot = getFakeBot()
 
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(true), getOPReply(false)])
+            td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([getOPReply(false), getOPReply(true), getOPReply(false)])
 
             const fakeComment = getFakeGuessComment()
             return new CommentProcessor(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
@@ -104,7 +104,7 @@ describe('CommentProcessor', () => {
             const fakeOPReply = getOPReply(true)
             fakeOPReply.author = { id: userID } as any
 
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([fakeOPReply])
+            td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([fakeOPReply])
 
             const fakeComment = getFakeGuessComment(userID)
             return new CommentProcessor(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
@@ -231,7 +231,7 @@ describe('CommentProcessor', () => {
 
         describe('when read only mode is not enabled', () => {
             it('should render the template with the right values', () => {
-                const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
+                const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
 
                 const templateValues = {
                     guesser,
@@ -298,6 +298,7 @@ function getFakeBot(submission?: Submission): RedditBot {
     td.when(fakeBot.getPostFromComment(td.matchers.anything())).thenResolve(fakeSubmission)
     td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
     td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
+    td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([getOPReply()])
 
     return fakeBot
 }

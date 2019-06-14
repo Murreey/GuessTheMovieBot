@@ -29,7 +29,7 @@ export class RedditBot {
     }
 
     async getOPReplies(comment: Comment, submission?: Submission): Promise<Comment[]> {
-        const submitter = await (submission.author.id || this.getPostFromComment(comment).then(post => post.author.id))
+        const submitter = await (submission && submission.author.id || this.getPostFromComment(comment).then(post => post.author.id))
         var replies: Comment[] = await comment.replies.fetchAll()
 
         const repliesWithIDs = await Promise.all(replies.map(async (reply: Comment) => {
