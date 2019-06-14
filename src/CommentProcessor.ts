@@ -135,7 +135,7 @@ export class CommentProcessor {
     }
 
     async replyWithBotMessage(foundOnGoogle: boolean, opComment: any, guesser: string, submitter: string) {
-        const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template.md"), "UTF-8")
+        const replyTemplate = fs.readFileSync(path.resolve(__dirname, "../reply_template_beta.md"), "UTF-8")
         const templateValues = {
             guesser,
             guesser_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
