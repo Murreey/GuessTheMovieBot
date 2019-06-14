@@ -14,14 +14,20 @@ export class GTMBot {
     async processComments(logger = Logger.safeLogger(), runOnce = false) {
         const reportedComments = await this.bot.getReportedComments()
         for (let comment of reportedComments) {
-            logger.verbose(this.bot.getRateLimitInfo())
+            if(this.bot.r.ratelimitRemaining && this.bot.r.ratelimitRemaining < 30) {
+                const expiry = this.bot.r.ratelimitExpiration
+                if(expiry > Date.now()) {
+                    logger.verbose('Approaching rate limit, skipping this check to wait for refresh.')
+                    return
+                }
+            }
+
             const result = await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
-            logger.verbose(this.bot.getRateLimitInfo())
 
             result ? logger.info(`\n`) : logger.verbose(`\n`)
             if (runOnce) {
                 if(await waitForInput('Process another? (y/n) ') !== 'y') return
-            };
+            }
         }
     }
 
