@@ -23,7 +23,7 @@ if(runOnce) {
     gtmBot.processComments(logger, true)
 } else {
     logger.enableConsoleLogging('info')
-    scheduler.schedule("*/2 * * * *", () => {
+    scheduler.schedule("*/1 * * * *", () => {
         gtmBot.processComments(logger)
     })
 }

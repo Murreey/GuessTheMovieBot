@@ -22,9 +22,9 @@ export class GTMBot {
                 }
             }
 
-            const result = await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
+            await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
 
-            result ? logger.info(`\n`) : logger.verbose(`\n`)
+            logger.verbose(`\n`)
             if (runOnce) {
                 if(await waitForInput('Process another? (y/n) ') !== 'y') return
             }
