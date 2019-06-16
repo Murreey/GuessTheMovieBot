@@ -19,7 +19,7 @@
     "@types/mocha": "5.2.0",
     "@types/mustache": "0.8.30",
     "@types/node-cron": "1.2.0",
-    "@types/snoowrap": "1.15.0",
+    "@types/snoowrap": "^1.15.3",
     "mocha": "5.1.1",
     "nyc": "^14.1.1",
     "testdouble": "3.7.0",
@@ -30,7 +30,7 @@
     "axios": "^0.19.0",
     "mustache": "2.3.0",
     "node-cron": "1.2.1",
-    "snoowrap": "1.15.2",
+    "snoowrap": "^1.17.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.9.0"
   },
