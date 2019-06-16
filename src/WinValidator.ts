@@ -31,6 +31,11 @@ export class WinValidator {
             return false
         }
 
+        if(await this.submission.author.id === await comment.author.id) {
+            this.logger.verbose(`'${comment.body}' rejected as it was posted by the OP`)
+            return false
+        }
+
         const currentFlair: string = await this.submission.link_flair_text
         if(currentFlair && (currentFlair.toLowerCase().includes("identified") || currentFlair.toLowerCase().includes("meta"))) {
             this.logger.verbose(`'${comment.body}' rejected as the post has '${currentFlair}' flair`)

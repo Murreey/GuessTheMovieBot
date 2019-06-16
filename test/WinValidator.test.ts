@@ -30,6 +30,19 @@ describe('WinValidator', () => {
                 .then((valid) => assert.equal(valid, false))
         })
 
+        it('should return false if reported comment was posted by the OP of the post', () => {
+            const fakeSubmission = getFakeSubmission()
+            const fakeBot = getFakeBot(fakeSubmission)
+
+            const fakeComment = getFakeGuessComment()
+            const authorId = randomString()
+            fakeSubmission.author = { id: authorId } as any
+            fakeComment.author = { id: authorId } as any
+
+            return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, false))
+        })
+
         it('should return false if post already has identified flair', () => {
             const fakeSubmission = getFakeSubmission('identified')
             const fakeBot = getFakeBot(fakeSubmission)
@@ -294,7 +307,7 @@ describe('WinValidator', () => {
 function getFakeBot(submission?: Submission): RedditBot {
     // This bot will return a valid, unsolved submission that confirms any comment
     const fakeBot = td.object(new RedditBot({}, {} as any, false))
-    const fakeSubmission = submission ? submission : td.object({} as Submission)
+    const fakeSubmission = submission ? submission : getFakeSubmission()
     td.when(fakeBot.getPostFromComment(td.matchers.anything())).thenResolve(fakeSubmission)
     td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
     td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
@@ -306,6 +319,7 @@ function getFakeBot(submission?: Submission): RedditBot {
 function getFakeSubmission(flair?: string): Submission {
     const fakeSubmission = td.object({} as Submission)
     fakeSubmission.link_flair_text = flair ? flair : null
+    fakeSubmission.author = { id: randomString(), name: randomString() } as any
 
     return fakeSubmission
 }
@@ -324,8 +338,8 @@ function getOPReply(valid: boolean = true): Comment {
 }
 
 function getFakeGuessComment(id: string = randomString(), name: string = randomString()): Comment {
-    const fakeComment = td.object({} as any)
-    fakeComment.author = { id, name }
+    const fakeComment = td.object({} as Comment)
+    fakeComment.author = { id, name } as any
     return fakeComment
 }
 
