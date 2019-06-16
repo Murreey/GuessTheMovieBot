@@ -111,7 +111,8 @@ describe('WinValidator', () => {
                 .then((valid) => assert.equal(valid, true))
         })
 
-        it('should return false if the bot has already posted a comment in the thread', () => {
+        // See the comment in WinValidator
+        it.skip('should return false if the bot has already posted a comment in the thread', () => {
             const fakeBot = getFakeBot()
             const botName = randomString()
             td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([randomString(), randomString(), botName, randomString()])

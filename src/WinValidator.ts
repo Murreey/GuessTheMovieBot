@@ -43,11 +43,14 @@ export class WinValidator {
             return false
         }
 
-        const repliers = await this.bot.getAllRepliers(this.submission)
-        if(repliers.indexOf(this.config['bot_username']) > -1) {
-            this.logger.verbose(`'${comment.body}' rejected as the bot has already replied to that post`)
-            return false
-        }
+        // Temporarily ignoring this step -
+        // expandReplies() in snoowrap appears to be broken so getAllRepliers isn't working
+        // Isn't super critical, almost all posts should be caught before as if the bot's already replied it will identified flair
+        // const repliers = await this.bot.getAllRepliers(this.submission)
+        // if(repliers.indexOf(this.config['bot_username']) > -1) {
+        //     this.logger.verbose(`'${comment.body}' rejected as the bot has already replied to that post`)
+        //     return false
+        // }
 
         const opReplies = await this.bot.getOPReplies(comment, this.submission)
         if(opReplies.length === 0) {
