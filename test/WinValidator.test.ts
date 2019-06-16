@@ -111,20 +111,6 @@ describe('WinValidator', () => {
                 .then((valid) => assert.equal(valid, true))
         })
 
-        it('should return false if the reported comment was posted by the OP', () => {
-            const fakeBot = getFakeBot()
-
-            const userID = randomString()
-            const fakeOPReply = getOPReply(true)
-            fakeOPReply.author = { id: userID } as any
-
-            td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([fakeOPReply])
-
-            const fakeComment = getFakeGuessComment(userID)
-            return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
-                .then((valid) => assert.equal(valid, false))
-        })
-
         it('should return false if the bot has already posted a comment in the thread', () => {
             const fakeBot = getFakeBot()
             const botName = randomString()
