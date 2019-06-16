@@ -19,14 +19,25 @@ export class ModCommandProcessor {
 
     // This seems super sketchy but I kind of like it?
     // Also too over-engineered for what it's doing but it's expandable for future.
-    async processReport(comment: Comment, report: string) {
-        const command = this.getCommand(report)
-        if(command) return await this[command](comment)
+    async processCommand(comment: Comment, command: Command) {
+        if(this[command]) return await this[command](comment)
+    }
+
+    reportsToCommands(comment: Comment) {
+        const reports = comment.mod_reports || []
+        const commands: Command[] = []
+        reports.forEach(report => {
+            const command = this.getCommand(report[0])
+            if(command && !commands.includes(command)) commands.push(command)
+        })
+
+        return commands
     }
 
     getCommand(report) {
         report = report.toLowerCase()
         if(report.includes('gis')) return Command.CORRECT_GIS
+        if(report.includes('correct')) return Command.CONFIRM
     }
 
     async correctGISError(comment, scoreProcessor?: ScoreProcessor) {
@@ -61,4 +72,5 @@ export class ModCommandProcessor {
 
 export enum Command {
     CORRECT_GIS = 'correctGISError',
+    CONFIRM = 'confirm'
 }

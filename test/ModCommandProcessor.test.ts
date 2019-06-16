@@ -10,7 +10,63 @@ import { ModCommandProcessor, Command } from '../src/ModCommandProcessor';
 import { ScoreProcessor, WinType } from '../src/ScoreProcessor';
 
 describe('ModCommandProcessor', () => {
-    const modCommandProcessor: ModCommandProcessor = new ModCommandProcessor({}, {});
+    const modCommandProcessor: ModCommandProcessor = new ModCommandProcessor({}, {}, { silly: (m) => console.log(m) } as any);
+
+    describe('reportsToCommands', () => {
+        let comment;
+        beforeEach(() => {
+            comment = getFakeComment()
+        })
+
+        it('should return an empty array if there were no reports', () => {
+            assert.equal(modCommandProcessor.reportsToCommands(comment).length, 0)
+        })
+
+        it('should return an empty array if no reports matched commands', () => {
+            comment.mod_reports = [
+                ['invalid', 'username'],
+                ['not a command', 'username'],
+                ['random report', 'username']
+            ]
+
+            assert.equal(modCommandProcessor.reportsToCommands(comment).length, 0)
+        })
+
+        it('should return the command matched from a report', () => {
+            comment.mod_reports = [
+                ['gis', 'username']
+            ]
+
+            const commands = modCommandProcessor.reportsToCommands(comment)
+            assert.equal(commands.length, 1)
+            assert.equal(commands[0], Command.CORRECT_GIS)
+        })
+
+        it('should include all matched commands', () => {
+            comment.mod_reports = [
+                ['GIS', 'username'],
+                ['not a command', 'username'],
+                ['correct', 'username']
+            ]
+
+            const commands = modCommandProcessor.reportsToCommands(comment)
+            assert.equal(commands.length, 2)
+            assert.equal(commands[0], Command.CORRECT_GIS)
+            assert.equal(commands[1], Command.CONFIRM)
+        })
+
+        it('should filter out duplicate commands', () => {
+            comment.mod_reports = [
+                ['GIS', 'username'],
+                ['not a command', 'username'],
+                ['GIS', 'username']
+            ]
+
+            const commands = modCommandProcessor.reportsToCommands(comment)
+            assert.equal(commands.length, 1)
+            assert.equal(commands[0], Command.CORRECT_GIS)
+        })
+    })
 
     describe('getCommand', () => {
         it('should return undefined if not a command', () => {

@@ -6,6 +6,7 @@ import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 import { GoogleImageSearcher } from './GoogleImageSearcher';
 import { Logger } from './Logger';
 import { ScoreProcessor, WinType } from './ScoreProcessor';
+import { Command } from './ModCommandProcessor';
 
 export class WinValidator {
     bot: any
@@ -23,8 +24,8 @@ export class WinValidator {
         this.logger = logger
     }
 
-    async checkCommentIsValidWin(comment: any, submission?: Submission): Promise<boolean> {
-        this.submission = submission || await this.bot.getPostFromComment(comment)
+    async checkCommentIsValidWin(comment: any, commands: Command[] = []): Promise<boolean> {
+        this.submission =  await this.bot.getPostFromComment(comment)
 
         if(await this.submission.is_self) {
             this.logger.verbose(`'${comment.body}' rejected as it's on a self post`)
@@ -56,22 +57,21 @@ export class WinValidator {
 
         const opConfirmationComments = opReplies.filter((comment) => this.commentContainsConfirmation(comment.body))
         if(opConfirmationComments.length === 0) {
-            this.logger.verbose(`'${comment.body}' rejected as OP's replies are not confirmations`)
-            return false
+            if(!commands.includes(Command.CONFIRM)) {
+                this.logger.verbose(`'${comment.body}' rejected as OP's replies are not confirmations`)
+                return false
+            }
+
+            this.logger.verbose(`'${comment.body}' has no confirmation from OP, but a mod has confirmed the guess`)
         }
 
         const guesser = await comment.author
-        if(await opConfirmationComments[0].author.id === guesser.id) {
-            this.logger.verbose(`'${comment.body}' rejected as the commenter is the post submitter`)
-            return false
-        }
-
         if(currentFlair && currentFlair.toLowerCase().includes("easy") && await this.bot.getUserPoints(guesser.name) >= 10) {
             this.logger.verbose(`'${comment.body}' rejected as the post is easy and commenter /u/${guesser.name} has >= 10 points`)
             return false
         }
 
-        this.submitterConfirmationComment = opConfirmationComments[0]
+        this.submitterConfirmationComment = opReplies[0]
 
         return true
     }

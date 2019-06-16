@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import * as td from 'testdouble'
 import { RedditBot } from '../src/RedditBot'
 import { WinValidator } from '../src/WinValidator'
+import { Command } from '../src/ModCommandProcessor'
 import { Comment, Submission } from 'snoowrap'
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit'
 import * as fs from 'fs'
@@ -158,6 +159,21 @@ describe('WinValidator', () => {
 
             return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
                 .then((valid) => assert.equal(valid, false))
+        })
+
+        describe('when the CONFIRM mod command is provided', () => {
+            const commands = [Command.CONFIRM]
+
+            it('should return true if it has OP has replied but not with a confirmation', () => {
+                const fakeBot = getFakeBot()
+
+                td.when(fakeBot.getOPReplies(td.matchers.anything(), td.matchers.anything())).thenResolve([getOPReply(false)])
+
+                const fakeComment = getFakeGuessComment()
+
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment, commands)
+                    .then((valid) => assert.equal(valid, true))
+            })
         })
     })
 
