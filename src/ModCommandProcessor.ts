@@ -35,7 +35,7 @@ export class ModCommandProcessor {
     }
 
     getCommand(report) {
-        report = report.toLowerCase()
+        report = report ? report.toLowerCase() : ''
         if(report.includes('gis')) return Command.CORRECT_GIS
         if(report.includes('correct')) return Command.CONFIRM
     }

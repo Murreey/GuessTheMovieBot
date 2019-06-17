@@ -66,6 +66,18 @@ describe('ModCommandProcessor', () => {
             assert.equal(commands.length, 1)
             assert.equal(commands[0], Command.CORRECT_GIS)
         })
+
+        it('should filter out reports with no reason', () => {
+            comment.mod_reports = [
+                ['GIS', 'username'],
+                ['not a command', 'username'],
+                [null, 'username']
+            ]
+
+            const commands = modCommandProcessor.reportsToCommands(comment)
+            assert.equal(commands.length, 1)
+            assert.equal(commands[0], Command.CORRECT_GIS)
+        })
     })
 
     describe('getCommand', () => {
