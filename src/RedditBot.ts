@@ -32,7 +32,9 @@ export class RedditBot {
         const submitter = await (submission && submission.author.id || this.getPostFromComment(comment).then(post => post.author.id))
         var replies: Comment[] = await comment.replies.fetchAll()
 
-        const repliesWithIDs = await Promise.all(replies.map(async (reply: Comment) => {
+        const repliesWithIDs = await Promise.all(replies
+            .filter((reply: Comment) => !this.isDeleted(reply))
+            .map(async (reply: Comment) => {
             return {
                 reply,
                 replier: await reply.author.id
@@ -43,6 +45,10 @@ export class RedditBot {
             .map((reply) => reply.reply)
 
         return Promise.resolve(replies)
+    }
+
+    isDeleted(comment: Comment) {
+        return comment.body === "[deleted]" || (comment.author as any) === "[deleted]"
     }
 
     async getAllRepliers(content: any): Promise<string[]> {
