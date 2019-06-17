@@ -28,8 +28,17 @@ export class WinValidator {
         this.submission =  await this.bot.getPostFromComment(comment)
 
         if(await this.submission.is_self) {
-            this.logger.verbose(`'${comment.body}' rejected as it's on a self post`)
-            return false
+            const body = await this.submission.selftext
+            const trimmed = body && body.toLowerCase().replace('&#x200b;', '').trim()
+            const isImageUrl = /^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|jpeg|gif|png)$/i.test(trimmed)
+
+            if(!isImageUrl) {
+                this.logger.verbose(`'${comment.body}' rejected as it's on a self post`)
+                return false
+            }
+
+            this.logger.verbose(`'${comment.body}' is a self post but looks like an image URL`)
+            this.submission.url = trimmed
         }
 
         if(await this.submission.author.id === await comment.author.id) {

@@ -27,7 +27,7 @@ export class CommentProcessor {
         const commands = modCommandProcessor.reportsToCommands(this.reportedComment)
 
         if(await this.reportedComment.author.name === this.config['bot_username']) {
-            commands.forEach(command => modCommandProcessor.processCommand(this.reportedComment, command))
+            await commands.forEach(async command => await modCommandProcessor.processCommand(this.reportedComment, command))
             return true
         }
 

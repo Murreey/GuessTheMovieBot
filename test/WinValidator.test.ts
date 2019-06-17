@@ -19,16 +19,84 @@ describe('WinValidator', () => {
                 .then((valid) => assert.equal(valid, true))
         })
 
-        it('should return false if the post is a self post', () => {
-            const fakeSubmission = getFakeSubmission()
-            fakeSubmission.is_self = true
-            const fakeBot = getFakeBot(fakeSubmission)
+        describe('when the post is a self post', () => {
+            it('should return true if the body only contains an image link', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                fakeSubmission.selftext = 'http://i.imgur.com/whatever.jpg'
+                const fakeBot = getFakeBot(fakeSubmission)
 
-            td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then((valid) => assert.equal(valid, true))
+            })
 
-            const fakeComment = getFakeGuessComment()
-            return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
-                .then((valid) => assert.equal(valid, false))
+            it('should set the submission url to the one from the body', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                const url = 'http://i.imgur.com/whatever.jpg'
+                fakeSubmission.selftext = url
+                const fakeBot = getFakeBot(fakeSubmission)
+
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then(() => assert.equal(fakeSubmission.url, url))
+            })
+
+            it('should strip whitespace and illegal characters from the url', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                const url = 'http://i.imgur.com/whatever.jpg'
+                fakeSubmission.selftext = `    \n \n   ${url}  &#x200B;   `
+                const fakeBot = getFakeBot(fakeSubmission)
+
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then(() => assert.equal(fakeSubmission.url, url))
+            })
+
+            it('should return false if the body is missing', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                const fakeBot = getFakeBot(fakeSubmission)
+
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then((valid) => assert.equal(valid, false))
+            })
+
+            it('should return false if the body does not contain an image link', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                fakeSubmission.selftext = 'Some text'
+                const fakeBot = getFakeBot(fakeSubmission)
+
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then((valid) => assert.equal(valid, false))
+            })
+
+            it('should return false if the body does not only contain an image link', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                fakeSubmission.selftext = 'Here is my submission https://i.imgur.com/image.jpg'
+                const fakeBot = getFakeBot(fakeSubmission)
+
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then((valid) => assert.equal(valid, false))
+            })
+
+            it('should return false if the body is empty', () => {
+                const fakeSubmission = getFakeSubmission()
+                fakeSubmission.is_self = true
+                fakeSubmission.selftext = ''
+                const fakeBot = getFakeBot(fakeSubmission)
+
+                const fakeComment = getFakeGuessComment()
+                return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                    .then((valid) => assert.equal(valid, false))
+            })
         })
 
         it('should return false if reported comment was posted by the OP of the post', () => {
