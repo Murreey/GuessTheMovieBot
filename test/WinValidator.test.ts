@@ -112,6 +112,17 @@ describe('WinValidator', () => {
                 .then((valid) => assert.equal(valid, false))
         })
 
+        // apparently people do this so we need to account for it...
+        it('should return false if the post OP has deleted their account', () => {
+            const fakeSubmission = getFakeSubmission()
+            fakeSubmission.author = { name: '[deleted]' } as any
+
+            const fakeBot = getFakeBot(fakeSubmission)
+            const fakeComment = getFakeGuessComment()
+            return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)
+                .then((valid) => assert.equal(valid, false))
+        })
+
         it('should return false if post already has identified flair', () => {
             const fakeSubmission = getFakeSubmission('identified')
             const fakeBot = getFakeBot(fakeSubmission)

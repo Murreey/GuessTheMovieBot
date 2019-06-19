@@ -41,6 +41,11 @@ export class WinValidator {
             this.submission.url = trimmed
         }
 
+        if(await this.submission.author.name === '[deleted]') {
+            this.logger.verbose(`'${comment.body}' rejected as the submitter has deleted their account.`)
+            return false
+        }
+
         if(await this.submission.author.id === await comment.author.id) {
             this.logger.verbose(`'${comment.body}' rejected as it was posted by the OP`)
             return false
