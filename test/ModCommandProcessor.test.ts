@@ -112,7 +112,25 @@ describe('ModCommandProcessor', () => {
             const fakeScoreProcessor = getFakeScoreProcessor()
 
             return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, fakeScoreProcessor)
-                .then(() => td.verify(fakeScoreProcessor.correctGIS(fakeBotComment, guesser, submitter)))
+                .then(() => td.verify(fakeScoreProcessor.correctGIS(guesser, submitter, td.matchers.anything())))
+        })
+
+        it('should tell the ScoreProcessor to use full points if it was previously marked found', () => {
+            const fakeScoreProcessor = getFakeScoreProcessor()
+
+            fakeBotComment.body = '[+1](// "green")'
+
+            return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, fakeScoreProcessor)
+                .then(() => td.verify(fakeScoreProcessor.correctGIS(guesser, submitter, false)))
+        })
+
+        it('should tell the ScoreProcessor to use half points if it was previously marked not found', () => {
+            const fakeScoreProcessor = getFakeScoreProcessor()
+
+            fakeBotComment.body = '[+6](// "green")'
+
+            return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, fakeScoreProcessor)
+                .then(() => td.verify(fakeScoreProcessor.correctGIS(guesser, submitter, true)))
         })
 
         it('should edit the bot comment with the correct message', () => {
@@ -142,8 +160,10 @@ function getFakeBot(comment?: Comment): RedditBot {
 
 function getFakeScoreProcessor(): ScoreProcessor {
     const fakeScoreProcessor = td.object(new ScoreProcessor({}, {} as any))
-    td.when(fakeScoreProcessor.winTypeToPoints(WinType.GUESSER, td.matchers.anything())).thenResolve(6)
-    td.when(fakeScoreProcessor.winTypeToPoints(WinType.SUBMITTER, td.matchers.anything())).thenResolve(3)
+    td.when(fakeScoreProcessor.winTypeToPoints(WinType.GUESSER, false)).thenResolve(6)
+    td.when(fakeScoreProcessor.winTypeToPoints(WinType.GUESSER, true)).thenResolve(1)
+    td.when(fakeScoreProcessor.winTypeToPoints(WinType.SUBMITTER, false)).thenResolve(3)
+    td.when(fakeScoreProcessor.winTypeToPoints(WinType.SUBMITTER, true)).thenResolve(2)
     fakeScoreProcessor.correctGIS = td.func('correctGIS') as any
     return fakeScoreProcessor
 }
@@ -152,6 +172,7 @@ function getFakeComment(username: string = randomString()): Comment {
     const fakeComment = td.object({} as any)
     fakeComment.author = { name: username }
     fakeComment.edit = td.func('edit')
+    fakeComment.body = '[+1](// "green")'
     return fakeComment
 }
 

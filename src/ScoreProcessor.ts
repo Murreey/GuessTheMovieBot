@@ -31,14 +31,14 @@ export class ScoreProcessor {
         await this.addPoints(username, pointsToAward)
     }
 
-    async correctGIS(botReply: any, guesser: string, submitter: string) {
+    async correctGIS(guesser: string, submitter: string, foundOnGoogle: boolean) {
         this.logger.verbose(`- Guesser ${guesser} has ${await this.bot.getUserPoints(guesser)}`)
         this.logger.verbose(`- Submitter ${submitter} has ${await this.bot.getUserPoints(submitter)}`)
-        const guesserCorrection = this.winTypeToPoints(WinType.GUESSER, false) - this.winTypeToPoints(WinType.GUESSER, true)
-        const submitterCorrection = this.winTypeToPoints(WinType.SUBMITTER, false) - this.winTypeToPoints(WinType.SUBMITTER, true)
+        const guesserCorrection = this.winTypeToPoints(WinType.GUESSER, foundOnGoogle) - this.winTypeToPoints(WinType.GUESSER, !foundOnGoogle)
+        const submitterCorrection = this.winTypeToPoints(WinType.SUBMITTER, foundOnGoogle) - this.winTypeToPoints(WinType.SUBMITTER, !foundOnGoogle)
         this.logger.verbose(`- Correction required is: `)
-        this.logger.verbose(`- Guesser +${guesserCorrection} points`)
-        this.logger.verbose(`- Submitter +${submitterCorrection} points`)
+        this.logger.verbose(`- Guesser gets ${guesserCorrection} points`)
+        this.logger.verbose(`- Submitter gets ${submitterCorrection} points`)
         await this.addPoints(guesser, guesserCorrection)
         await this.addPoints(submitter, submitterCorrection)
 
@@ -47,7 +47,10 @@ export class ScoreProcessor {
 
     async addPoints(username: string, points: number) {
         const currentPoints = await this.bot.getUserPoints(username)
-        const newPoints = currentPoints + points
+        let newPoints = currentPoints + points
+        if(newPoints < 0) {
+            newPoints = 0
+        }
         await this.bot.setUserFlair(username, newPoints, this.getCssClass(newPoints))
         this.logger.verbose(`Added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points} (css class ${this.getCssClass(newPoints)})`)
     }

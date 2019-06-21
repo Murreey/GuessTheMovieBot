@@ -42,19 +42,36 @@ export class ModCommandProcessor {
 
     async correctGISError(comment, scoreProcessor?: ScoreProcessor) {
         this.logger.info(`GIS correction requested for this post, updating points`)
-        const confirmationComment: any = await this.bot.getParentComment(comment)
+        const confirmationComment: Comment = await this.bot.getParentComment(comment)
         const submitter = await confirmationComment.author.name
         const guessComment = await this.bot.getParentComment(confirmationComment)
         const guesser = await guessComment.author.name
+
+        const body = await comment.body
+        let guesserOldPoints
+        try {
+            guesserOldPoints = parseInt((/\[\+(\d)]\(\/\/ "green"\)/i).exec(body)[1])
+        } catch {
+            this.logger.error("Couldn't get old points from previous score comment. Check the formatting?")
+            this.logger.verbose('Bot comment was:')
+            this.logger.verbose(body)
+            return false
+        }
+
         scoreProcessor = scoreProcessor || new ScoreProcessor(this.bot, this.config, this.logger)
-        await scoreProcessor.correctGIS(comment, guesser, submitter)
+        // Figure out if the existing comment is giving full points (not found) or half points (found on google)
+        // Whatever the previous Google find was, we're inverting that to either give or dock points
+        const previouslyMarkedAsFound = guesserOldPoints === await scoreProcessor.winTypeToPoints(WinType.GUESSER, true)
+        this.logger.verbose(`Checking if original bot comment detected the image on Google:`)
+        this.logger.verbose(`${previouslyMarkedAsFound ? 'It did! Giving extra points to correct error.' : 'Nope! Docking points.'}`)
+        await scoreProcessor.correctGIS(guesser, submitter, !previouslyMarkedAsFound)
 
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../${this.config['replyTemplate']}`), "UTF-8")
         const templateValues = {
             guesser,
-            guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, false),
+            guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, !previouslyMarkedAsFound),
             poster: submitter,
-            poster_points: await scoreProcessor.winTypeToPoints(WinType.SUBMITTER, false),
+            poster_points: await scoreProcessor.winTypeToPoints(WinType.SUBMITTER, !previouslyMarkedAsFound),
             subreddit: (this.config as any).subreddit
         }
 

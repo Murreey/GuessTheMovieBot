@@ -31,6 +31,19 @@ describe('ScoreProcessor', () => {
             return new ScoreProcessor(fakeBot, {}, undefined).addPoints(username, -newPoints)
                 .then(() => td.verify(fakeBot.setUserFlair(username, currentPoints - newPoints, td.matchers.anything())))
         })
+
+        it('should not drop points below 0', () => {
+            const fakeBot = td.object(new RedditBot({}, {} as any, false))
+            const username = randomString()
+
+            const currentPoints = 5
+            const newPoints = -10
+
+            td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
+
+            return new ScoreProcessor(fakeBot, {}, undefined).addPoints(username, newPoints)
+                .then(() => td.verify(fakeBot.setUserFlair(username, 0, td.matchers.anything())))
+        })
     })
 
     // Going to leave this whole bank as pending
