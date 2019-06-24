@@ -214,13 +214,13 @@ describe('WinValidator', () => {
                 .then((valid) => assert.equal(valid, true))
         })
 
-        it('should return false if the post is flaired easy and the guesser has >= 10 points', () => {
+        it('should return false if the post is flaired easy and the guesser has > 10 points', () => {
             const fakeSubmission = getFakeSubmission('easy')
             const fakeBot = getFakeBot(fakeSubmission)
 
             const username = randomString()
-            td.when(fakeBot.getUserPoints(username)).thenResolve(Math.floor(Math.random()*10) + 10)
-            td.when(fakeBot.getUserPoints(td.matchers.not(username))).thenResolve(Math.floor(Math.random()*9))
+            td.when(fakeBot.getUserPoints(username)).thenResolve(11)
+            td.when(fakeBot.getUserPoints(td.matchers.not(username))).thenResolve(9)
             const fakeComment = getFakeGuessComment(null, username)
 
             return new WinValidator(fakeBot, {}, undefined).checkCommentIsValidWin(fakeComment)

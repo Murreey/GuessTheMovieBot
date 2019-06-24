@@ -83,8 +83,8 @@ export class WinValidator {
         }
 
         const guesser = await comment.author
-        if(currentFlair && currentFlair.toLowerCase().includes("easy") && await this.bot.getUserPoints(guesser.name) >= 10) {
-            this.logger.verbose(`'${comment.body}' rejected as the post is easy and commenter /u/${guesser.name} has >= 10 points`)
+        if(currentFlair && currentFlair.toLowerCase().includes("easy") && await this.bot.getUserPoints(guesser.name) > 10) {
+            this.logger.verbose(`'${comment.body}' rejected as the post is easy and commenter /u/${guesser.name} has > 10 points`)
             return false
         }
 
