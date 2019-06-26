@@ -1,6 +1,6 @@
+import * as fs from 'fs'
 import { Logger } from './Logger';
 import { RedditBot } from './RedditBot';
-import { Comment } from 'snoowrap'
 
 export class ScoreProcessor {
     bot: RedditBot
@@ -29,6 +29,13 @@ export class ScoreProcessor {
     async processWin(username: string, type: WinType, foundOnGoogle: boolean) {
         const pointsToAward = this.winTypeToPoints(type, foundOnGoogle)
         await this.addPoints(username, pointsToAward)
+
+        const scores = this.getScoreFile()
+        const typeString = type === WinType.GUESSER ? 'guesses' : 'submissions'
+        if(!scores[username]) scores[username] = {}
+        if(!scores[username][typeString]) scores[username][typeString] = 0
+        scores[username][typeString]++
+        this.saveScoreFile(scores)
     }
 
     async correctGIS(guesser: string, submitter: string, foundOnGoogle: boolean) {
@@ -52,7 +59,43 @@ export class ScoreProcessor {
             newPoints = 0
         }
         await this.bot.setUserFlair(username, newPoints, this.getCssClass(newPoints))
+        const scores = this.getScoreFile()
+        if(!scores[username]) scores[username] = {}
+        if(!scores[username].points) scores[username].points = 0
+        if(!scores[username].points) scores[username].total = 0
+        scores[username].points += points
+        scores[username].total = currentPoints + points
+        this.saveScoreFile(scores)
         this.logger.verbose(`Added ${points} to ${username} - had ${currentPoints}, now has ${currentPoints + points} (css class ${this.getCssClass(newPoints)})`)
+    }
+
+    getScoreFileName(fileDate?: number) {
+        // fileDate allows you to update scores for a specific month based on a timestamp.
+        // Not used for now - will default to the date the bot gave the points.
+        const date = fileDate ? new Date(fileDate) : new Date()
+        const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        const path = './scores/'
+        if(!fs.existsSync(path)) {
+            fs.mkdirSync(path)
+        }
+        return `${path}${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
+    }
+
+    getScoreFile(fileDate?: number) {
+        const file = this.getScoreFileName(fileDate)
+        if(!fs.existsSync(file)) {
+            fs.openSync(file, 'w')
+        }
+        const data = fs.readFileSync(file, "utf8")
+        return data ? JSON.parse(data) : {}
+    }
+
+    saveScoreFile(scores, fileDate?: number) {
+        const file = this.getScoreFileName(fileDate)
+        if(!fs.existsSync(file)) {
+            fs.openSync(file, 'w')
+        }
+        fs.writeFileSync(file, JSON.stringify(scores, null, 2))
     }
 
     getCssClass(points: number): string {
