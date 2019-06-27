@@ -34,12 +34,11 @@ export class RedditBot {
 
         const repliesWithIDs = await Promise.all(replies
             .filter((reply: Comment) => !this.isDeleted(reply))
-            .map(async (reply: Comment) => {
-            return {
+            .map(async (reply: Comment) => ({
                 reply,
-                replier: await reply.author.id
-            }
-        }))
+                replier: reply.author.name === '[deleted]' ? '[deleted]' : await reply.author.id
+            })
+        ))
 
         replies = repliesWithIDs.filter((reply) => reply.replier === submitter)
             .map((reply) => reply.reply)

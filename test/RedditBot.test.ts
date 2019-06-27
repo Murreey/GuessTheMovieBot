@@ -115,6 +115,23 @@ describe('RedditBot', () => {
             return new RedditBot({}, fakeSnoowrap, false).getAllRepliers(fakeSubmission)
                 .then((repliers) => assert.equal(repliers.length, expectedUsernames.length))
         })
+
+        it('should process comments that have been deleted', () => {
+            const fakeSnoowrap = mockSnoowrap()
+            const fakeSubmission: Submission = td.object({} as any)
+            fakeSubmission.expandReplies = td.func('expandReplies') as any
+            td.when(fakeSnoowrap.getSubmission(td.matchers.anything())).thenResolve(fakeSubmission)
+
+            const deletedComment = mockComment({
+                name: '[deleted]'
+            } as RedditUser)
+
+            fakeSubmission.comments = [deletedComment] as Listing<Comment>
+            td.when(fakeSubmission.expandReplies()).thenResolve(fakeSubmission)
+
+            return new RedditBot({}, fakeSnoowrap, false).getAllRepliers(fakeSubmission)
+                .then((repliers) => repliers.forEach((replier) => assert.equal(replier, '[deleted]')))
+        })
     })
 
     describe('getUserPoints', () => {
