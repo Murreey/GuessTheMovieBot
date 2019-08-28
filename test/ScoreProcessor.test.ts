@@ -23,13 +23,10 @@ describe('ScoreProcessor', () => {
             const fakeBot = td.object(new RedditBot({}, {} as any, false))
             const username = randomString()
 
-            const currentPoints = Math.floor(Math.random() * 50)
-            const newPoints = Math.ceil((Math.random() + 1) * 3)
+            td.when(fakeBot.getUserPoints(username)).thenResolve(30)
 
-            td.when(fakeBot.getUserPoints(username)).thenResolve(currentPoints)
-
-            return new ScoreProcessor(fakeBot, {}, undefined).addPoints(username, -newPoints)
-                .then(() => td.verify(fakeBot.setUserFlair(username, currentPoints - newPoints, td.matchers.anything())))
+            return new ScoreProcessor(fakeBot, {}, undefined).addPoints(username, -5)
+                .then(() => td.verify(fakeBot.setUserFlair(username, 25, td.matchers.anything())))
         })
 
         it('should not drop points below 0', () => {
