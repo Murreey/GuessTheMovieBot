@@ -66,7 +66,7 @@ export class ModCommandProcessor {
         this.logger.verbose(`${previouslyMarkedAsFound ? 'It did! Giving extra points to correct error.' : 'Nope! Docking points.'}`)
         await scoreProcessor.correctGIS(guesser, submitter, !previouslyMarkedAsFound)
 
-        const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../${this.config['replyTemplate']}`), "UTF-8")
+        const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
         const templateValues = {
             guesser,
             guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, !previouslyMarkedAsFound),
