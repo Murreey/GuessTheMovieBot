@@ -11,6 +11,7 @@
     "start": "ts-node src/index.ts",
     "once": "ts-node src/index.ts -- once",
     "readonly": "ts-node src/index.ts -- readonly",
+    "scoreboard": "ts-node src/index.ts -- scoreboard",
     "test": "nyc mocha -r ts-node/register test/**/*.test.ts"
   },
   "author": "",
