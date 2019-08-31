@@ -66,9 +66,10 @@ export class ModCommandProcessor {
         this.logger.verbose(`${previouslyMarkedAsFound ? 'It did! Giving extra points to correct error.' : 'Nope! Docking points.'}`)
         await scoreProcessor.correctGIS(guesser, submitter, !previouslyMarkedAsFound)
 
+        const postID = await this.bot.getPostFromComment(comment).then(post => post.fetch()).then(post => post.id)
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
         const templateValues = {
-            post: await (this.bot.getPostFromComment(comment) as any).permalink,
+            postID,
             guesser,
             guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, !previouslyMarkedAsFound),
             poster: submitter,

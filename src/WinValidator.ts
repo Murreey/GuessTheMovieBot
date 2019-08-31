@@ -145,9 +145,10 @@ export class WinValidator {
     }
 
     async replyWithBotMessage(foundOnGoogle: boolean, opComment: any, guesser: string, submitter: string) {
+        const postID = await this.bot.getPostFromComment(opComment).then(post => post.fetch()).then(post => post.id)
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
         const templateValues = {
-            post: await this.bot.getPostFromComment(opComment).permalink,
+            postID,
             guesser,
             guesser_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
             poster: submitter,
