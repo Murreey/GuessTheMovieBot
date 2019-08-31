@@ -68,6 +68,7 @@ export class ModCommandProcessor {
 
         const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
         const templateValues = {
+            post: await (this.bot.getPostFromComment(comment) as any).permalink,
             guesser,
             guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, !previouslyMarkedAsFound),
             poster: submitter,
