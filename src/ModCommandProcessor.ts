@@ -72,7 +72,8 @@ export class ModCommandProcessor {
             guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, !previouslyMarkedAsFound),
             poster: submitter,
             poster_points: await scoreProcessor.winTypeToPoints(WinType.SUBMITTER, !previouslyMarkedAsFound),
-            subreddit: (this.config as any).subreddit
+            subreddit: (this.config as any).subreddit,
+            foundOnGoogle: !previouslyMarkedAsFound
         }
 
         const updatedReply = Mustache.render(replyTemplate, templateValues)

@@ -151,7 +151,8 @@ export class WinValidator {
             guesser_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
             poster: submitter,
             poster_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
-            subreddit: (this.config as any).subreddit
+            subreddit: (this.config as any).subreddit,
+            foundOnGoogle
         }
 
         const reply = Mustache.render(replyTemplate, templateValues)

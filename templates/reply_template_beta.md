@@ -3,6 +3,12 @@ Guess confirmed:
 * winner **/u/{{ guesser }} gets [+{{ guesser_points }}](// "green") points**
 * poster **/u/{{ poster }} gets [+{{ poster_points }}](// "blue") points**
 
-See sidebar for more details. If anything is incorrect, please [contact the mods!](/message/compose?to=%2Fr%2F{{ subreddit }}&subject=Bot%20error)
+{{#foundOnGoogle}}
+***
+^Why ^reduced ^points? ^This ^post ^was ^found ^on ^Google ^Image ^Search, ^which ^means ^it ^didn't ^earn ^full ^points. ^Think ^I've ^made ^a ^mistake? [^Contact ^the ^mods!](/message/compose?to=%2Fr%2F{{ subreddit }}&subject=Google%20Image%20Search%20Error)
+{{/foundOnGoogle}}
 
-*^\(The ^bot ^is ^back ^in ^beta ^- ^see [^this ^post](https://redd.it/c07tso) ^for ^details!\)*
+***
+See [the wiki for more details](https://www.reddit.com/r/GuessTheMovie/wiki/index). If anything is incorrect, please [contact the mods!](/message/compose?to=%2Fr%2F{{ subreddit }}&subject=Bot%20error)
+
+*^For ^info ^about ^the ^bot, ^see [^this ^post!](https://redd.it/c7rp90)*

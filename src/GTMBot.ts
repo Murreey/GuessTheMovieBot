@@ -31,7 +31,6 @@ export class GTMBot {
         }
     }
 
-
 }
 
 function waitForInput (text) {
