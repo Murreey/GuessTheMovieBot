@@ -111,4 +111,25 @@ export class RedditBot {
     getRateLimitInfo(): string {
         return `Rate Limit: ${this.r.ratelimitRemaining} remaining, expires ${new Date(this.r.ratelimitExpiration)}`
     }
+
+    makePost(post: Post) {
+        if(this.readonly) {
+            return
+        }
+
+        this.r.submitSelfpost({
+            subredditName: this.config['subreddit'],
+            title: post.title,
+            text: post.body,
+            sendReplies: false
+        }).then(submission => {
+            if(post.sticky) submission.sticky({ num: 2 })
+        })
+    }
+}
+
+type Post = {
+    title: string
+    body: string
+    sticky?: boolean
 }

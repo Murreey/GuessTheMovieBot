@@ -3,6 +3,7 @@ import { GTMBot } from './GTMBot';
 import { Logger } from './Logger';
 import { RedditBot } from './RedditBot';
 import { ConfigLoader } from './ConfigLoader';
+import { ScoreboardCreator } from './ScoreboardCreator';
 
 const logger = new Logger().getLogger()
 const config = new ConfigLoader(logger).getConfig()
@@ -18,7 +19,11 @@ if(readOnly) {
 
 let gtmBot = new GTMBot(redditBot, config)
 
-if(runOnce) {
+if(process.argv.indexOf("scoreboard") > -1) {
+    const scoreboardCreator = new ScoreboardCreator(redditBot, config, logger)
+    const scoreboard = scoreboardCreator.createScoreboard()
+    scoreboardCreator.postScoreboard(scoreboard)
+} else if(runOnce) {
     logger.enableConsoleLogging('silly')
     gtmBot.processComments(logger, true)
 } else {
