@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as Mustache from 'mustache';
-import * as path from 'path';
 import { Logger } from "./Logger";
 import { Comment } from "snoowrap";
 import { RedditBot } from "./RedditBot";
@@ -67,18 +64,7 @@ export class ModCommandProcessor {
         await scoreProcessor.correctGIS(guesser, submitter, !previouslyMarkedAsFound)
 
         const postID = await this.bot.getPostFromComment(comment).then(post => post.fetch()).then(post => post.id)
-        const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
-        const templateValues = {
-            postID,
-            guesser,
-            guesser_points: await scoreProcessor.winTypeToPoints(WinType.GUESSER, !previouslyMarkedAsFound),
-            poster: submitter,
-            poster_points: await scoreProcessor.winTypeToPoints(WinType.SUBMITTER, !previouslyMarkedAsFound),
-            subreddit: (this.config as any).subreddit,
-            foundOnGoogle: !previouslyMarkedAsFound
-        }
-
-        const updatedReply = Mustache.render(replyTemplate, templateValues)
+        const updatedReply = scoreProcessor.generateScoreComment(postID, guesser, submitter, !previouslyMarkedAsFound)
 
         if(!this.bot.readonly) {
             comment.edit(updatedReply)

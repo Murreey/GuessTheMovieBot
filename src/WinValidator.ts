@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as Mustache from 'mustache';
-import * as path from 'path';
 import { Comment, Submission } from 'snoowrap';
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit';
 import { GoogleImageSearcher } from './GoogleImageSearcher';
@@ -146,18 +143,7 @@ export class WinValidator {
 
     async replyWithBotMessage(foundOnGoogle: boolean, opComment: any, guesser: string, submitter: string) {
         const postID = await this.bot.getPostFromComment(opComment).then(post => post.fetch()).then(post => post.id)
-        const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
-        const templateValues = {
-            postID,
-            guesser,
-            guesser_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.GUESSER, foundOnGoogle),
-            poster: submitter,
-            poster_points: await new ScoreProcessor(this.bot, this.config, this.logger).winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
-            subreddit: (this.config as any).subreddit,
-            foundOnGoogle
-        }
-
-        const reply = Mustache.render(replyTemplate, templateValues)
+        const reply = new ScoreProcessor(this.bot, this.config, this.logger).generateScoreComment(postID, guesser, submitter, foundOnGoogle)
 
         if(!this.bot.readonly) {
             const postedComment: Comment = await opComment.reply(reply) as Comment

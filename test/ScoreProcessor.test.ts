@@ -64,6 +64,12 @@ describe('ScoreProcessor', () => {
             assert.equal(score, 1234)
         })
     })
+
+    describe.skip('generateScoreComment', () => {
+        it('should generate correct scoring message from the template', () => {
+
+        })
+    })
 })
 
 function randomString(): string {

@@ -1,4 +1,6 @@
-import * as fs from 'fs'
+import * as fs from 'fs';
+import * as Mustache from 'mustache';
+import * as path from 'path';
 import { Logger } from './Logger';
 import { RedditBot } from './RedditBot';
 
@@ -116,6 +118,21 @@ export class ScoreProcessor {
         }
 
         return this.defaultPoints[type][googled]
+    }
+
+    generateScoreComment(postID: string, guesser: string, submitter: string, foundOnGoogle: boolean): string {
+        const replyTemplate = fs.readFileSync(path.resolve(__dirname, `../templates/${this.config['replyTemplate']}`), "UTF-8")
+        const templateValues = {
+            postID,
+            guesser,
+            guesser_points: this.winTypeToPoints(WinType.GUESSER, foundOnGoogle),
+            poster: submitter,
+            poster_points: this.winTypeToPoints(WinType.SUBMITTER, foundOnGoogle),
+            subreddit: (this.config as any).subreddit,
+            foundOnGoogle
+        }
+
+        return Mustache.render(replyTemplate, templateValues)
     }
 }
 
