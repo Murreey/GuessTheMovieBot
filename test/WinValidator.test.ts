@@ -6,9 +6,7 @@ import { WinValidator } from '../src/WinValidator'
 import { Command } from '../src/ModCommandProcessor'
 import { Comment, Submission } from 'snoowrap'
 import { FlairTemplate } from 'snoowrap/dist/objects/Subreddit'
-import * as fs from 'fs'
-import * as path from 'path'
-import * as Mustache from 'mustache'
+import { ScoreProcessor } from '../src/ScoreProcessor';
 
 describe('WinValidator', () => {
     describe('checkCommentIsValidWin', () => {
@@ -316,33 +314,25 @@ describe('WinValidator', () => {
     })
 
     describe('replyWithBotMessage', () => {
-        let fakeBot, guesser, poster
+        let fakeBot, fakeScoreProcessor, guesser, poster
 
         beforeEach(() => {
             fakeBot = getFakeBot()
+            fakeScoreProcessor = getFakeScoreProcessor()
             guesser = randomString()
             poster = randomString()
         })
 
         describe('when read only mode is not enabled', () => {
-            it('should render the template with the right values', () => {
-                const replyTemplate = fs.readFileSync(path.resolve(__dirname, "test_reply_template.md"), "UTF-8")
-
-                const templateValues = {
-                    guesser,
-                    guesser_points: 6,
-                    poster,
-                    poster_points: 3,
-                    subreddit: ''
-                }
-
-                const expectedTemplate = Mustache.render(replyTemplate, templateValues)
-
+            it('should reply to the comment with the score message', () => {
                 const mockOPComment = td.object({} as any)
                 mockOPComment.reply = td.func('reply')
 
-                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
-                    .then(() => td.verify(mockOPComment.reply(expectedTemplate)))
+                const reply = randomString()
+                td.when(fakeScoreProcessor.generateScoreComment(td.matchers.anything(), td.matchers.anything(), td.matchers.anything(), td.matchers.anything())).thenReturn(reply)
+
+                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(fakeScoreProcessor, false, mockOPComment, guesser, poster)
+                    .then(() => td.verify(mockOPComment.reply(reply)))
             })
 
             it('should distinguish the posted comment', () => {
@@ -353,7 +343,7 @@ describe('WinValidator', () => {
                 mockPostedComment.distinguish = td.func('distinguish')
                 td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(fakeScoreProcessor, false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockPostedComment.distinguish()))
             })
         })
@@ -363,15 +353,15 @@ describe('WinValidator', () => {
                 fakeBot.readonly = true
             })
 
-            it('should render the template with the right values', () => {
+            it('should not reply to the op comment', () => {
                 const mockOPComment = td.object({} as any)
                 mockOPComment.reply = td.func('reply')
 
-                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(fakeScoreProcessor, false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockOPComment.reply(), { times: 0 }))
             })
 
-            it('should distinguish the posted comment', () => {
+            it('should not distinguish the posted comment', () => {
                 const mockOPComment = td.object({} as any)
                 const mockPostedComment = td.object({} as any)
 
@@ -379,17 +369,17 @@ describe('WinValidator', () => {
                 mockPostedComment.distinguish = td.func('distinguish')
                 td.when(mockOPComment.reply(td.matchers.anything())).thenResolve(mockPostedComment)
 
-                return new WinValidator(fakeBot, { replyTemplate: 'test/test_reply_template.md' }, undefined).replyWithBotMessage(false, mockOPComment, guesser, poster)
+                return new WinValidator(fakeBot, {}, undefined).replyWithBotMessage(fakeScoreProcessor, false, mockOPComment, guesser, poster)
                     .then(() => td.verify(mockPostedComment.distinguish(), { times: 0 }))
             })
         })
     })
 })
 
-function getFakeBot(submission?: Submission): RedditBot {
+function getFakeBot(submission?: Submission, postID?: string): RedditBot {
     // This bot will return a valid, unsolved submission that confirms any comment
     const fakeBot = td.object(new RedditBot({}, {} as any, false))
-    const fakeSubmission = submission ? submission : getFakeSubmission()
+    const fakeSubmission = submission ? submission : getFakeSubmission(undefined, postID)
     td.when(fakeBot.getPostFromComment(td.matchers.anything())).thenResolve(fakeSubmission)
     td.when(fakeBot.getAllRepliers(td.matchers.anything())).thenResolve([])
     td.when(fakeBot.getOPReplies(td.matchers.anything())).thenResolve([getOPReply()])
@@ -398,11 +388,18 @@ function getFakeBot(submission?: Submission): RedditBot {
     return fakeBot
 }
 
-function getFakeSubmission(flair?: string): Submission {
+function getFakeScoreProcessor(): ScoreProcessor {
+    const fakeScoreProcessor = td.object(new ScoreProcessor({}, {}))
+    return fakeScoreProcessor
+}
+
+function getFakeSubmission(flair?: string, postID: string = randomString()): Submission {
     const fakeSubmission = td.object({} as Submission)
+    fakeSubmission.id = postID
     fakeSubmission.link_flair_text = flair ? flair : null
     fakeSubmission.author = { id: randomString(), name: randomString() } as any
-
+    (fakeSubmission as any).fetch = td.func('fetch')
+    td.when((fakeSubmission as any).fetch()).thenResolve(fakeSubmission)
     return fakeSubmission
 }
 

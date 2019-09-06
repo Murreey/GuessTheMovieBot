@@ -116,7 +116,7 @@ export class WinValidator {
         await scoreProcessor.processWin(submitter, WinType.SUBMITTER, foundOnGoogle)
 
         this.logger.verbose(`Replying with bot message...`)
-        this.replyWithBotMessage(foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
+        this.replyWithBotMessage(scoreProcessor, foundOnGoogle, this.submitterConfirmationComment, guesser, submitter)
 
         this.bot.removeReports(comment)
 
@@ -141,9 +141,9 @@ export class WinValidator {
         }
     }
 
-    async replyWithBotMessage(foundOnGoogle: boolean, opComment: any, guesser: string, submitter: string) {
+    async replyWithBotMessage(scoreProcessor: ScoreProcessor, foundOnGoogle: boolean, opComment: any, guesser: string, submitter: string) {
         const postID = await this.bot.getPostFromComment(opComment).then(post => post.fetch()).then(post => post.id)
-        const reply = new ScoreProcessor(this.bot, this.config, this.logger).generateScoreComment(postID, guesser, submitter, foundOnGoogle)
+        const reply = scoreProcessor.generateScoreComment(postID, guesser, submitter, foundOnGoogle)
 
         if(!this.bot.readonly) {
             const postedComment: Comment = await opComment.reply(reply) as Comment

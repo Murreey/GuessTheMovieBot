@@ -1,9 +1,6 @@
 import 'mocha'
 import * as assert from 'assert'
 import * as td from 'testdouble'
-import * as fs from 'fs'
-import * as path from 'path'
-import * as Mustache from 'mustache'
 import { Comment } from 'snoowrap'
 import { RedditBot } from '../src/RedditBot'
 import { ModCommandProcessor, Command } from '../src/ModCommandProcessor';
@@ -108,7 +105,7 @@ describe('ModCommandProcessor', () => {
             td.when(fakeBot.getParentComment(fakeOPComment)).thenResolve(fakeGuessComment)
         })
 
-        it('should call the ScoreProcessor with the correct values in the correct order', () => {
+        it('should call ScoreProcessor.correctGIS() with the correct values in the correct order', () => {
             const fakeScoreProcessor = getFakeScoreProcessor()
 
             return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, fakeScoreProcessor)
@@ -133,28 +130,22 @@ describe('ModCommandProcessor', () => {
                 .then(() => td.verify(fakeScoreProcessor.correctGIS(guesser, submitter, true)))
         })
 
-        it('should edit the bot comment with the correct message', () => {
-            const replyTemplate = fs.readFileSync(path.resolve(__dirname, "test_reply_template.md"), "UTF-8")
+        it.skip('should send the correct values to the template generator', () => {
+            const fakeScoreProcessor = getFakeScoreProcessor()
 
-            const templateValues = {
-                guesser,
-                guesser_points: 6,
-                poster: submitter,
-                poster_points: 3,
-                subreddit: ''
-            }
-
-            const expectedTemplate = Mustache.render(replyTemplate, templateValues)
-            return new ModCommandProcessor(fakeBot, { replyTemplate: 'test/test_reply_template.md' }).correctGISError(fakeBotComment, getFakeScoreProcessor())
-                .then(() => td.verify(fakeBotComment.edit(expectedTemplate)))
+            return new ModCommandProcessor(fakeBot, {}).correctGISError(fakeBotComment, fakeScoreProcessor)
+                .then(() => td.verify(fakeScoreProcessor.generateScoreComment("", "", "", false)))
         })
     })
 })
 
-function getFakeBot(comment?: Comment): RedditBot {
+function getFakeBot(comment?: Comment, postID: string = randomString()): RedditBot {
     const fakeBot = td.object(new RedditBot({}, {} as any, false))
     const fakeComment = comment ? comment : td.object({} as Comment)
     td.when(fakeBot.getParentComment(td.matchers.anything())).thenResolve(fakeComment)
+    td.when(fakeBot.getPostFromComment(td.matchers.anything())).thenResolve({
+        fetch: () => ({ id: postID })
+    })
     return fakeBot
 }
 
@@ -164,6 +155,7 @@ function getFakeScoreProcessor(): ScoreProcessor {
     td.when(fakeScoreProcessor.winTypeToPoints(WinType.GUESSER, true)).thenResolve(1)
     td.when(fakeScoreProcessor.winTypeToPoints(WinType.SUBMITTER, false)).thenResolve(3)
     td.when(fakeScoreProcessor.winTypeToPoints(WinType.SUBMITTER, true)).thenResolve(2)
+    fakeScoreProcessor.generateScoreComment = td.func('generateScoreComment') as any
     fakeScoreProcessor.correctGIS = td.func('correctGIS') as any
     return fakeScoreProcessor
 }
