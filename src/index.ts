@@ -31,4 +31,12 @@ if(process.argv.indexOf("scoreboard") > -1) {
     scheduler.schedule("*/1 * * * *", () => {
         gtmBot.processComments(logger)
     })
+
+    scheduler.schedule("1 0 1 * *", () => {
+        const scoreboardCreator = new ScoreboardCreator(redditBot, config, logger)
+        const yesterday = new Date(new Date().setDate(new Date().getDate() - 1))
+        logger.info(`* Publishing scoreboard for ${yesterday.toLocaleString('en-GB', { month: 'long', year: 'numeric' })}!`)
+        const scoreboard = scoreboardCreator.createScoreboard(yesterday)
+        scoreboardCreator.postScoreboard(scoreboard)
+    })
 }

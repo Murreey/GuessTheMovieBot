@@ -16,11 +16,11 @@ export class ScoreboardCreator {
         this.logger = logger
     }
 
-    createScoreboard(): ScoreboardData {
-        const rawScores = this.getScores()
+    createScoreboard(date: Date = new Date()): ScoreboardData {
+        const rawScores = this.getScores(date)
         const scores = this.sortScores(rawScores)
-        scores.month = new Date().toLocaleString('en-GB', { month: 'long' })
-        scores.year = new Date().toLocaleString('en-GB', { year: 'numeric' })
+        scores.month = date.toLocaleString('en-GB', { month: 'long' })
+        scores.year = date.toLocaleString('en-GB', { year: 'numeric' })
         return scores
     }
 
@@ -56,9 +56,9 @@ export class ScoreboardCreator {
     }
 
     // Only creates for current month atm
-    getScores() {
+    getScores(date: Date) {
         const scoreProcessor = new ScoreProcessor(this.bot, this.config, this.logger)
-        return scoreProcessor.getScoreFile()
+        return scoreProcessor.getScoreFile(date.getTime())
     }
 
 }
