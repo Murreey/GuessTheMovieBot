@@ -22,7 +22,11 @@ export class GTMBot {
                 }
             }
 
-            await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
+            try {
+                await new CommentProcessor(this.bot, this.config, logger).processComment(comment)
+            } catch (ex) {
+                logger.info(`Error processing comment ${comment.link_id}: ${ex}`)
+            }
 
             logger.verbose(`\n`)
             if (runOnce) {
