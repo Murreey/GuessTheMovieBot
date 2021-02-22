@@ -1,0 +1,33 @@
+// Check post is not already Identified
+// Check post submitter is not deleted
+// Get comment's parent and check not from OP
+// Check comment parent has < 10 if easy
+// Run google to check WinType
+
+import snoowrap from "snoowrap";
+import PointsManager from "./PointsManager";
+import { RedditBot } from "./RedditBot";
+
+export default (bot: RedditBot) => ({
+  isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
+    const submission = bot.fetchPostFromComment(comment)
+
+    if(!bot.isCommentAReply(comment)) return false
+
+    const guessComment = (await bot.fetchComment(comment.parent_id))()
+
+    if(guessComment.is_submitter) return false
+
+    const currentFlair: string = await submission.link_flair_text
+    if(currentFlair) {
+      if(currentFlair.toLowerCase().includes("identified")) return false
+      if(currentFlair.toLowerCase().includes("meta")) return false
+
+      if(currentFlair.toLowerCase().includes("easy") && await PointsManager(bot).getPoints(guessComment.author) >= 10) {
+        return false
+      }
+    }
+
+    return true
+  }
+})
