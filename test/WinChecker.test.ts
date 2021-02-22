@@ -73,7 +73,9 @@ describe('WinChecker', () => {
 const mockRedditBot = (guessComment = {}, submission = {}) => {
   const mockGuessComment = {
     is_submitter: false,
-    author: "guesser",
+    author: {
+      name: "guesser"
+    },
     ...guessComment
   }
 

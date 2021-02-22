@@ -22,7 +22,7 @@ export default (bot: RedditBot) => ({
       if(currentFlair.toLowerCase().includes("identified")) return false
       if(currentFlair.toLowerCase().includes("meta")) return false
 
-      if(currentFlair.toLowerCase().includes("easy") && await PointsManager(bot).getPoints(guessComment.author) >= 10) {
+      if(currentFlair.toLowerCase().includes("easy") && await PointsManager(bot).getPoints(await guessComment.author.name) >= 10) {
         return false
       }
     }
