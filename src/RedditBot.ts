@@ -1,4 +1,4 @@
-import snoowrap from 'snoowrap'
+import snoowrap, { ReplyableContent } from 'snoowrap'
 import { loadConfig } from './config'
 import { Logger } from './Logger'
 
@@ -11,7 +11,7 @@ import { Logger } from './Logger'
 // Flair should maybe be a class of it's own
 // Pass in a submission and desired flair
 
-export const create = ({ debug, startFrom }: RedditBotOptions = { debug: false }): RedditBot => {
+export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debug: false, readOnly: false }): RedditBot => {
   const config = loadConfig()
   const r = new snoowrap({
     userAgent: config.userAgent,
@@ -42,9 +42,13 @@ export const create = ({ debug, startFrom }: RedditBotOptions = { debug: false }
     fetchNewConfirmations: async () => {
       const fetchOptions = {}
       if(lastFetchedComment) fetchOptions["before"] = lastFetchedComment
+      Logger.verbose(`Fetching new comments ${lastFetchedComment ? `since ${lastFetchedComment}`: ''}`)
       const newComments = await (await subreddit.getNewComments(fetchOptions)).fetchAll()
 
-      if(newComments.length === 0) return []
+      if(newComments.length === 0) {
+        Logger.verbose('No new comments fetched')
+        return []
+      }
 
       lastFetchedComment = newComments[0].name
       return newComments
@@ -52,7 +56,26 @@ export const create = ({ debug, startFrom }: RedditBotOptions = { debug: false }
         .filter(comment => comment.is_submitter)
         .filter(comment => !isDeleted(comment))
     },
-    isCommentAReply: (comment) => !comment.parent_id.startsWith("t1")
+    isCommentAReply: (comment) => !comment.parent_id.startsWith("t1"),
+    reply: async (content, body) => {
+      if(readOnly) {
+        Logger.warn('reply() ignored, read only mode is enabled')
+        return
+      }
+
+      const reply = (await (content as any).reply(body) as snoowrap.Comment);
+      if(reply) reply.distinguish()
+      Logger.verbose('Reply sent!')
+    },
+    setFlair: async (post, template, text) => {
+      if(readOnly) {
+        Logger.warn('setFlair() ignored, read only mode is enabled')
+        return
+      }
+
+      await (post as any).selectFlair({ flair_template_id: template, text })
+      Logger.verbose(`Setting flair ${template} ${text ? `(${text})`: ''} on ${post.name}`)
+    }
   }
 }
 
@@ -60,10 +83,13 @@ export type RedditBot = {
   fetchComment: (id: string) => Promise<() => snoowrap.Comment>
   fetchPostFromComment: (comment: snoowrap.Comment) => snoowrap.Submission
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
-  isCommentAReply: (comment: snoowrap.Comment) => boolean
+  isCommentAReply: (comment: snoowrap.Comment) => boolean,
+  reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string) => Promise<void>,
+  setFlair: (post: snoowrap.Submission, template: string, text?: string) => Promise<void>
 }
 
 export type RedditBotOptions = {
+  readOnly?: boolean,
   debug?: boolean,
   startFrom?: string
 }

@@ -1,4 +1,5 @@
 import snoowrap from "snoowrap";
+import { Logger } from "./Logger";
 import { RedditBot } from "./RedditBot";
 
 export default (bot: RedditBot) => ({
@@ -6,6 +7,7 @@ export default (bot: RedditBot) => ({
     return 10
   },
   addPoints: async (user: snoowrap.RedditUser, amount: number): Promise<void> => {
+    Logger.info(`Gave ${amount} points to ${user.name}`)
     return
   }
 })
