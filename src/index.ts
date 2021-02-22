@@ -8,11 +8,11 @@ Logger.setup({ file: null, console: LogLevel.SILLY })
 
 bot.fetchNewConfirmations().then(comments => {
   [comments[0]].forEach(async comment => {
-    const valid = await WinChecker(bot).isValidWin(comment)
     Logger.verbose(`Processing new comment by ${comment.author.name}:`)
     Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
 
-    if(!valid) {
+    const validWin = await WinChecker(bot).isValidWin(comment)
+    if(!validWin) {
       Logger.verbose('No win detected, ignoring')
       // return
     }
