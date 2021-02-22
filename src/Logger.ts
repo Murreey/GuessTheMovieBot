@@ -9,9 +9,9 @@ export class Logger {
         transports: []
       })
 
-      if(console) {
-        this.logger.add(new winston.transports.Console({ level: console }))
-      }
+      // `silent` ensures there's always at least one transport active
+      // (required by winston)
+      this.logger.add(new winston.transports.Console({ level: console, silent: console === null }))
 
       if(file) {
         this.logger.add(new DailyRotateFile({
