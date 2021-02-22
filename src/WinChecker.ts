@@ -10,14 +10,13 @@ import { RedditBot } from "./RedditBot";
 
 export default (bot: RedditBot) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
-    const submission = bot.fetchPostFromComment(comment)
-
     if(!bot.isCommentAReply(comment)) return false
 
     const guessComment = (await bot.fetchComment(comment.parent_id))()
 
     if(guessComment.is_submitter) return false
 
+    const submission = bot.fetchPostFromComment(comment)
     const currentFlair: string = await submission.link_flair_text
     if(currentFlair) {
       if(currentFlair.toLowerCase().includes("identified")) return false
