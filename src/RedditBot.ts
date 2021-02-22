@@ -1,4 +1,4 @@
-import snoowrap, { ReplyableContent } from 'snoowrap'
+import snoowrap, { RedditUser } from 'snoowrap'
 import { loadConfig } from './config'
 import { Logger } from './Logger'
 
@@ -67,14 +67,27 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
       if(reply) reply.distinguish()
       Logger.verbose('Reply sent!')
     },
-    setFlair: async (post, template, text) => {
+    setPostFlair: async (post, template, text) => {
       if(readOnly) {
-        Logger.warn('setFlair() ignored, read only mode is enabled')
+        Logger.warn('setPostFlair() ignored, read only mode is enabled')
         return
       }
 
       await (post as any).selectFlair({ flair_template_id: template, text })
       Logger.verbose(`Setting flair ${template} ${text ? `(${text})`: ''} on ${post.name}`)
+    },
+    getUserFlair: async (username) => subreddit.getUserFlair(username).then(flair => flair.flair_text),
+    setUserFlair: async (username, text, cssClass) => {
+      if(readOnly) {
+        Logger.warn('setUserFlair() ignored, read only mode is enabled')
+        return
+      }
+
+      const user = await (r.getUser(username) as any);
+      await user.assignFlair({
+        subreddit: subreddit.display_name,
+        text, cssClass
+      })
     }
   }
 }
@@ -85,7 +98,9 @@ export type RedditBot = {
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
   reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string) => Promise<void>,
-  setFlair: (post: snoowrap.Submission, template: string, text?: string) => Promise<void>
+  setPostFlair: (post: snoowrap.Submission, template: string, text?: string) => Promise<void>,
+  getUserFlair: (username: string) => Promise<string>,
+  setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>
 }
 
 export type RedditBotOptions = {

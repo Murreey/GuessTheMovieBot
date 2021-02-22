@@ -36,7 +36,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   const flairTemplate = flairTypes.find((template) => newFlair === template.flair_text)
   if(flairTemplate) {
     Logger.verbose(`Setting ${await submission.id} flair to '${newFlair}'`)
-    bot.setFlair(submission, flairTemplate.flair_template_id)
+    bot.setPostFlair(submission, flairTemplate.flair_template_id)
   } else {
     Logger.warn(`Could not find valid flair template for '${newFlair}'`)
   }

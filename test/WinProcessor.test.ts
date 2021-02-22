@@ -23,19 +23,19 @@ describe('WinProcessor', () =>  {
   describe('sets the correct flair', () => {
     it('when the post has no flair', async () => {
       await processWin(redditBot, mockComment)
-      expect(redditBot.setFlair).toHaveBeenCalledWith(expect.anything(), "identifiedTemplate")
+      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "identifiedTemplate")
     })
 
     it('when the post has `easy` flair', async () => {
       redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("easy") })
       await processWin(redditBot, mockComment)
-      expect(redditBot.setFlair).toHaveBeenCalledWith(expect.anything(), "easyIdentifiedTemplate")
+      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "easyIdentifiedTemplate")
     })
 
     it('when the post has `hard` flair', async () => {
       redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("hard") })
       await processWin(redditBot, mockComment)
-      expect(redditBot.setFlair).toHaveBeenCalledWith(expect.anything(), "hardIdentifiedTemplate")
+      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "hardIdentifiedTemplate")
     })
   })
 
@@ -80,7 +80,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
   return {
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockReturnValue(mockSubmission),
-    setFlair: jest.fn(),
+    setPostFlair: jest.fn(),
     reply: jest.fn()
   }
 }
