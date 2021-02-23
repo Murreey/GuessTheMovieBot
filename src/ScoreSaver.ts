@@ -1,12 +1,22 @@
 import fs from 'fs'
+import { Logger } from './Logger'
 
 export default () => {
   const fileName = getFileName()
 
   const getScoreData = (): ScoreData => {
-    if(!fs.existsSync(fileName)) fs.openSync(fileName, 'w')
+    if(!fs.existsSync(fileName)) {
+      Logger.verbose(`Created new score file ${fileName}`)
+      fs.openSync(fileName, 'w')
+    }
+
     const data = fs.readFileSync(fileName, "utf8")
-    return JSON.parse(data) ?? {}
+    Logger.verbose(`Loaded scores from ${fileName}`)
+    try {
+      return JSON.parse(data) ?? {}
+    } catch (ex) {
+      return {}
+    }
   }
 
   const initUserScore = (scores: ScoreData, username: string): ScoreData => {
@@ -28,8 +38,13 @@ export default () => {
   }
 
   const saveScoreData = (newData: ScoreData) => {
-    if(!fs.existsSync(fileName)) fs.openSync(fileName, 'w')
+    if(!fs.existsSync(fileName)) {
+      Logger.verbose(`Created new score file ${fileName}`)
+      fs.openSync(fileName, 'w')
+    }
+
     fs.writeFileSync(fileName, JSON.stringify(newData, null, 2))
+    Logger.verbose(`Saving file ${fileName}...`)
   }
 
   return {

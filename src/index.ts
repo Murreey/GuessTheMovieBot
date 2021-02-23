@@ -3,11 +3,12 @@ import * as RedditBot from './RedditBot';
 import WinChecker from './WinChecker';
 import processWin from './WinProcessor'
 
-const bot = RedditBot.create({ debug: true, readOnly: true, startFrom: "t1_gobjgub" })
+// const bot = RedditBot.create({ debug: true, readOnly: true, startFrom: "t1_gobjgub" })
+const bot = RedditBot.create({ debug: false, readOnly: false })
 Logger.setup({ file: null, console: LogLevel.SILLY })
 
 bot.fetchNewConfirmations().then(comments => {
-  [comments[0]].forEach(async comment => {
+  comments.slice(0, 1).forEach(async comment => {
     Logger.verbose(`Processing new comment by ${comment.author.name}:`)
     Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
 
@@ -17,7 +18,7 @@ bot.fetchNewConfirmations().then(comments => {
       // return
     }
 
-    Logger.verbose('Win confirmed!')
+    Logger.info('Win confirmed!')
     await processWin(bot, comment)
   })
 })

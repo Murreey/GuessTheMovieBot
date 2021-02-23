@@ -56,15 +56,20 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
         .filter(comment => comment.is_submitter)
         .filter(comment => !isDeleted(comment))
     },
-    isCommentAReply: (comment) => !comment.parent_id.startsWith("t1"),
+    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     reply: async (content, body) => {
       if(readOnly) {
         Logger.warn('reply() ignored, read only mode is enabled')
         return
       }
 
-      const reply = (await (content as any).reply(body) as snoowrap.Comment);
-      if(reply) reply.distinguish()
+      try {
+        const reply = (await (content as any).reply(body) as snoowrap.Comment);
+        if(reply) reply.distinguish()
+      } catch (ex) {
+        // Do nothing
+        // This likely meant the parent comment was deleted or the post is now archived
+      }
       Logger.verbose('Reply sent!')
     },
     setPostFlair: async (post, template, text) => {
@@ -74,7 +79,7 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
       }
 
       await (post as any).selectFlair({ flair_template_id: template, text })
-      Logger.verbose(`Setting flair ${template} ${text ? `(${text})`: ''} on ${post.name}`)
+      Logger.verbose(`Setting flair ${template}${text ? ` (${text})`: ''} on ${post.name}`)
     },
     getUserFlair: async (username) => subreddit.getUserFlair(username).then(flair => flair.flair_text),
     setUserFlair: async (username, text, cssClass) => {
@@ -85,7 +90,7 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
 
       const user = await (r.getUser(username) as any);
       await user.assignFlair({
-        subreddit: subreddit.display_name,
+        subredditName: subreddit.display_name,
         text, cssClass
       })
     }
