@@ -4,33 +4,45 @@ import { readFileSync } from 'fs'
 import snoowrap from 'snoowrap';
 import Mustache from 'mustache';
 import FlairManager from './scores/ScoreFlairManager';
-import { loadConfig } from './config'
+import { getConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
 import ScoreFileManager from './scores/ScoreFileManager';
 import { checkGoogleForImage } from './GoogleImageSearcher'
+import { getScores } from './scores/Scores';
 
 export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
+  Logger.verbose('Updating post flair')
   await updateFlairToIdentified(bot, submission)
 
   const guesser = await guessComment.author.name
   const submitter = await submission.author.name
 
   const foundOnGoogle = await checkGoogleForImage(await submission.url)
+  Logger.verbose(`Image was ${foundOnGoogle ? 'not ' : ''}found on Google`)
+
+  const scores = getScores(foundOnGoogle)
 
   const flairManager = FlairManager(bot)
-  const guesserTotal = await flairManager.addPoints(guesser, 6)
-  const submitterTotal = await flairManager.addPoints(submitter, 3)
+  Logger.verbose('Updating flair points')
+  const guesserTotal = await flairManager.addPoints(guesser, scores.guesser)
+  const submitterTotal = await flairManager.addPoints(submitter, scores.submitter)
 
+  Logger.verbose('Saving scores to file')
   const scoreFileManager = ScoreFileManager()
-  scoreFileManager.recordGuess(guesser, 6, guesserTotal)
-  scoreFileManager.recordSubmission(submitter, 3, submitterTotal)
+  scoreFileManager.recordGuess(guesser, scores.guesser, guesserTotal)
+  scoreFileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
-  bot.reply(comment, createWinComment(await submission.id, submitter, guesser, foundOnGoogle))
+  bot.reply(comment, createWinComment({
+    postID: await submission.id,
+    guesser: { name: guesser, points: scores.guesser },
+    submitter: { name: submitter, points: scores.submitter },
+    foundOnGoogle
+  }))
 }
 
 const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Submission) => {
@@ -50,19 +62,14 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   }
 }
 
-const createWinComment = (submissionId: string, submitter: string, guesser: string, foundOnGoogle = false): string => {
-  const config = loadConfig()
+const createWinComment = (args: {
+  postID: string,
+  guesser: { name: string, points: number },
+  submitter: { name: string, points: number },
+  foundOnGoogle: boolean
+}): string => {
+  const config = getConfig()
   const replyTemplate = readFileSync(path.resolve(__dirname, `../templates/${config.replyTemplate}`), 'utf-8')
 
-  const templateValues = {
-      postID: submissionId,
-      guesser,
-      guesser_points: 6,
-      poster: submitter,
-      poster_points: 3,
-      subreddit: config.subreddit,
-      foundOnGoogle
-  }
-
-  return Mustache.render(replyTemplate, templateValues)
+  return Mustache.render(replyTemplate, {...args, subreddit: config.subreddit})
 }

@@ -1,7 +1,7 @@
 import { Logger } from "./Logger";
 import { Config } from "./types";
 
-export const loadConfig = (): Config => {
+export const getConfig = (): Config => {
   let defaultConfig, providedConfig
 
   try {

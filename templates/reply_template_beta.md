@@ -1,7 +1,7 @@
 Guess confirmed:
 
-* winner **/u/{{ guesser }} gets [+{{ guesser_points }}](// "green") points**
-* poster **/u/{{ poster }} gets [+{{ poster_points }}](// "blue") points**
+* winner **/u/{{ guesser.name }} gets [+{{ guesser.points }}](// "green") points**
+* poster **/u/{{ submitter.name }} gets [+{{ submitter.points }}](// "blue") points**
 
 {{#foundOnGoogle}}
 ***

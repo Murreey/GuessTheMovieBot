@@ -1,18 +1,9 @@
-import snoowrap, { RedditUser } from 'snoowrap'
-import { loadConfig } from './config'
+import snoowrap from 'snoowrap'
+import { getConfig } from './config'
 import { Logger } from './Logger'
 
-// getConfirmations(): Comment[]
-// isPostIdentified(): boolean
-// getCorrectAnswer(): Comment
-// setFlair (flair: FlairEnum maybe?)
-// reply()
-
-// Flair should maybe be a class of it's own
-// Pass in a submission and desired flair
-
 export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debug: false, readOnly: false }): RedditBot => {
-  const config = loadConfig()
+  const config = getConfig()
   const r = new snoowrap({
     userAgent: config.userAgent,
     refreshToken: config.refreshToken,

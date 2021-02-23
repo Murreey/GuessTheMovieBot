@@ -3,11 +3,13 @@ import processWin from '../src/WinProcessor'
 import FlairManager from "../src/scores/ScoreFlairManager";
 import ScoreFileManager from "../src/scores/ScoreFileManager";
 import { checkGoogleForImage } from "../src/GoogleImageSearcher"
+import { getScores } from "../src/scores/Scores"
 
 import { mocked } from 'ts-jest/utils'
 
 jest.mock('../src/scores/ScoreFlairManager')
 jest.mock('../src/scores/ScoreFileManager')
+jest.mock('../src/scores/Scores')
 jest.mock('../src/GoogleImageSearcher')
 
 describe('WinProcessor', () =>  {
@@ -17,7 +19,8 @@ describe('WinProcessor', () =>  {
     parent_id: "parent-id"
   }
 
-  const mockSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
+  mocked(checkGoogleForImage).mockResolvedValue(false)
+  mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
@@ -51,20 +54,20 @@ describe('WinProcessor', () =>  {
 
   it('gives players points', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("guesser", 6)
-    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("submitter", 3)
+    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("guesser", 8)
+    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("submitter", 5)
   })
 
   it('saves players scores to file', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockScoreFileManager.recordGuess).toHaveBeenCalledWith("guesser", 6, 12)
-    expect(mockScoreFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 3, 30)
+    expect(mockScoreFileManager.recordGuess).toHaveBeenCalledWith("guesser", 8, 12)
+    expect(mockScoreFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5, 30)
   })
 
   it('replies with the correctly formatted reply', async () => {
     await processWin(redditBot, mockComment)
-    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/guesser gets [+6]"))
-    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/submitter gets [+3]"))
+    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/guesser gets [+8]"))
+    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/submitter gets [+5]"))
   })
 })
 
