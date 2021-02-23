@@ -8,6 +8,7 @@ import { loadConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
 import ScoreSaver from './ScoreSaver';
+import { checkGoogleForImage } from './GoogleImageSearcher'
 
 export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
@@ -18,6 +19,8 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   const guesser = await guessComment.author.name
   const submitter = await submission.author.name
 
+  const foundOnGoogle = await checkGoogleForImage(await submission.url)
+
   const pointsManager = PointsManager(bot)
   const guesserTotal = await pointsManager.addPoints(guesser, 6)
   const submitterTotal = await pointsManager.addPoints(submitter, 3)
@@ -27,7 +30,7 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   scoreSaver.recordSubmission(submitter, 3, submitterTotal)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
-  bot.reply(comment, createWinComment(await submission.id, submitter, guesser))
+  bot.reply(comment, createWinComment(await submission.id, submitter, guesser, foundOnGoogle))
 }
 
 const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Submission) => {
@@ -47,7 +50,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   }
 }
 
-const createWinComment = (submissionId: string, submitter: string, guesser: string): string => {
+const createWinComment = (submissionId: string, submitter: string, guesser: string, foundOnGoogle = false): string => {
   const config = loadConfig()
   const replyTemplate = readFileSync(path.resolve(__dirname, `../templates/${config.replyTemplate}`), 'utf-8')
 
@@ -57,7 +60,8 @@ const createWinComment = (submissionId: string, submitter: string, guesser: stri
       guesser_points: 6,
       poster: submitter,
       poster_points: 3,
-      subreddit: config.subreddit
+      subreddit: config.subreddit,
+      foundOnGoogle
   }
 
   return Mustache.render(replyTemplate, templateValues)

@@ -2,10 +2,13 @@ import processWin from '../src/WinProcessor'
 
 import PointsManager from "../src/PointsManager";
 import ScoreSaver from "../src/ScoreSaver";
-import { mocked } from 'ts-jest/utils';
+import { checkGoogleForImage } from "../src/GoogleImageSearcher"
+
+import { mocked } from 'ts-jest/utils'
 
 jest.mock('../src/PointsManager')
 jest.mock('../src/ScoreSaver')
+jest.mock('../src/GoogleImageSearcher')
 
 describe('WinProcessor', () =>  {
   let redditBot
@@ -13,6 +16,8 @@ describe('WinProcessor', () =>  {
   const mockComment: any = {
     parent_id: "parent-id"
   }
+
+  const mockSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
