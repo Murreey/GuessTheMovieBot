@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { Logger } from './Logger'
+import { Logger } from '../Logger'
 
 export default () => {
   const fileName = getFileName()

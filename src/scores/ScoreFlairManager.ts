@@ -1,6 +1,6 @@
 import snoowrap from "snoowrap";
-import { Logger } from "./Logger";
-import { RedditBot } from "./RedditBot";
+import { Logger } from "../Logger";
+import { RedditBot } from "../RedditBot";
 
 const getCssClass = (points: number): string => {
   const thresholds = [1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]

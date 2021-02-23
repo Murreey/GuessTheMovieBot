@@ -5,7 +5,7 @@
 // Run google to check WinType
 
 import snoowrap from "snoowrap";
-import PointsManager from "./PointsManager";
+import FlairManager from "./scores/ScoreFlairManager";
 import { RedditBot } from "./RedditBot";
 
 export default (bot: RedditBot) => ({
@@ -22,7 +22,7 @@ export default (bot: RedditBot) => ({
       if(currentFlair.toLowerCase().includes("identified")) return false
       if(currentFlair.toLowerCase().includes("meta")) return false
 
-      if(currentFlair.toLowerCase().includes("easy") && await PointsManager(bot).getPoints(await guessComment.author.name) >= 10) {
+      if(currentFlair.toLowerCase().includes("easy") && await FlairManager(bot).getPoints(await guessComment.author.name) >= 10) {
         return false
       }
     }

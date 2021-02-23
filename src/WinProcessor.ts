@@ -3,11 +3,11 @@ import path from 'path'
 import { readFileSync } from 'fs'
 import snoowrap from 'snoowrap';
 import Mustache from 'mustache';
-import PointsManager from './PointsManager';
+import FlairManager from './scores/ScoreFlairManager';
 import { loadConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
-import ScoreSaver from './ScoreSaver';
+import ScoreFileManager from './scores/ScoreFileManager';
 import { checkGoogleForImage } from './GoogleImageSearcher'
 
 export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
@@ -21,13 +21,13 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
 
   const foundOnGoogle = await checkGoogleForImage(await submission.url)
 
-  const pointsManager = PointsManager(bot)
-  const guesserTotal = await pointsManager.addPoints(guesser, 6)
-  const submitterTotal = await pointsManager.addPoints(submitter, 3)
+  const flairManager = FlairManager(bot)
+  const guesserTotal = await flairManager.addPoints(guesser, 6)
+  const submitterTotal = await flairManager.addPoints(submitter, 3)
 
-  const scoreSaver = ScoreSaver()
-  scoreSaver.recordGuess(guesser, 6, guesserTotal)
-  scoreSaver.recordSubmission(submitter, 3, submitterTotal)
+  const scoreFileManager = ScoreFileManager()
+  scoreFileManager.recordGuess(guesser, 6, guesserTotal)
+  scoreFileManager.recordSubmission(submitter, 3, submitterTotal)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment(await submission.id, submitter, guesser, foundOnGoogle))

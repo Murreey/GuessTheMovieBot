@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { mocked } from 'ts-jest/utils'
 
-import ScoreSaver from '../src/ScoreSaver'
+import ScoreFileManager from '../../src/scores/ScoreFileManager'
 
 jest.mock('fs')
 const mockFs = mocked(fs)
@@ -17,12 +17,12 @@ const mockFs = mocked(fs)
 
   describe('recordGuess', () => {
     it('fetches the correct score file for the month', () => {
-      ScoreSaver().recordGuess("username", 3, 5)
+      ScoreFileManager().recordGuess("username", 3, 5)
       expect(mockFs.readFileSync).toHaveBeenCalledWith("./scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
-      ScoreSaver().recordGuess("username", 3, 5)
+      ScoreFileManager().recordGuess("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 3,
@@ -43,7 +43,7 @@ const mockFs = mocked(fs)
         }
       }))
 
-      ScoreSaver().recordGuess("username", 3, 5)
+      ScoreFileManager().recordGuess("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 41,
@@ -57,12 +57,12 @@ const mockFs = mocked(fs)
 
   describe('recordSubmission', () => {
     it('fetches the correct score file for the month', () => {
-      ScoreSaver().recordSubmission("username", 3, 5)
+      ScoreFileManager().recordSubmission("username", 3, 5)
       expect(mockFs.readFileSync).toHaveBeenCalledWith("./scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
-      ScoreSaver().recordSubmission("username", 3, 5)
+      ScoreFileManager().recordSubmission("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 3,
@@ -83,7 +83,7 @@ const mockFs = mocked(fs)
         }
       }))
 
-      ScoreSaver().recordSubmission("username", 3, 5)
+      ScoreFileManager().recordSubmission("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 41,

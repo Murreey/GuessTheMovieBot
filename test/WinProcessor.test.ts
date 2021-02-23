@@ -1,18 +1,18 @@
 import processWin from '../src/WinProcessor'
 
-import PointsManager from "../src/PointsManager";
-import ScoreSaver from "../src/ScoreSaver";
+import FlairManager from "../src/scores/ScoreFlairManager";
+import ScoreFileManager from "../src/scores/ScoreFileManager";
 import { checkGoogleForImage } from "../src/GoogleImageSearcher"
 
 import { mocked } from 'ts-jest/utils'
 
-jest.mock('../src/PointsManager')
-jest.mock('../src/ScoreSaver')
+jest.mock('../src/scores/ScoreFlairManager')
+jest.mock('../src/scores/ScoreFileManager')
 jest.mock('../src/GoogleImageSearcher')
 
 describe('WinProcessor', () =>  {
   let redditBot
-  let mockPointsManager, mockScoreSaver
+  let mockFlairManager, mockScoreFileManager
   const mockComment: any = {
     parent_id: "parent-id"
   }
@@ -21,13 +21,13 @@ describe('WinProcessor', () =>  {
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
-    mockPointsManager = {
+    mockFlairManager = {
       getPoints: jest.fn().mockResolvedValue(15),
       addPoints: jest.fn().mockResolvedValueOnce(12).mockResolvedValueOnce(30)
     };
-    (PointsManager as any).mockReturnValue(mockPointsManager)
-    mockScoreSaver = { recordGuess: jest.fn(), recordSubmission: jest.fn() };
-    (ScoreSaver as any).mockReturnValue(mockScoreSaver)
+    (FlairManager as any).mockReturnValue(mockFlairManager)
+    mockScoreFileManager = { recordGuess: jest.fn(), recordSubmission: jest.fn() };
+    (ScoreFileManager as any).mockReturnValue(mockScoreFileManager)
   })
 
   describe('sets the correct flair', () => {
@@ -51,14 +51,14 @@ describe('WinProcessor', () =>  {
 
   it('gives players points', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockPointsManager.addPoints).toHaveBeenCalledWith("guesser", 6)
-    expect(mockPointsManager.addPoints).toHaveBeenCalledWith("submitter", 3)
+    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("guesser", 6)
+    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("submitter", 3)
   })
 
   it('saves players scores to file', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockScoreSaver.recordGuess).toHaveBeenCalledWith("guesser", 6, 12)
-    expect(mockScoreSaver.recordSubmission).toHaveBeenCalledWith("submitter", 3, 30)
+    expect(mockScoreFileManager.recordGuess).toHaveBeenCalledWith("guesser", 6, 12)
+    expect(mockScoreFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 3, 30)
   })
 
   it('replies with the correctly formatted reply', async () => {
