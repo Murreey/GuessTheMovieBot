@@ -15,14 +15,14 @@ export default (bot: RedditBot) => {
     return parseInt(flair.replace(/\D/g, '')) || 0
   }
 
-  const addPoints = async (user: string, amount: number): Promise<void> => {
+  const addPoints = async (user: string, amount: number): Promise<number> => {
     const currentPoints = await getPoints(user)
     const newTotal = Math.max(0, currentPoints + amount)
 
     bot.setUserFlair(user, "" + newTotal, getCssClass(newTotal))
 
     Logger.info(`Gave ${amount} points to ${user} - now has ${newTotal}`)
-    return
+    return newTotal
   }
 
   return {

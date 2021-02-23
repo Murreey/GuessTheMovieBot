@@ -36,8 +36,9 @@ describe('PointsManager', () => {
   })
 
   describe('addPoints', () => {
-    it('sets the users flair to their new total', async () => {
-      await PointsManager(redditBot).addPoints("username", 789)
+    it('sets the users flair and returns the new total', async () => {
+      const newTotal = await PointsManager(redditBot).addPoints("username", 789)
+      expect(newTotal).toBe(2023)
       expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "2023", "points points-2000")
     })
 

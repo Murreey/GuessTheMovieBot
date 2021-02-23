@@ -7,6 +7,7 @@ import PointsManager from './PointsManager';
 import { loadConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
+import ScoreSaver from './ScoreSaver';
 
 export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
@@ -18,8 +19,12 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   const submitter = await submission.author.name
 
   const pointsManager = PointsManager(bot)
-  pointsManager.addPoints(guesser, 6)
-  pointsManager.addPoints(submitter, 3)
+  const guesserTotal = await pointsManager.addPoints(guesser, 6)
+  const submitterTotal = await pointsManager.addPoints(submitter, 3)
+
+  const scoreSaver = ScoreSaver()
+  scoreSaver.recordGuess(guesser, 6, guesserTotal)
+  scoreSaver.recordSubmission(submitter, 3, submitterTotal)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment(await submission.id, submitter, guesser))

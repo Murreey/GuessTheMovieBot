@@ -1,12 +1,15 @@
 import processWin from '../src/WinProcessor'
 
 import PointsManager from "../src/PointsManager";
+import ScoreSaver from "../src/ScoreSaver";
+import { mocked } from 'ts-jest/utils';
 
 jest.mock('../src/PointsManager')
+jest.mock('../src/ScoreSaver')
 
 describe('WinProcessor', () =>  {
   let redditBot
-  let mockPointsManager
+  let mockPointsManager, mockScoreSaver
   const mockComment: any = {
     parent_id: "parent-id"
   }
@@ -15,9 +18,11 @@ describe('WinProcessor', () =>  {
     redditBot = mockRedditBot({});
     mockPointsManager = {
       getPoints: jest.fn().mockResolvedValue(15),
-      addPoints: jest.fn()
+      addPoints: jest.fn().mockResolvedValueOnce(12).mockResolvedValueOnce(30)
     };
     (PointsManager as any).mockReturnValue(mockPointsManager)
+    mockScoreSaver = { recordGuess: jest.fn(), recordSubmission: jest.fn() };
+    (ScoreSaver as any).mockReturnValue(mockScoreSaver)
   })
 
   describe('sets the correct flair', () => {
@@ -43,6 +48,12 @@ describe('WinProcessor', () =>  {
     await processWin(redditBot, mockComment)
     expect(mockPointsManager.addPoints).toHaveBeenCalledWith("guesser", 6)
     expect(mockPointsManager.addPoints).toHaveBeenCalledWith("submitter", 3)
+  })
+
+  it('saves players scores to file', async () => {
+    await processWin(redditBot, mockComment)
+    expect(mockScoreSaver.recordGuess).toHaveBeenCalledWith("guesser", 6, 12)
+    expect(mockScoreSaver.recordSubmission).toHaveBeenCalledWith("submitter", 3, 30)
   })
 
   it('replies with the correctly formatted reply', async () => {
