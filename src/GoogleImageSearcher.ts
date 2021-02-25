@@ -8,7 +8,7 @@ const isImageURL = (url: string): boolean => {
 
 export const checkGoogleForImage = async (url: string): Promise<boolean> => {
   const client: AxiosInstance = axios.create({
-    headers: { 'user-agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11' }
+    headers: { 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36' }
   })
 
   url = url.split('?')[0]
