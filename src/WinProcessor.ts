@@ -21,7 +21,7 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   const guesser = await guessComment.author.name
   const submitter = await submission.author.name
 
-  const foundOnGoogle = await checkGoogleForImage(await submission.url)
+  const foundOnGoogle = await checkGoogleForImage(await submission.is_self ? await submission.selftext : await submission.url)
   Logger.verbose(`Image was ${foundOnGoogle ? 'not ' : ''}found on Google`)
 
   const scores = getScores(foundOnGoogle)

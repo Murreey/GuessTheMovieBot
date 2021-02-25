@@ -19,8 +19,8 @@ describe('WinProcessor', () =>  {
     parent_id: "parent-id"
   }
 
-  mocked(checkGoogleForImage).mockResolvedValue(false)
   mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
+  const mockGoogleSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
@@ -31,6 +31,7 @@ describe('WinProcessor', () =>  {
     (FlairManager as any).mockReturnValue(mockFlairManager)
     mockScoreFileManager = { recordGuess: jest.fn(), recordSubmission: jest.fn() };
     (ScoreFileManager as any).mockReturnValue(mockScoreFileManager)
+    mockGoogleSearcher.mockClear()
   })
 
   describe('sets the correct flair', () => {
@@ -50,6 +51,17 @@ describe('WinProcessor', () =>  {
       await processWin(redditBot, mockComment)
       expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "hardIdentifiedTemplate")
     })
+  })
+
+  it('checks the image on google', async () => {
+    await processWin(redditBot, mockComment)
+    expect(mockGoogleSearcher).toHaveBeenCalledWith("image-url")
+  })
+
+  it('searches for the body text if it is a self post', async () => {
+    redditBot = mockRedditBot(null, { is_self: true, selftext: "body text" })
+    await processWin(redditBot, mockComment)
+    expect(mockGoogleSearcher).toHaveBeenCalledWith("body text")
   })
 
   it('gives players points', async () => {
@@ -85,6 +97,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     author: {
       name: "submitter"
     },
+    url: 'image-url',
     link_flair_text: Promise.resolve(null),
     getLinkFlairTemplates: () => ([
       { flair_template_id: "easyTemplate", flair_text: "easy" },

@@ -34,6 +34,28 @@ describe('WinChecker', () => {
     expect(redditBot.fetchComment).toHaveBeenCalledWith("parent-id")
   })
 
+  describe('self post', () => {
+    it('rejects if the body is not an image URL', async () => {
+      redditBot = mockRedditBot(null, { is_self: true, selftext: "Some body text" })
+
+      const validWin = await WinChecker(redditBot).isValidWin(mockComment)
+      expect(validWin).toBe(false)
+    })
+
+    it('approves if if it is a valid image url', async () => {
+      redditBot = mockRedditBot(null, { is_self: true, selftext: "https://images.com/an-image.png" })
+
+      const validWin = await WinChecker(redditBot).isValidWin(mockComment)
+      expect(validWin).toBe(true)
+    })
+    it('approves if it is a valid image url but formatted badly', async () => {
+      redditBot = mockRedditBot(null, { is_self: true, selftext: "  https://images.com/an-image.png     " })
+
+      const validWin = await WinChecker(redditBot).isValidWin(mockComment)
+      expect(validWin).toBe(true)
+    })
+  })
+
   it('rejects if the flair contains `identified`', async () => {
     redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("identified") })
 

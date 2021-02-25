@@ -1,12 +1,8 @@
-// Check post is not already Identified
-// Check post submitter is not deleted
-// Get comment's parent and check not from OP
-// Check comment parent has < 10 if easy
-// Run google to check WinType
-
 import snoowrap from "snoowrap";
 import FlairManager from "./scores/ScoreFlairManager";
 import { RedditBot } from "./RedditBot";
+import { isImageURL } from "./GoogleImageSearcher";
+import { Logger } from "./Logger";
 
 export default (bot: RedditBot) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
@@ -17,6 +13,15 @@ export default (bot: RedditBot) => ({
     if(guessComment.is_submitter) return false
 
     const submission = bot.fetchPostFromComment(comment)
+
+    if(await submission.is_self) {
+      const body = await submission.selftext
+      const isImageUrl = isImageURL(body)
+      if(!isImageUrl) return false
+
+      Logger.verbose(`'${comment.body}' is a self post but looks like an image URL`)
+    }
+
     const currentFlair: string = await submission.link_flair_text
     if(currentFlair) {
       if(currentFlair.toLowerCase().includes("identified")) return false
