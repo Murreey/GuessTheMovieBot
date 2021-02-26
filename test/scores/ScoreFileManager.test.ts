@@ -1,13 +1,14 @@
 import fs from 'fs'
 import { mocked } from 'ts-jest/utils'
 
-import ScoreFileManager from '../../src/scores/ScoreFileManager'
+import * as fileManager from '../../src/scores/ScoreFileManager'
 
 jest.mock('fs')
 const mockFs = mocked(fs)
 
  describe('ScoreSaver', () => {
   const mockDate = new Date(1623495600000)
+  const realDate = global.Date
   jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string)
 
   beforeEach(() => {
@@ -17,12 +18,12 @@ const mockFs = mocked(fs)
 
   describe('recordGuess', () => {
     it('fetches the correct score file for the month', () => {
-      ScoreFileManager().recordGuess("username", 3, 5)
+      fileManager.recordGuess("username", 3, 5)
       expect(mockFs.readFileSync).toHaveBeenCalledWith("./scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
-      ScoreFileManager().recordGuess("username", 3, 5)
+      fileManager.recordGuess("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 3,
@@ -43,7 +44,7 @@ const mockFs = mocked(fs)
         }
       }))
 
-      ScoreFileManager().recordGuess("username", 3, 5)
+      fileManager.recordGuess("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 41,
@@ -57,12 +58,12 @@ const mockFs = mocked(fs)
 
   describe('recordSubmission', () => {
     it('fetches the correct score file for the month', () => {
-      ScoreFileManager().recordSubmission("username", 3, 5)
+      fileManager.recordSubmission("username", 3, 5)
       expect(mockFs.readFileSync).toHaveBeenCalledWith("./scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
-      ScoreFileManager().recordSubmission("username", 3, 5)
+      fileManager.recordSubmission("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 3,
@@ -83,7 +84,7 @@ const mockFs = mocked(fs)
         }
       }))
 
-      ScoreFileManager().recordSubmission("username", 3, 5)
+      fileManager.recordSubmission("username", 3, 5)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 41,
@@ -95,6 +96,15 @@ const mockFs = mocked(fs)
     })
   })
 
+  describe('getFileName', () => {
+    it('formats correctly', () => {
+      expect(fileManager.getFileName()).toBe('./scores/2021-jun.json')
+      expect(fileManager.getFileName(new realDate(2000, 7))).toBe('./scores/2000-jul.json')
+      expect(fileManager.getFileName(new realDate(2010, 140))).toBe('./scores/2021-aug.json')
+      expect(fileManager.getFileName(new realDate(1999, 0))).toBe('./scores/1999-jan.json')
+      expect(fileManager.getFileName(new realDate(2021, 10))).toBe('./scores/2021-nov.json')
+    })
+  })
 
   afterEach(() => {
     jest.clearAllMocks()

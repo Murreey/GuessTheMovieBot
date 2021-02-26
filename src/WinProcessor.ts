@@ -7,7 +7,7 @@ import FlairManager from './scores/ScoreFlairManager';
 import { getConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
-import ScoreFileManager from './scores/ScoreFileManager';
+import * as fileManager from './scores/ScoreFileManager';
 import { checkGoogleForImage } from './GoogleImageSearcher'
 import { getScores } from './scores/Scores';
 
@@ -32,9 +32,8 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   const submitterTotal = await flairManager.addPoints(submitter, scores.submitter)
 
   Logger.verbose('Saving scores to file')
-  const scoreFileManager = ScoreFileManager()
-  scoreFileManager.recordGuess(guesser, scores.guesser, guesserTotal)
-  scoreFileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
+  fileManager.recordGuess(guesser, scores.guesser, guesserTotal)
+  fileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({

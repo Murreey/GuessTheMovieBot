@@ -1,7 +1,7 @@
 import processWin from '../src/WinProcessor'
 
 import FlairManager from "../src/scores/ScoreFlairManager";
-import ScoreFileManager from "../src/scores/ScoreFileManager";
+import * as fileManager from "../src/scores/ScoreFileManager";
 import { checkGoogleForImage } from "../src/GoogleImageSearcher"
 import { getScores } from "../src/scores/Scores"
 
@@ -21,6 +21,7 @@ describe('WinProcessor', () =>  {
 
   mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
   const mockGoogleSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
+  const mockFileManager = mocked(fileManager)
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
@@ -29,8 +30,8 @@ describe('WinProcessor', () =>  {
       addPoints: jest.fn().mockResolvedValueOnce(12).mockResolvedValueOnce(30)
     };
     (FlairManager as any).mockReturnValue(mockFlairManager)
-    mockScoreFileManager = { recordGuess: jest.fn(), recordSubmission: jest.fn() };
-    (ScoreFileManager as any).mockReturnValue(mockScoreFileManager)
+    mockFileManager.recordGuess.mockClear()
+    mockFileManager.recordSubmission.mockClear()
     mockGoogleSearcher.mockClear()
   })
 
@@ -72,8 +73,8 @@ describe('WinProcessor', () =>  {
 
   it('saves players scores to file', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockScoreFileManager.recordGuess).toHaveBeenCalledWith("guesser", 8, 12)
-    expect(mockScoreFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5, 30)
+    expect(mockFileManager.recordGuess).toHaveBeenCalledWith("guesser", 8, 12)
+    expect(mockFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5, 30)
   })
 
   it('replies with the correctly formatted reply', async () => {
