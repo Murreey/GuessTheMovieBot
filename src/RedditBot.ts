@@ -56,10 +56,12 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
 
       try {
         const reply = (await (content as any).reply(body) as snoowrap.Comment);
-        if(reply) reply.distinguish()
+        if(reply) await (reply as any).distinguish()
+        Logger.verbose(`Posted comment on ${content.id}`)
       } catch (ex) {
         // Do nothing
         // This likely meant the parent comment was deleted or the post is now archived
+        Logger.error(`Reply failed - ${ex}`)
       }
       Logger.verbose('Reply sent!')
     },
