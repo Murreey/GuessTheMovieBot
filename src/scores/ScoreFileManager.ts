@@ -70,7 +70,7 @@ export const recordSubmission = (username: string, pointsEarned: number, totalPo
   saveScoreData(fileName, scores)
 }
 
-type ScoreData = {
+export type ScoreData = {
   [username: string]: UserScores
 }
 

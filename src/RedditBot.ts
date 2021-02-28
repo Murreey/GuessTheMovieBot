@@ -63,7 +63,21 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
         // This likely meant the parent comment was deleted or the post is now archived
         Logger.error(`Reply failed - ${ex}`)
       }
-      Logger.verbose('Reply sent!')
+    },
+    createPost: async (title, text, sticky = false) => {
+      if(readOnly) {
+        Logger.warn('createPost() ignored, read only mode is enabled')
+        return
+      }
+
+      const post = await (r.submitSelfpost({
+        subredditName: subreddit.display_name,
+        title,
+        text,
+        sendReplies: false
+      }) as any)
+      if(post && sticky) await post.sticky({ num: 2 })
+      Logger.verbose(`Created new self post - ${await post.id}`)
     },
     setPostFlair: async (post, template) => {
       if(readOnly) {
