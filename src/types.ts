@@ -10,6 +10,15 @@ export interface Config {
     [key in WinType]: {
       [key in PointLevel]: number
     }
+  },
+  linkFlairTemplates: {
+    easy: string,
+    hard: string,
+    identified: {
+      normal: string,
+      easy: string,
+      hard: string
+    }
   }
 }
 

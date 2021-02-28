@@ -1,9 +1,11 @@
 import processWin from '../src/WinProcessor'
 
+import fs from 'fs'
 import FlairManager from "../src/scores/ScoreFlairManager";
 import * as fileManager from "../src/scores/ScoreFileManager";
 import { checkGoogleForImage } from "../src/GoogleImageSearcher"
 import { getScores } from "../src/scores/Scores"
+import { getConfig } from '../src/config'
 
 import { mocked } from 'ts-jest/utils'
 
@@ -11,13 +13,32 @@ jest.mock('../src/scores/ScoreFlairManager')
 jest.mock('../src/scores/ScoreFileManager')
 jest.mock('../src/scores/Scores')
 jest.mock('../src/GoogleImageSearcher')
+jest.mock('../src/config')
+
+jest.mock('fs')
+const mockFs = mocked(fs)
 
 describe('WinProcessor', () =>  {
   let redditBot
-  let mockFlairManager, mockScoreFileManager
+  let mockFlairManager
   const mockComment: any = {
     parent_id: "parent-id"
   }
+
+  mockFs.readFileSync.mockReturnValue(`
+    * winner **/u/{{ guesser.name }} gets [+{{ guesser.points }}](// "green") points**
+    * poster **/u/{{ submitter.name }} gets [+{{ submitter.points }}](// "blue") points**
+  `)
+
+  mocked(getConfig).mockReturnValue({
+    linkFlairTemplates: {
+      identified: {
+        normal: "identifiedTemplate",
+        easy: "easyIdentifiedTemplate",
+        hard: "hardIdentifiedTemplate"
+      }
+    }
+  } as any)
 
   mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
   const mockGoogleSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
@@ -100,13 +121,6 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     },
     url: 'image-url',
     link_flair_text: Promise.resolve(null),
-    getLinkFlairTemplates: () => ([
-      { flair_template_id: "easyTemplate", flair_text: "easy" },
-      { flair_template_id: "hardTemplate", flair_text: "hard" },
-      { flair_template_id: "identifiedTemplate", flair_text: "identified" },
-      { flair_template_id: "easyIdentifiedTemplate", flair_text: "identified + easy" },
-      { flair_template_id: "hardIdentifiedTemplate", flair_text: "identified + hard" },
-    ]),
     ...submission
   }
 

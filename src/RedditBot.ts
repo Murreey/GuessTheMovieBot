@@ -65,14 +65,14 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
       }
       Logger.verbose('Reply sent!')
     },
-    setPostFlair: async (post, template, text) => {
+    setPostFlair: async (post, template) => {
       if(readOnly) {
         Logger.warn('setPostFlair() ignored, read only mode is enabled')
         return
       }
 
-      await (post as any).selectFlair({ flair_template_id: template, text })
-      Logger.verbose(`Setting flair ${template}${text ? ` (${text})`: ''} on ${post.name}`)
+      await (post as any).selectFlair({ flair_template_id: template })
+      Logger.verbose(`Setting flair ${template} on ${post.name}`)
     },
     getUserFlair: async (username) => subreddit.getUserFlair(username).then(flair => flair.flair_text),
     setUserFlair: async (username, text, cssClass) => {
@@ -96,7 +96,7 @@ export type RedditBot = {
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
   reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string) => Promise<void>,
-  setPostFlair: (post: snoowrap.Submission, template: string, text?: string) => Promise<void>,
+  setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
   getUserFlair: (username: string) => Promise<string>,
   setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>
 }

@@ -15,5 +15,14 @@
             "normal": 3,
             "google": 2
         }
+    },
+    "linkFlairTemplates": {
+        "easy": "<template-uuid>",
+        "hard": "<template-uuid>",
+        "identified": {
+            "normal": "<template-uuid>",
+            "easy": "<template-uuid>",
+            "hard": "<template-uuid>"
+        }
     }
 }

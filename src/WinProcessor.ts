@@ -46,18 +46,15 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
 
 const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Submission) => {
   const currentFlair = await submission.link_flair_text
-  const flairTypes = await submission.getLinkFlairTemplates()
+  const config = getConfig()
 
-  let newFlair = "identified"
-  if(currentFlair === "easy") newFlair += " + easy"
-  if(currentFlair === "hard") newFlair += " + hard"
+  const identifiedTemplate = config?.linkFlairTemplates?.identified?.[currentFlair] ?? config?.linkFlairTemplates?.identified?.normal
 
-  const flairTemplate = flairTypes.find((template) => newFlair === template.flair_text)
-  if(flairTemplate) {
-    Logger.verbose(`Setting ${await submission.id} flair to '${newFlair}'`)
-    bot.setPostFlair(submission, flairTemplate.flair_template_id)
+  if(identifiedTemplate) {
+    Logger.verbose(`Setting ${await submission.id} flair to '${identifiedTemplate}'`)
+    bot.setPostFlair(submission, identifiedTemplate)
   } else {
-    Logger.warn(`Could not find valid flair template for '${newFlair}'`)
+    Logger.warn(`Could not find valid flair template for identifying '${currentFlair}'!`)
   }
 }
 
