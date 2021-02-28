@@ -17,7 +17,7 @@ export class GoogleImageSearcher {
             return Promise.resolve(false)
         }
 
-        const searchURL = `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('-site:reddit.com')}&image_url=${encodeURIComponent(url)}`
+        const searchURL = `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
         return this.client.get(searchURL)
             .then((response) => response.data.indexOf("Pages that include matching images") > -1)
     }
