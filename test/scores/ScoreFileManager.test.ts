@@ -1,25 +1,29 @@
 import fs from 'fs'
+import path from 'path'
 import { mocked } from 'ts-jest/utils'
 
 import * as fileManager from '../../src/scores/ScoreFileManager'
 
 jest.mock('fs')
 const mockFs = mocked(fs)
+jest.mock('path')
+const mockPath = mocked(path)
 
- describe('ScoreSaver', () => {
+ describe('ScoreFileManager', () => {
   const mockDate = new Date(1623495600000)
-  const realDate = global.Date
+  const _Date = global.Date
   jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string)
 
   beforeEach(() => {
     mockFs.existsSync.mockReturnValue(true)
     mockFs.readFileSync.mockReturnValue("{}")
+    mockPath.resolve.mockImplementation((dir, path) => 'root/scores')
   })
 
   describe('recordGuess', () => {
     it('fetches the correct score file for the month', () => {
       fileManager.recordGuess("username", 3, 5)
-      expect(mockFs.readFileSync).toHaveBeenCalledWith("./scores/2021-jun.json", "utf8")
+      expect(mockFs.readFileSync).toHaveBeenCalledWith("root/scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
@@ -59,7 +63,7 @@ const mockFs = mocked(fs)
   describe('recordSubmission', () => {
     it('fetches the correct score file for the month', () => {
       fileManager.recordSubmission("username", 3, 5)
-      expect(mockFs.readFileSync).toHaveBeenCalledWith("./scores/2021-jun.json", "utf8")
+      expect(mockFs.readFileSync).toHaveBeenCalledWith("root/scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
@@ -98,11 +102,11 @@ const mockFs = mocked(fs)
 
   describe('getFileName', () => {
     it('formats correctly', () => {
-      expect(fileManager.getFileName()).toBe('./scores/2021-jun.json')
-      expect(fileManager.getFileName(new realDate(2000, 7))).toBe('./scores/2000-jul.json')
-      expect(fileManager.getFileName(new realDate(2010, 140))).toBe('./scores/2021-aug.json')
-      expect(fileManager.getFileName(new realDate(1999, 0))).toBe('./scores/1999-jan.json')
-      expect(fileManager.getFileName(new realDate(2021, 10))).toBe('./scores/2021-nov.json')
+      expect(fileManager.getFileName()).toBe('root/scores/2021-jun.json')
+      expect(fileManager.getFileName(new _Date(2000, 7))).toBe('root/scores/2000-jul.json')
+      expect(fileManager.getFileName(new _Date(2010, 140))).toBe('root/scores/2021-aug.json')
+      expect(fileManager.getFileName(new _Date(1999, 0))).toBe('root/scores/1999-jan.json')
+      expect(fileManager.getFileName(new _Date(2021, 10))).toBe('root/scores/2021-nov.json')
     })
   })
 

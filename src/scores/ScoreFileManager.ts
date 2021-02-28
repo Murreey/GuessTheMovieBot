@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import { Logger } from '../Logger'
 
 const initUserScore = (scores: ScoreData, username: string): ScoreData => {
@@ -31,9 +32,9 @@ const saveScoreData = (fileName: string, newData: ScoreData) => {
 
 export const getFileName = (date = new Date) => {
   const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-  const path = './scores/'
-  if(!fs.existsSync(path)) fs.mkdirSync(path)
-  return `${path}${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
+  const directory = path.resolve(__dirname, '../../scores/')
+  if(!fs.existsSync(directory)) fs.mkdirSync(directory)
+  return `${directory}/${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
 }
 
 export const getScoreData = (fileName: string): ScoreData => {
