@@ -2,7 +2,7 @@ import snoowrap from 'snoowrap'
 import { getConfig } from './config'
 import { Logger } from './Logger'
 
-export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debug: false, readOnly: false }): RedditBot => {
+export const create = ({ readOnly, debug, startFromComment, startFromSubmission }: RedditBotOptions = { debug: false, readOnly: false }): RedditBot => {
   const config = getConfig()
   const r = new snoowrap({
     userAgent: config.userAgent,
@@ -14,7 +14,8 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
 
   const subreddit = r.getSubreddit(config.subreddit)
 
-  let lastFetchedComment = startFrom
+  let lastFetchedComment = startFromComment
+  let lastFetchedSubmission = startFromSubmission
 
   const isDeleted = (comment: snoowrap.Comment) =>
     comment.body === "[deleted]" ||
@@ -47,8 +48,22 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
         .filter(comment => comment.is_submitter)
         .filter(comment => !isDeleted(comment))
     },
+    fetchNewSubmissions: async () => {
+      const fetchOptions = {}
+      if(lastFetchedSubmission) fetchOptions["before"] = lastFetchedSubmission
+      Logger.verbose(`Fetching new submissions ${lastFetchedSubmission ? `since ${lastFetchedSubmission}`: ''}`)
+      const newSubmissions = await (await subreddit.getNew(fetchOptions)).fetchAll()
+
+      if(newSubmissions.length === 0) {
+        Logger.verbose('No new submissions fetched')
+        return []
+      }
+
+      return newSubmissions
+        .filter(sub => !sub.link_flair_text)
+    },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
-    reply: async (content, body) => {
+    reply: async (content, body, sticky = false) => {
       if(readOnly) {
         Logger.warn('reply() ignored, read only mode is enabled')
         return
@@ -56,7 +71,7 @@ export const create = ({ readOnly, debug, startFrom }: RedditBotOptions = { debu
 
       try {
         const reply = (await (content as any).reply(body) as snoowrap.Comment);
-        if(reply) await (reply as any).distinguish()
+        if (reply) await (reply as any).distinguish({ status: true, sticky })
         Logger.verbose(`Posted comment on ${content.id}`)
       } catch (ex) {
         // Do nothing
@@ -108,8 +123,10 @@ export type RedditBot = {
   fetchComment: (id: string) => Promise<() => snoowrap.Comment>
   fetchPostFromComment: (comment: snoowrap.Comment) => snoowrap.Submission
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
+  fetchNewSubmissions: () => Promise<snoowrap.Submission[]>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
-  reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string) => Promise<void>,
+  reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string, sticky?: boolean) => Promise<void>,
+  createPost: (title: string, text: string, sticky: boolean) => Promise<void>,
   setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
   getUserFlair: (username: string) => Promise<string>,
   setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>
@@ -118,6 +135,7 @@ export type RedditBot = {
 export type RedditBotOptions = {
   readOnly?: boolean,
   debug?: boolean,
-  startFrom?: string
+  startFromComment?: string
+  startFromSubmission?: string
 }
 
