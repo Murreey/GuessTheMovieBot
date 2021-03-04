@@ -20,8 +20,8 @@ export const checkGoogleForImage = async (url: string): Promise<boolean> => {
   if(!isImageURL(url)) return false
 
   const searchURL = `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
-  Logger.verbose(`Checking GIS for image:`)
-  Logger.verbose(searchURL)
+  Logger.debug(`Checking GIS for image:`)
+  Logger.debug(searchURL)
   const searchResult = (await client.get(searchURL)).data
   return searchResult.indexOf("Pages that include matching images") > -1
 }

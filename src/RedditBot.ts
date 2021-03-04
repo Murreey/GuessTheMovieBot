@@ -38,7 +38,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       const newComments = await (await subreddit.getNewComments(fetchOptions)).fetchAll()
 
       if(newComments.length === 0) {
-        Logger.verbose('No new comments fetched')
+        Logger.debug('No new comments fetched')
         return []
       }
 
@@ -55,10 +55,11 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       const newSubmissions = await (await subreddit.getNew(fetchOptions)).fetchAll()
 
       if(newSubmissions.length === 0) {
-        Logger.verbose('No new submissions fetched')
+        Logger.debug('No new submissions fetched')
         return []
       }
 
+      lastFetchedSubmission = newSubmissions[0].name
       return newSubmissions
         .filter(sub => !sub.link_flair_text)
     },

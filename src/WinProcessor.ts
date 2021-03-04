@@ -27,11 +27,11 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   const scores = getScores(foundOnGoogle)
 
   const flairManager = FlairManager(bot)
-  Logger.verbose('Updating flair points')
+  Logger.debug('Updating flair points')
   const guesserTotal = await flairManager.addPoints(guesser, scores.guesser)
   const submitterTotal = await flairManager.addPoints(submitter, scores.submitter)
 
-  Logger.verbose('Saving scores to file')
+  Logger.debug('Saving scores to file')
   fileManager.recordGuess(guesser, scores.guesser, guesserTotal)
   fileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
 
@@ -51,7 +51,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   const identifiedTemplate = config?.linkFlairTemplates?.identified?.[currentFlair] ?? config?.linkFlairTemplates?.identified?.normal
 
   if(identifiedTemplate) {
-    Logger.verbose(`Setting ${await submission.id} flair to '${identifiedTemplate}'`)
+    Logger.debug(`Setting ${await submission.id} flair to '${identifiedTemplate}'`)
     bot.setPostFlair(submission, identifiedTemplate)
   } else {
     Logger.warn(`Could not find valid flair template for identifying '${currentFlair}'!`)

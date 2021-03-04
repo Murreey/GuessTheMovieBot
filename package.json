@@ -9,9 +9,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "once": "ts-node src/index.ts -- once",
-    "readonly": "ts-node src/index.ts -- readonly",
-    "scoreboard": "ts-node src/index.ts -- scoreboard",
+    "read-only": "ts-node src/index.ts -- readonly",
     "test": "jest"
   },
   "author": "",
@@ -31,6 +29,7 @@
     "node-cron": "^2.0.3",
     "snoowrap": "^1.22.0",
     "winston": "^3.2.1",
-    "winston-daily-rotate-file": "^3.9.0"
+    "winston-daily-rotate-file": "^3.9.0",
+    "yargs": "^16.2.0"
   }
 }

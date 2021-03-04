@@ -8,7 +8,7 @@ export default (bot: RedditBot) => ({
     const config = getConfig()
 
     if((await (submission as any).expandReplies()).comments.some(comment => comment.author.name === config.bot_username)) {
-      Logger.verbose(`Ignoring ${submission.id} as bot has already replied`)
+      Logger.debug(`Ignoring ${submission.id} as bot has already replied`)
       return
     }
 
