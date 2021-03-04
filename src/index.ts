@@ -27,7 +27,7 @@ const processNewSubmissions = async () => {
 const processNewComments = async () => {
   const comments = await bot.fetchNewConfirmations()
   comments.forEach(async comment => {
-    Logger.verbose(`Processing new comment by ${comment.author.name}:`)
+    Logger.verbose(`\nProcessing new comment by ${comment.author.name}:`)
     Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
 
     const validWin = await WinChecker(bot).isValidWin(comment)
@@ -36,8 +36,10 @@ const processNewComments = async () => {
       return
     }
 
+    Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
     Logger.info('Win confirmed!')
-    await processWin(bot, comment)
+    await processWin(bot, comment, args['read-only'])
+    Logger.info("\n")
   })
 }
 

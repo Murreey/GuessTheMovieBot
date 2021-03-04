@@ -98,6 +98,12 @@ describe('WinProcessor', () =>  {
     expect(mockFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5, 30)
   })
 
+  it('does not saves players scores to file if read only mode is enabled', async () => {
+    await processWin(redditBot, mockComment, true)
+    expect(mockFileManager.recordGuess).not.toHaveBeenCalled()
+    expect(mockFileManager.recordSubmission).not.toHaveBeenCalled()
+  })
+
   it('replies with the correctly formatted reply', async () => {
     await processWin(redditBot, mockComment)
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/guesser gets [+8]"))

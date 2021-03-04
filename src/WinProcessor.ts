@@ -11,7 +11,7 @@ import * as fileManager from './scores/ScoreFileManager';
 import { checkGoogleForImage } from './GoogleImageSearcher'
 import { getScores } from './scores/Scores';
 
-export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
+export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = false): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
@@ -31,9 +31,13 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   const guesserTotal = await flairManager.addPoints(guesser, scores.guesser)
   const submitterTotal = await flairManager.addPoints(submitter, scores.submitter)
 
-  Logger.debug('Saving scores to file')
-  fileManager.recordGuess(guesser, scores.guesser, guesserTotal)
-  fileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
+  if(!readOnly) {
+    Logger.debug('Saving scores to file')
+    fileManager.recordGuess(guesser, scores.guesser, guesserTotal)
+    fileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
+  } else {
+    Logger.warn("Skipping score file saving, read only mode is enabled")
+  }
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({
