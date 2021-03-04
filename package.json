@@ -9,7 +9,6 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "read-only": "ts-node src/index.ts -- readonly",
     "test": "jest"
   },
   "author": "",

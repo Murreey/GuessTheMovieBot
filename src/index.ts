@@ -11,8 +11,9 @@ const args = yargs(process.argv.slice(2))
   .option('debug-requests', {type: 'boolean', alias: 'd', description: 'display snoowrap request debugging'})
   .argv
 
-const bot = RedditBot.create({ debug: args['debug-requests'], readOnly: args['read-only'] })
 Logger.setup({ file: LogLevel.INFO, console: args['log-level'] })
+
+const bot = RedditBot.create({ debug: args['debug-requests'], readOnly: args['read-only'] })
 
 const processNewSubmissions = async () => {
   const newPosts = await bot.fetchNewSubmissions()
@@ -27,19 +28,20 @@ const processNewSubmissions = async () => {
 const processNewComments = async () => {
   const comments = await bot.fetchNewConfirmations()
   comments.forEach(async comment => {
-    Logger.verbose(`\nProcessing new comment by ${comment.author.name}:`)
+    Logger.verbose(`Processing new comment by ${comment.author.name}:`)
     Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
 
     const validWin = await WinChecker(bot).isValidWin(comment)
     if(!validWin) {
       Logger.verbose('No win detected, ignoring')
+      Logger.info("")
       return
     }
 
     Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
     Logger.info('Win confirmed!')
     await processWin(bot, comment, args['read-only'])
-    Logger.info("\n")
+    Logger.info("")
   })
 }
 
