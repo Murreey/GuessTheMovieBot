@@ -94,8 +94,8 @@ describe('WinProcessor', () =>  {
 
   it('saves players scores to file', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockFileManager.recordGuess).toHaveBeenCalledWith("guesser", 8, 12)
-    expect(mockFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5, 30)
+    expect(mockFileManager.recordGuess).toHaveBeenCalledWith("guesser", 8)
+    expect(mockFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5)
   })
 
   it('does not saves players scores to file if read only mode is enabled', async () => {

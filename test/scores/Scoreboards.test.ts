@@ -22,7 +22,7 @@ describe('Scoreboards', () => {
       createPost: jest.fn()
     }
 
-    mockFileManager.getFileName.mockClear()
+    mockFileManager.getMonthlyFileName.mockClear()
     mockFileManager.getScoreData.mockClear()
     mockFileManager.getScoreData.mockReturnValue({
       player1: { points: 10, guesses: 10, submissions: 10 },
@@ -39,12 +39,12 @@ describe('Scoreboards', () => {
   describe('postScoreboard', () => {
     it('defaults to last month if no date specified', async () => {
       await Scoreboards(redditBot).postScoreboard()
-      expect(mockFileManager.getFileName).toHaveBeenCalledWith(new _Date("2021-05-31T11:00:00.000Z"))
+      expect(mockFileManager.getMonthlyFileName).toHaveBeenCalledWith(new _Date("2021-05-31T11:00:00.000Z"))
     })
 
     it('opens the specified file if date is provided', async () => {
       await Scoreboards(redditBot).postScoreboard(new _Date(2010, 2, 5))
-      expect(mockFileManager.getFileName).toHaveBeenCalledWith(new _Date("2010-03-05T00:00:00.000Z"))
+      expect(mockFileManager.getMonthlyFileName).toHaveBeenCalledWith(new _Date("2010-03-05T00:00:00.000Z"))
     })
 
     it('calls the bot with the correctly sorted and formatted data', async () => {

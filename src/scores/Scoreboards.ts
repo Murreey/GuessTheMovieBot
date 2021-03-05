@@ -7,7 +7,7 @@ import { ScoreData } from './ScoreFileManager';
 import { Logger } from '../Logger';
 
 const generateScoreboardData = (date): ScoreboardData => {
-  const fileName = fileManager.getFileName(date)
+  const fileName = fileManager.getMonthlyFileName(date)
   const rawScores = fileManager.getScoreData(fileName)
 
   if(!rawScores || Object.keys(rawScores).length === 0) {

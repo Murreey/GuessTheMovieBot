@@ -33,8 +33,8 @@ export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = fals
 
   if(!readOnly) {
     Logger.debug('Saving scores to file')
-    fileManager.recordGuess(guesser, scores.guesser, guesserTotal)
-    fileManager.recordSubmission(submitter, scores.submitter, submitterTotal)
+    fileManager.recordGuess(guesser, scores.guesser)
+    fileManager.recordSubmission(submitter, scores.submitter)
   } else {
     Logger.warn("Skipping score file saving, read only mode is enabled")
   }

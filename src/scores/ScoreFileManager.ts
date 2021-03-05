@@ -6,14 +6,12 @@ const initUserScore = (scores: ScoreData, username: string): ScoreData => {
   if(!scores[username]) {
     scores[username] = {
       points: 0,
-      total: 0,
       submissions: 0,
       guesses: 0
     }
   }
 
   if(!scores[username].points) scores[username].points = 0
-  if(!scores[username].total) scores[username].total = 0
   if(!scores[username].guesses) scores[username].guesses = 0
   if(!scores[username].submissions) scores[username].submissions = 0
 
@@ -30,9 +28,9 @@ const saveScoreData = (fileName: string, newData: ScoreData) => {
   Logger.verbose(`Saving file ${fileName}...`)
 }
 
-export const getFileName = (date = new Date) => {
+export const getMonthlyFileName = (date = new Date) => {
   const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-  const directory = path.resolve(__dirname, '../../scores/')
+  const directory = path.resolve(__dirname, '../../scores/monthly/')
   if(!fs.existsSync(directory)) fs.mkdirSync(directory)
   return `${directory}/${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
 }
@@ -52,21 +50,19 @@ export const getScoreData = (fileName: string): ScoreData => {
   }
 }
 
-export const recordGuess = (username: string, pointsEarned: number, totalPoints: number) => {
-  const fileName = getFileName()
+export const recordGuess = (username: string, pointsEarned: number) => {
+  const fileName = getMonthlyFileName()
   const scores = initUserScore(getScoreData(fileName), username)
   scores[username].guesses++
   scores[username].points += pointsEarned
-  scores[username].total = totalPoints
   saveScoreData(fileName, scores)
 }
 
-export const recordSubmission = (username: string, pointsEarned: number, totalPoints: number) => {
-  const fileName = getFileName()
+export const recordSubmission = (username: string, pointsEarned: number) => {
+  const fileName = getMonthlyFileName()
   const scores = initUserScore(getScoreData(fileName), username)
   scores[username].submissions++
   scores[username].points += pointsEarned
-  scores[username].total = totalPoints
   saveScoreData(fileName, scores)
 }
 
@@ -76,7 +72,6 @@ export type ScoreData = {
 
 type UserScores = {
   points?: number,
-  total?: number,
   submissions?: number,
   guesses?: number
 }

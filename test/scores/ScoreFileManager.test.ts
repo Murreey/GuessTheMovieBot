@@ -22,16 +22,15 @@ const mockPath = mocked(path)
 
   describe('recordGuess', () => {
     it('fetches the correct score file for the month', () => {
-      fileManager.recordGuess("username", 3, 5)
+      fileManager.recordGuess("username", 3)
       expect(mockFs.readFileSync).toHaveBeenCalledWith("root/scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
-      fileManager.recordGuess("username", 3, 5)
+      fileManager.recordGuess("username", 3)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 3,
-          total: 5,
           submissions: 0,
           guesses: 1
         }
@@ -42,17 +41,15 @@ const mockPath = mocked(path)
       mockFs.readFileSync.mockReturnValue(JSON.stringify({
         username: {
           points: 38,
-          total: 320,
           submissions: 8,
           guesses: 25
         }
       }))
 
-      fileManager.recordGuess("username", 3, 5)
+      fileManager.recordGuess("username", 3)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 41,
-          total: 5,
           submissions: 8,
           guesses: 26
         }
@@ -62,16 +59,15 @@ const mockPath = mocked(path)
 
   describe('recordSubmission', () => {
     it('fetches the correct score file for the month', () => {
-      fileManager.recordSubmission("username", 3, 5)
+      fileManager.recordSubmission("username", 3)
       expect(mockFs.readFileSync).toHaveBeenCalledWith("root/scores/2021-jun.json", "utf8")
     })
 
     it('creates users scores with the correct totals', () => {
-      fileManager.recordSubmission("username", 3, 5)
+      fileManager.recordSubmission("username", 3)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 3,
-          total: 5,
           submissions: 1,
           guesses: 0
         }
@@ -82,17 +78,15 @@ const mockPath = mocked(path)
       mockFs.readFileSync.mockReturnValue(JSON.stringify({
         username: {
           points: 38,
-          total: 320,
           submissions: 8,
           guesses: 25
         }
       }))
 
-      fileManager.recordSubmission("username", 3, 5)
+      fileManager.recordSubmission("username", 3)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(expect.anything(), JSON.stringify({
         username: {
           points: 41,
-          total: 5,
           submissions: 9,
           guesses: 25
         }
@@ -102,11 +96,11 @@ const mockPath = mocked(path)
 
   describe('getFileName', () => {
     it('formats correctly', () => {
-      expect(fileManager.getFileName()).toBe('root/scores/2021-jun.json')
-      expect(fileManager.getFileName(new _Date(2000, 7))).toBe('root/scores/2000-jul.json')
-      expect(fileManager.getFileName(new _Date(2010, 140))).toBe('root/scores/2021-aug.json')
-      expect(fileManager.getFileName(new _Date(1999, 0))).toBe('root/scores/1999-jan.json')
-      expect(fileManager.getFileName(new _Date(2021, 10))).toBe('root/scores/2021-nov.json')
+      expect(fileManager.getMonthlyFileName()).toBe('root/scores/2021-jun.json')
+      expect(fileManager.getMonthlyFileName(new _Date(2000, 7))).toBe('root/scores/2000-jul.json')
+      expect(fileManager.getMonthlyFileName(new _Date(2010, 140))).toBe('root/scores/2021-aug.json')
+      expect(fileManager.getMonthlyFileName(new _Date(1999, 0))).toBe('root/scores/1999-jan.json')
+      expect(fileManager.getMonthlyFileName(new _Date(2021, 10))).toBe('root/scores/2021-nov.json')
     })
   })
 
