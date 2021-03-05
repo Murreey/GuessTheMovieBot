@@ -3,13 +3,7 @@ import path from 'path'
 import { Logger } from '../Logger'
 
 const initUserScore = (scores: ScoreData, username: string): ScoreData => {
-  if(!scores[username]) {
-    scores[username] = {
-      points: 0,
-      submissions: 0,
-      guesses: 0
-    }
-  }
+  if(!scores[username]) scores[username] = {}
 
   if(!scores[username].points) scores[username].points = 0
   if(!scores[username].guesses) scores[username].guesses = 0
@@ -35,7 +29,7 @@ export const getMonthlyFileName = (date = new Date) => {
   return `${directory}/monthly/${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
 }
 
-const getTotalFileName = () => {
+export const getTotalFileName = () => {
   const directory = path.resolve(__dirname, '../../scores/')
   if(!fs.existsSync(directory)) fs.mkdirSync(directory)
   return `${directory}/total.json`

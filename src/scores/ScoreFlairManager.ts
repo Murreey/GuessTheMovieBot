@@ -1,4 +1,3 @@
-import snoowrap from "snoowrap";
 import { Logger } from "../Logger";
 import { RedditBot } from "../RedditBot";
 
@@ -15,18 +14,16 @@ export default (bot: RedditBot) => {
     return parseInt(flair.replace(/\D/g, '')) || 0
   }
 
-  const addPoints = async (user: string, amount: number): Promise<number> => {
-    const currentPoints = await getPoints(user)
-    const newTotal = Math.max(0, currentPoints + amount)
+  const setPoints = async (user: string, amount: number): Promise<void> => {
+    if(amount < 0) amount = 0
 
-    bot.setUserFlair(user, "" + newTotal, getCssClass(newTotal))
+    await bot.setUserFlair(user, "" + amount, getCssClass(amount))
 
-    Logger.info(`Gave ${amount} points to ${user} - now has ${newTotal}`)
-    return newTotal
+    Logger.info(`Set ${user}'s points flair to ${amount}`)
   }
 
   return {
     getPoints,
-    addPoints
+    setPoints
   }
 }

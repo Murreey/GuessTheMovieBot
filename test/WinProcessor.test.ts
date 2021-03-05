@@ -1,16 +1,14 @@
 import processWin from '../src/WinProcessor'
 
 import fs from 'fs'
-import FlairManager from "../src/scores/ScoreFlairManager";
-import * as fileManager from "../src/scores/ScoreFileManager";
+import ScoreManager from "../src/scores/ScoreManager";
 import { checkGoogleForImage } from "../src/GoogleImageSearcher"
 import { getScores } from "../src/scores/Scores"
 import { getConfig } from '../src/config'
 
 import { mocked } from 'ts-jest/utils'
 
-jest.mock('../src/scores/ScoreFlairManager')
-jest.mock('../src/scores/ScoreFileManager')
+jest.mock('../src/scores/ScoreManager')
 jest.mock('../src/scores/Scores')
 jest.mock('../src/GoogleImageSearcher')
 jest.mock('../src/config')
@@ -20,7 +18,7 @@ const mockFs = mocked(fs)
 
 describe('WinProcessor', () =>  {
   let redditBot
-  let mockFlairManager
+  let mockScoreManager
   const mockComment: any = {
     parent_id: "parent-id"
   }
@@ -42,17 +40,13 @@ describe('WinProcessor', () =>  {
 
   mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
   const mockGoogleSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
-  const mockFileManager = mocked(fileManager)
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
-    mockFlairManager = {
-      getPoints: jest.fn().mockResolvedValue(15),
-      addPoints: jest.fn().mockResolvedValueOnce(12).mockResolvedValueOnce(30)
-    };
-    (FlairManager as any).mockReturnValue(mockFlairManager)
-    mockFileManager.recordGuess.mockClear()
-    mockFileManager.recordSubmission.mockClear()
+    mockScoreManager = {
+      addScore: jest.fn().mockResolvedValue({ guesser: 8, submitter: 5 }),
+    }
+    mocked(ScoreManager).mockReturnValue(mockScoreManager)
     mockGoogleSearcher.mockClear()
   })
 
@@ -86,22 +80,15 @@ describe('WinProcessor', () =>  {
     expect(mockGoogleSearcher).toHaveBeenCalledWith("body text")
   })
 
-  it('gives players points', async () => {
+  it('invokes the score manager', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("guesser", 8)
-    expect(mockFlairManager.addPoints).toHaveBeenCalledWith("submitter", 5)
+    expect(mockScoreManager.addScore).toHaveBeenCalledWith("guesser", "submitter", false)
   })
 
-  it('saves players scores to file', async () => {
+  it('invokes the score manager if the image was found on google', async () => {
+  mockGoogleSearcher.mockResolvedValue(true)
     await processWin(redditBot, mockComment)
-    expect(mockFileManager.recordGuess).toHaveBeenCalledWith("guesser", 8)
-    expect(mockFileManager.recordSubmission).toHaveBeenCalledWith("submitter", 5)
-  })
-
-  it('does not saves players scores to file if read only mode is enabled', async () => {
-    await processWin(redditBot, mockComment, true)
-    expect(mockFileManager.recordGuess).not.toHaveBeenCalled()
-    expect(mockFileManager.recordSubmission).not.toHaveBeenCalled()
+    expect(mockScoreManager.addScore).toHaveBeenCalledWith("guesser", "submitter", true)
   })
 
   it('replies with the correctly formatted reply', async () => {

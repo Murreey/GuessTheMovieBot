@@ -31,16 +31,16 @@ const mockPath = mocked(path)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", JSON.stringify({
         username: {
           points: 3,
-          submissions: 0,
-          guesses: 1
+          guesses: 1,
+          submissions: 0
         }
       }, null, 2))
 
       expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/total.json", JSON.stringify({
         username: {
           points: 3,
-          submissions: 0,
-          guesses: 1
+          guesses: 1,
+          submissions: 0
         }
       }, null, 2))
     })
@@ -83,15 +83,15 @@ const mockPath = mocked(path)
       expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", JSON.stringify({
         username: {
           points: 3,
-          submissions: 1,
-          guesses: 0
+          guesses: 0,
+          submissions: 1
         }
       }, null, 2))
       expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/total.json", JSON.stringify({
         username: {
           points: 3,
-          submissions: 1,
-          guesses: 0
+          guesses: 0,
+          submissions: 1
         }
       }, null, 2))
     })

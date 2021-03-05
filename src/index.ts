@@ -49,7 +49,7 @@ if(args['read-only']) Logger.warn('Starting in read only mode!')
 
 let running = false
 const run = async () => {
-  if(running) return Logger.warn("Skipping run as previous is still running (probably hit the rate limit)")
+  if(running) return Logger.verbose("Skipping run as previous is still running (probably hit the rate limit)")
   running = true
   await processNewSubmissions()
   await processNewComments()

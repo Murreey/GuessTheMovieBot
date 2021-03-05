@@ -116,7 +116,8 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         subredditName: subreddit.display_name,
         text, cssClass
       })
-    }
+    },
+    isReadOnly: () => readOnly
   }
 }
 
@@ -130,7 +131,8 @@ export type RedditBot = {
   createPost: (title: string, text: string, sticky: boolean) => Promise<void>,
   setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
   getUserFlair: (username: string) => Promise<string>,
-  setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>
+  setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>,
+  isReadOnly: () => boolean
 }
 
 export type RedditBotOptions = {

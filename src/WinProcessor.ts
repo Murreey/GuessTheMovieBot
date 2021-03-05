@@ -3,13 +3,11 @@ import path from 'path'
 import { readFileSync } from 'fs'
 import snoowrap from 'snoowrap';
 import Mustache from 'mustache';
-import FlairManager from './scores/ScoreFlairManager';
 import { getConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
-import * as fileManager from './scores/ScoreFileManager';
+import ScoreManager from './scores/ScoreManager';
 import { checkGoogleForImage } from './GoogleImageSearcher'
-import { getScores } from './scores/Scores';
 
 export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = false): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
@@ -22,28 +20,16 @@ export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = fals
   const submitter = await submission.author.name
 
   const foundOnGoogle = await checkGoogleForImage(await submission.is_self ? await submission.selftext : await submission.url)
-  Logger.verbose(`Image was ${foundOnGoogle ? 'not ' : ''}found on Google`)
+  Logger.verbose(`Image was ${foundOnGoogle ? '' : 'note '}found on Google`)
 
-  const scores = getScores(foundOnGoogle)
-
-  const flairManager = FlairManager(bot)
-  Logger.debug('Updating flair points')
-  const guesserTotal = await flairManager.addPoints(guesser, scores.guesser)
-  const submitterTotal = await flairManager.addPoints(submitter, scores.submitter)
-
-  if(!readOnly) {
-    Logger.debug('Saving scores to file')
-    fileManager.recordGuess(guesser, scores.guesser)
-    fileManager.recordSubmission(submitter, scores.submitter)
-  } else {
-    Logger.warn("Skipping score file saving, read only mode is enabled")
-  }
+  Logger.debug('Sending win to ScoreManager')
+  const points = await ScoreManager(bot).addScore(guesser, submitter, foundOnGoogle)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({
     postID: await submission.id,
-    guesser: { name: guesser, points: scores.guesser },
-    submitter: { name: submitter, points: scores.submitter },
+    guesser: { name: guesser, points: points.guesser },
+    submitter: { name: submitter, points: points.submitter },
     foundOnGoogle
   }))
 }

@@ -35,26 +35,25 @@ describe('ScoreFlairManager', () => {
     })
   })
 
-  describe('addPoints', () => {
-    it('sets the users flair and returns the new total', async () => {
-      const newTotal = await FlairManager(redditBot).addPoints("username", 789)
-      expect(newTotal).toBe(2023)
-      expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "2023", "points points-2000")
+  describe('setPoints', () => {
+    it('sets the users flair', async () => {
+      await FlairManager(redditBot).setPoints("username", 789)
+      expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "789", "points points-500")
     })
 
     it('works with negative score', async () => {
-      await FlairManager(redditBot).addPoints("username", -500)
-      expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "734", "points points-500")
+      await FlairManager(redditBot).setPoints("username", -500)
+      expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "0", "points points-1")
     })
 
     it('does not reduce points below 0', async () => {
-      await FlairManager(redditBot).addPoints("username", -9999)
+      await FlairManager(redditBot).setPoints("username", -9999)
       expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "0", "points points-1")
     })
 
     it('uses the right css threshold uses the max css threshold if exceeded', async () => {
-      await FlairManager(redditBot).addPoints("username", 999999999)
-      expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "1000001233", "points points-10000")
+      await FlairManager(redditBot).setPoints("username", 999999999)
+      expect(redditBot.setUserFlair).toHaveBeenCalledWith("username", "999999999", "points points-10000")
     })
   })
 })
