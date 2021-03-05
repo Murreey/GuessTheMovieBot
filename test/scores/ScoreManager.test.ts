@@ -10,9 +10,8 @@ jest.mock('../../src/scores/Scores')
 jest.mock('../../src/scores/ScoreFlairManager')
 jest.mock('../../src/scores/ScoreFileManager')
 
-
 describe('ScoreManager', () => {
-  const mockRedditBot = ({} as any)
+  const mockRedditBot = ({ isReadOnly: () => false } as any)
   let mockFlairManager
 
   beforeEach(() => {

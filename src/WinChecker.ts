@@ -4,14 +4,19 @@ import { RedditBot } from "./RedditBot";
 import { isImageURL } from "./GoogleImageSearcher";
 import { Logger } from "./Logger";
 import { getConfig } from './config'
+import { config } from "winston";
 
 export default (bot: RedditBot) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
     if(!bot.isCommentAReply(comment)) return false
+    if(bot.hasReplied(comment)) return false
 
     const guessComment = (await bot.fetchComment(comment.parent_id))()
 
     if(guessComment.is_submitter) return false
+
+    const config = getConfig()
+    if(guessComment.author.name === config.bot_username) return false
 
     const submission = bot.fetchPostFromComment(comment)
 
@@ -25,7 +30,7 @@ export default (bot: RedditBot) => ({
 
     const currentFlair: string = await submission.link_flair_template_id
     if(currentFlair) {
-      const flairs = getConfig().linkFlairTemplates
+      const flairs = config.linkFlairTemplates
       if(Object.values(flairs.identified).includes(currentFlair)) return false
 
       if(currentFlair === flairs.meta) return false

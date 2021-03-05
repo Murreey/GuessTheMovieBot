@@ -15,6 +15,7 @@ describe('WinChecker', () => {
   }
 
   mocked(getConfig).mockReturnValue({
+    bot_username: "bot-username",
     linkFlairTemplates: {
       easy: "easyTemplate",
       hard: "hardTemplate",
@@ -36,8 +37,20 @@ describe('WinChecker', () => {
     (FlairManager as any).mockReturnValue(mockFlairManager)
   })
 
+  it('does not reject a valid win', async () => {
+    const validWin = await WinChecker(redditBot).isValidWin(mockComment)
+    expect(validWin).toBe(true)
+  })
+
   it('rejects any top level comment', async () => {
     redditBot.isCommentAReply.mockReturnValue(false)
+
+    const validWin = await WinChecker(redditBot).isValidWin(mockComment)
+    expect(validWin).toBe(false)
+  })
+
+  it('rejects if the bot has already replied', async () => {
+    redditBot.hasReplied.mockReturnValue(true)
 
     const validWin = await WinChecker(redditBot).isValidWin(mockComment)
     expect(validWin).toBe(false)
@@ -49,6 +62,13 @@ describe('WinChecker', () => {
     const validWin = await WinChecker(redditBot).isValidWin(mockComment)
     expect(validWin).toBe(false)
     expect(redditBot.fetchComment).toHaveBeenCalledWith("parent-id")
+  })
+
+  it('rejects if the parent comment was from the bot', async () => {
+    redditBot = mockRedditBot({ author: { name: "bot-username" } })
+
+    const validWin = await WinChecker(redditBot).isValidWin(mockComment)
+    expect(validWin).toBe(false)
   })
 
   describe('self post', () => {
@@ -175,5 +195,6 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     isCommentAReply: jest.fn().mockReturnValue(true),
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockReturnValue(mockSubmission),
+    hasReplied: jest.fn().mockReturnValue(false)
   }
 }

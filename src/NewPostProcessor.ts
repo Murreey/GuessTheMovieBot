@@ -7,7 +7,7 @@ export default (bot: RedditBot) => ({
   processNewSubmission: async (submission: Submission) => {
     const config = getConfig()
 
-    if((await (submission as any).expandReplies()).comments.some(comment => comment.author.name === config.bot_username)) {
+    if(await bot.hasReplied(submission)) {
       Logger.debug(`Ignoring ${submission.id} as bot has already replied`)
       return
     }

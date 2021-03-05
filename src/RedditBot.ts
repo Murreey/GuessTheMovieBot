@@ -63,7 +63,6 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       return newSubmissions
         .filter(sub => !sub.link_flair_text)
     },
-    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     reply: async (content, body, sticky = false) => {
       if(readOnly) {
         Logger.warn('reply() ignored, read only mode is enabled')
@@ -117,6 +116,8 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         text, cssClass
       })
     },
+    hasReplied: async (content) => (await (content as any).expandReplies()).comments.some(comment => comment.author.name === config.bot_username),
+    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     isReadOnly: () => readOnly
   }
 }
@@ -126,12 +127,13 @@ export type RedditBot = {
   fetchPostFromComment: (comment: snoowrap.Comment) => snoowrap.Submission
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
   fetchNewSubmissions: () => Promise<snoowrap.Submission[]>,
-  isCommentAReply: (comment: snoowrap.Comment) => boolean,
   reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string, sticky?: boolean) => Promise<void>,
   createPost: (title: string, text: string, sticky: boolean) => Promise<void>,
   setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
   getUserFlair: (username: string) => Promise<string>,
   setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>,
+  hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
+  isCommentAReply: (comment: snoowrap.Comment) => boolean,
   isReadOnly: () => boolean
 }
 

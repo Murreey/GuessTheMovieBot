@@ -19,7 +19,8 @@ describe('NewPostProcessor', () => {
 
   beforeEach(() => {
     redditBot = {
-      reply: jest.fn()
+      reply: jest.fn(),
+      hasReplied: jest.fn().mockReturnValue(false)
     }
 
     mockSubmission = {
@@ -30,12 +31,7 @@ describe('NewPostProcessor', () => {
   })
 
   it('does not reply if the bot has already replied', async () => {
-    mockSubmission.expandReplies = () => ({ comments: [
-      { author: { name: 'foo' } },
-      { author: { name: 'bot-username' } },
-      { author: { name: 'bar' } },
-    ]})
-
+    redditBot.hasReplied.mockReturnValue(true)
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
     expect(mockSubmission.selectFlair).not.toHaveBeenCalled()
     expect(redditBot.reply).not.toHaveBeenCalled()
