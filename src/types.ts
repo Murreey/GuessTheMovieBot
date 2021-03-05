@@ -14,6 +14,7 @@ export interface Config {
   linkFlairTemplates: {
     easy: string,
     hard: string,
+    meta: string,
     identified: {
       normal: string,
       easy: string,

@@ -19,6 +19,7 @@
     "linkFlairTemplates": {
         "easy": "<template-uuid>",
         "hard": "<template-uuid>",
+        "meta": "<template-uuid>",
         "identified": {
             "normal": "<template-uuid>",
             "easy": "<template-uuid>",

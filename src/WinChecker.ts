@@ -3,6 +3,7 @@ import FlairManager from "./scores/ScoreFlairManager";
 import { RedditBot } from "./RedditBot";
 import { isImageURL } from "./GoogleImageSearcher";
 import { Logger } from "./Logger";
+import { getConfig } from './config'
 
 export default (bot: RedditBot) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
@@ -22,12 +23,28 @@ export default (bot: RedditBot) => ({
       Logger.verbose(`'${comment.body}' is a self post but looks like an image URL`)
     }
 
-    const currentFlair: string = await submission.link_flair_text
+    const currentFlair: string = await submission.link_flair_template_id
     if(currentFlair) {
-      if(currentFlair.toLowerCase().includes("identified")) return false
-      if(currentFlair.toLowerCase().includes("meta")) return false
+      const flairs = getConfig().linkFlairTemplates
+      if(Object.values(flairs.identified).includes(currentFlair)) return false
 
-      if(currentFlair.toLowerCase().includes("easy") && await FlairManager(bot).getPoints(await guessComment.author.name) >= 10) {
+      if(currentFlair === flairs.meta) return false
+
+      if(currentFlair === flairs.easy && await FlairManager(bot).getPoints(await guessComment.author.name) >= 10) {
+        return false
+      }
+    }
+
+    // I think this will only be needed for legacy posts, as post flair
+    // is 'stamped' once assigned, so changing templates does not affect old posts.
+    // Probably safe to keep anyway.
+    const currentFlairText: string = (await submission.link_flair_text)
+    if(currentFlairText) {
+      const flair = currentFlairText.toLowerCase()
+      if(flair.includes("identified")) return false
+      if(flair.includes("meta")) return false
+
+      if(flair.includes("easy") && await FlairManager(bot).getPoints(await guessComment.author.name) >= 10) {
         return false
       }
     }
