@@ -7,7 +7,7 @@ export const isImageURL = (url: string): boolean => {
 
 const trimImageURL = (url: string): string => {
   if(!url) return url
-  return url.toLowerCase().split('?')[0].replace('&#x200b;', '').trim()
+  return url.split('?')[0].replace('&#x200b;', '').trim()
 }
 
 export const checkGoogleForImage = async (url: string): Promise<boolean> => {
