@@ -30,9 +30,15 @@ const saveScoreData = (fileName: string, newData: ScoreData) => {
 
 export const getMonthlyFileName = (date = new Date) => {
   const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-  const directory = path.resolve(__dirname, '../../scores/monthly/')
+  const directory = path.resolve(__dirname, '../../scores/')
   if(!fs.existsSync(directory)) fs.mkdirSync(directory)
-  return `${directory}/${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
+  return `${directory}/monthly/${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
+}
+
+const getTotalFileName = () => {
+  const directory = path.resolve(__dirname, '../../scores/')
+  if(!fs.existsSync(directory)) fs.mkdirSync(directory)
+  return `${directory}/total.json`
 }
 
 export const getScoreData = (fileName: string): ScoreData => {
@@ -51,19 +57,21 @@ export const getScoreData = (fileName: string): ScoreData => {
 }
 
 export const recordGuess = (username: string, pointsEarned: number) => {
-  const fileName = getMonthlyFileName()
-  const scores = initUserScore(getScoreData(fileName), username)
-  scores[username].guesses++
-  scores[username].points += pointsEarned
-  saveScoreData(fileName, scores)
+  [getMonthlyFileName(), getTotalFileName()].forEach(fileName => {
+    const scores = initUserScore(getScoreData(fileName), username)
+    scores[username].guesses++
+    scores[username].points += pointsEarned
+    saveScoreData(fileName, scores)
+  });
 }
 
 export const recordSubmission = (username: string, pointsEarned: number) => {
-  const fileName = getMonthlyFileName()
-  const scores = initUserScore(getScoreData(fileName), username)
-  scores[username].submissions++
-  scores[username].points += pointsEarned
-  saveScoreData(fileName, scores)
+  [getMonthlyFileName(), getTotalFileName()].forEach(fileName => {
+    const scores = initUserScore(getScoreData(fileName), username)
+    scores[username].submissions++
+    scores[username].points += pointsEarned
+    saveScoreData(fileName, scores)
+  });
 }
 
 export type ScoreData = {
