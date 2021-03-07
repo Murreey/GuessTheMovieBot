@@ -1,10 +1,9 @@
 import snoowrap from "snoowrap";
-import FlairManager from "./scores/ScoreFlairManager";
+import ScoreManager from "./scores/Scoremanager";
 import { RedditBot } from "./RedditBot";
 import { isImageURL } from "./GoogleImageSearcher";
 import { Logger } from "./Logger";
 import { getConfig } from './config'
-import { config } from "winston";
 
 export default (bot: RedditBot) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
@@ -35,7 +34,7 @@ export default (bot: RedditBot) => ({
 
       if(currentFlair === flairs.meta) return false
 
-      if(currentFlair === flairs.easy && await FlairManager(bot).getPoints(await guessComment.author.name) >= 10) {
+      if(currentFlair === flairs.easy && await ScoreManager(bot).getUserPoints(await guessComment.author.name) >= 10) {
         return false
       }
     }
@@ -49,7 +48,7 @@ export default (bot: RedditBot) => ({
       if(flair.includes("identified")) return false
       if(flair.includes("meta")) return false
 
-      if(flair.includes("easy") && await FlairManager(bot).getPoints(await guessComment.author.name) >= 10) {
+      if(flair.includes("easy") && await ScoreManager(bot).getUserPoints(await guessComment.author.name) >= 10) {
         return false
       }
     }

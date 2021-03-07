@@ -1,15 +1,15 @@
 import WinChecker from '../src/WinChecker';
-import FlairManager from "../src/scores/ScoreFlairManager";
+import ScoreManager from "../src/scores/ScoreManager";
 import { getConfig } from '../src/config'
 
 import { mocked } from 'ts-jest/utils'
 
-jest.mock('../src/scores/ScoreFlairManager')
+jest.mock('../src/scores/ScoreManager')
 jest.mock('../src/config')
 
 describe('WinChecker', () => {
   let redditBot
-  let mockFlairManager
+  let mockScoreManager
   const mockComment: any = {
     parent_id: "parent-id"
   }
@@ -30,11 +30,10 @@ describe('WinChecker', () => {
 
   beforeEach(() => {
     redditBot = mockRedditBot({});
-    mockFlairManager = {
-      getPoints: jest.fn().mockResolvedValue(15),
-      addPoints: jest.fn()
+    mockScoreManager = {
+      getUserPoints: jest.fn().mockResolvedValue(15),
     };
-    (FlairManager as any).mockReturnValue(mockFlairManager)
+    mocked(ScoreManager).mockReturnValue(mockScoreManager)
   })
 
   it('does not reject a valid win', async () => {
@@ -124,17 +123,17 @@ describe('WinChecker', () => {
 
       const validWin = await WinChecker(redditBot).isValidWin(mockComment)
       expect(validWin).toBe(false)
-      expect(mockFlairManager.getPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
 
     it('does not reject if the flair is the easy template and the guesser has < 10 points', async () => {
       redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("easyTemplate") })
-      mockFlairManager.getPoints.mockResolvedValue(5)
+      mockScoreManager.getUserPoints.mockResolvedValue(5)
 
       const validWin = await WinChecker(redditBot).isValidWin(mockComment)
       expect(validWin).toBe(true)
-      expect(mockFlairManager.getPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
   })
@@ -161,17 +160,17 @@ describe('WinChecker', () => {
 
       const validWin = await WinChecker(redditBot).isValidWin(mockComment)
       expect(validWin).toBe(false)
-      expect(mockFlairManager.getPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
 
     it('does not reject if the flair contains `easy` and the guesser has < 10 points', async () => {
       redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("easy") })
-      mockFlairManager.getPoints.mockResolvedValue(5)
+      mockScoreManager.getUserPoints.mockResolvedValue(5)
 
       const validWin = await WinChecker(redditBot).isValidWin(mockComment)
       expect(validWin).toBe(true)
-      expect(mockFlairManager.getPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
   })

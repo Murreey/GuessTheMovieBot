@@ -20,6 +20,7 @@ export default (bot: RedditBot) => {
   }
 
   return {
+    getUserPoints,
     addScore: async (guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
