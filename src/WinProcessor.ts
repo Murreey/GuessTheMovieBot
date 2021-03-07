@@ -41,8 +41,8 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   const identifiedTemplate = config?.linkFlairTemplates?.identified?.[currentFlair] ?? config?.linkFlairTemplates?.identified?.normal
 
   if(identifiedTemplate) {
-    Logger.debug(`Setting ${await submission.id} flair to '${identifiedTemplate}'`)
-    bot.setPostFlair(submission, identifiedTemplate)
+    Logger.debug(`Setting post ${await submission.id} flair to '${identifiedTemplate}'`)
+    await bot.setPostFlair(submission, identifiedTemplate)
   } else {
     Logger.warn(`Could not find valid flair template for identifying '${currentFlair}'!`)
   }

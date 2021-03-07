@@ -116,7 +116,11 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         text, cssClass
       })
     },
-    hasReplied: async (content) => (await (content as any).expandReplies()).comments.some(comment => comment.author.name === config.bot_username),
+    hasReplied: async (content) => {
+      const expanded = await (await (content as any).expandReplies())
+      return (expanded.comments || expanded.replies || [])
+        .some(comment => comment.author.name === config.bot_username && !comment.removed)
+    },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     isReadOnly: () => readOnly
   }
