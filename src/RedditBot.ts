@@ -104,16 +104,20 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       Logger.verbose(`Setting flair ${template} on ${post.name}`)
     },
     getUserFlair: async (username) => subreddit.getUserFlair(username).then(flair => flair.flair_text),
-    setUserFlair: async (username, text, cssClass) => {
+    setUserFlair: async (username, { text, css_class, background_color, text_color = 'light'}) => {
       if(readOnly) {
         Logger.warn('setUserFlair() ignored, read only mode is enabled')
         return
       }
 
-      const user = await (r.getUser(username) as any);
-      await user.assignFlair({
-        subredditName: subreddit.display_name,
-        text, cssClass
+      await r.oauthRequest({
+        uri: `/r/${subreddit.display_name}/api/selectflair`,
+        method: 'POST',
+        form: {
+          name: username,
+          text, css_class,
+          background_color, text_color
+        }
       })
     },
     hasReplied: async (content) => {
@@ -135,7 +139,7 @@ export type RedditBot = {
   createPost: (title: string, text: string, sticky: boolean) => Promise<void>,
   setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
   getUserFlair: (username: string) => Promise<string>,
-  setUserFlair: (username: string, text: string, cssClass: string) => Promise<void>,
+  setUserFlair: (username: string, options: { text?: string, css_class?: string, background_color?: string, text_color?: 'light' | 'dark' }) => Promise<void>,
   hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
   isReadOnly: () => boolean

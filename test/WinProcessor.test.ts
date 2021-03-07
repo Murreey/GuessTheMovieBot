@@ -86,7 +86,7 @@ describe('WinProcessor', () =>  {
   })
 
   it('invokes the score manager if the image was found on google', async () => {
-  mockGoogleSearcher.mockResolvedValue(true)
+    mockGoogleSearcher.mockResolvedValue(true)
     await processWin(redditBot, mockComment)
     expect(mockScoreManager.addScore).toHaveBeenCalledWith("guesser", "submitter", true)
   })

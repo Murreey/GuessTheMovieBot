@@ -1,25 +1,47 @@
 import { Logger } from "../Logger";
 import { RedditBot } from "../RedditBot";
 
-const getCssClass = (points: number): string => {
-  const thresholds = [1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
-  const threshold = thresholds.reverse().find(threshold => threshold <= points)
-  return `points points-${threshold || 1}`
+const thresholds: [number, string][] = [
+  [1, '#7EFF7B'], [5, '#7BCAFF'], [10, '#FFE47B'],
+  [20, '#FFBC7B'], [50, '#7B9BFF'], [100, '#C07BFF'],
+  [200, '#FF7BD0'], [500, '#FF7B85'], [1000, '#FFDA7B'],
+  [2000, '#7B82FF'], [5000, '#FF25D3']
+]
+
+const chooseTextColour = (colour: string): 'light' | 'dark' => {
+  // Magic code that chooses light or dark text based on the background colour
+  // I'd hoped to be able to use one text colour for all of them (they all look okay on dark)
+  // But when actually displayed on reddit the design makes some a bit hard to read
+  const r = parseInt(colour.substring(1, 3), 16)
+  const g = parseInt(colour.substring(3, 5), 16)
+  const b = parseInt(colour.substring(5, 7), 16)
+  return (((r * 0.299) + (g * 0.587) + (b * 0.114)) > 186) ? 'dark' : 'light'
 }
+
+const getThresholdInfo = (points: number) => [...thresholds].reverse().find(threshold => threshold[0] <= points) || thresholds[0]
 
 export default (bot: RedditBot) => {
   const getPoints = async (user: string): Promise<number> => {
     const flair = await bot.getUserFlair(user)
     if(flair === null) return 0
-    return parseInt(flair.replace(/\D/g, '')) || 0
+    return parseInt(flair.match(/^\D*([\d,]+)/)?.[1].replace(/,/g, '')) || 0
   }
 
   const setPoints = async (user: string, amount: number): Promise<void> => {
     if(amount < 0) amount = 0
 
-    await bot.setUserFlair(user, "" + amount, getCssClass(amount))
+    const [ threshold, colour ] = getThresholdInfo(amount)
 
-    Logger.info(`Set ${user}'s points flair to ${amount}`)
+    const options = {
+      text: "" + amount,
+      css_class: `points points-${threshold || 1}`,
+      background_color: colour,
+      text_color: chooseTextColour(colour)
+    }
+
+    await bot.setUserFlair(user, options)
+
+    Logger.info(`Set ${user}'s points flair to ${amount} (${options.background_color})`)
   }
 
   return {
