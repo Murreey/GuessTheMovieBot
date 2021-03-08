@@ -58,19 +58,19 @@ describe('ScoreFlairManager', () => {
     it('sets the users flair with the correct class and colour', async () => {
       await FlairManager(redditBot).setPoints("username", 789)
       expect(redditBot.setUserFlair).toHaveBeenCalledWith("username",
-        {text: "789", css_class: "points points-500", background_color: "#FF7B85", text_color: "light"})
+        {text: "789 points", css_class: "points points-500", background_color: "#FF7B85", text_color: "light"})
     })
 
     it('works with negative score', async () => {
       await FlairManager(redditBot).setPoints("username", -500)
       expect(redditBot.setUserFlair).toHaveBeenCalledWith("username",
-        {text: "0", css_class: "points points-1", background_color: "#7EFF7B", text_color: "dark"})
+        {text: "0 points", css_class: "points points-1", background_color: "#7EFF7B", text_color: "dark"})
     })
 
     it('uses the max css threshold if exceeded', async () => {
       await FlairManager(redditBot).setPoints("username", 999999999)
       expect(redditBot.setUserFlair).toHaveBeenCalledWith("username",
-        {text: "999999999", css_class: "points points-5000", background_color: "#FF25D3", text_color: "light"})
+        {text: "999999999 points", css_class: "points points-5000", background_color: "#FF25D3", text_color: "light"})
     })
   })
 })

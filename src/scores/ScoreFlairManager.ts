@@ -33,7 +33,7 @@ export default (bot: RedditBot) => {
     const [ threshold, colour ] = getThresholdInfo(amount)
 
     const options = {
-      text: "" + amount,
+      text: `${amount} points`,
       css_class: `points points-${threshold || 1}`,
       background_color: colour,
       text_color: chooseTextColour(colour)
