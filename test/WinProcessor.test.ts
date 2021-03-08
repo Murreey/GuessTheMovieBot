@@ -23,9 +23,10 @@ describe('WinProcessor', () =>  {
     parent_id: "parent-id"
   }
 
+  mockFs.existsSync.mockReturnValue(true)
   mockFs.readFileSync.mockReturnValue(`
-    * winner **/u/{{ guesser.name }} gets [+{{ guesser.points }}](// "green") points**
-    * poster **/u/{{ submitter.name }} gets [+{{ submitter.points }}](// "blue") points**
+    * winner /u/{{ guesser.name }} gets +{{ guesser.points }} points
+    * poster /u/{{ submitter.name }} gets +{{ submitter.points }} points
   `)
 
   mocked(getConfig).mockReturnValue({
@@ -93,8 +94,8 @@ describe('WinProcessor', () =>  {
 
   it('replies with the correctly formatted reply', async () => {
     await processWin(redditBot, mockComment)
-    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/guesser gets [+8]"))
-    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("**/u/submitter gets [+5]"))
+    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/guesser gets +8"))
+    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/submitter gets +5"))
   })
 })
 

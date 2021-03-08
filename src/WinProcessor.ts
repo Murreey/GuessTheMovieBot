@@ -1,13 +1,13 @@
 
 import path from 'path'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import snoowrap from 'snoowrap';
 import Mustache from 'mustache';
 import { getConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
 import ScoreManager from './scores/ScoreManager';
-import { checkGoogleForImage } from './GoogleImageSearcher'
+import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
 
 export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = false): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
@@ -19,18 +19,19 @@ export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = fals
   const guesser = await guessComment.author.name
   const submitter = await submission.author.name
 
-  const foundOnGoogle = await checkGoogleForImage(await submission.is_self ? await submission.selftext : await submission.url)
-  Logger.verbose(`Image was ${foundOnGoogle ? '' : 'note '}found on Google`)
+  const imageUrl = await submission.is_self ? await submission.selftext : await submission.url
+  const foundOnGoogle = await checkGoogleForImage(imageUrl)
+  Logger.verbose(`Image was ${foundOnGoogle ? '' : 'not '}found on Google`)
 
   Logger.debug('Sending win to ScoreManager')
-  const points = await ScoreManager(bot).addScore(guesser, submitter, foundOnGoogle)
+  const points = await ScoreManager(bot).addScore(guesser, submitter, !!foundOnGoogle)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({
     postID: await submission.id,
     guesser: { name: guesser, points: points.guesser },
     submitter: { name: submitter, points: points.submitter },
-    foundOnGoogle
+    googleUrl: foundOnGoogle ? getSearchUrl(imageUrl) : undefined
   }))
 }
 
@@ -52,10 +53,11 @@ const createWinComment = (args: {
   postID: string,
   guesser: { name: string, points: number },
   submitter: { name: string, points: number },
-  foundOnGoogle: boolean
+  googleUrl: string
 }): string => {
   const config = getConfig()
-  const replyTemplate = readFileSync(path.resolve(__dirname, `../templates/${config.replyTemplate}`), 'utf-8')
-
+  const templateFile = path.resolve(__dirname, `../templates/${config.replyTemplate}`)
+  if(!existsSync(templateFile)) return undefined
+  const replyTemplate = readFileSync(templateFile, 'utf-8')
   return Mustache.render(replyTemplate, {...args, subreddit: config.subreddit})
 }
