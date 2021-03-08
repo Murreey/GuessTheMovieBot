@@ -60,7 +60,9 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       }
 
       lastFetchedSubmission = newSubmissions[0].name
+      const oneDayAgo = (new Date().getTime() / 1000) - 86400
       return newSubmissions
+        .filter(sub => sub.created_utc > oneDayAgo)
         .filter(sub => !sub.link_flair_text)
     },
     reply: async (content, body, sticky = false) => {
