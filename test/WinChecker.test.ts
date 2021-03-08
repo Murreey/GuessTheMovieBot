@@ -49,7 +49,7 @@ describe('WinChecker', () => {
   })
 
   it('rejects if the bot has already replied', async () => {
-    redditBot.hasReplied.mockReturnValue(true)
+    redditBot.hasReplied.mockResolvedValue(true)
 
     const validWin = await WinChecker(redditBot).isValidWin(mockComment)
     expect(validWin).toBe(false)
@@ -194,6 +194,6 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     isCommentAReply: jest.fn().mockReturnValue(true),
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockReturnValue(mockSubmission),
-    hasReplied: jest.fn().mockReturnValue(false)
+    hasReplied: jest.fn().mockResolvedValue(false)
   }
 }

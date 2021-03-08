@@ -8,7 +8,7 @@ import { getConfig } from './config'
 export default (bot: RedditBot) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
     if(!bot.isCommentAReply(comment)) return false
-    if(bot.hasReplied(comment)) return false
+    if(await bot.hasReplied(comment)) return false
 
     const guessComment = (await bot.fetchComment(comment.parent_id))()
 
