@@ -7,11 +7,19 @@ export const isImageURL = (url: string): boolean => {
 
 const trimImageURL = (url: string): string => {
   if(!url) return url
-  return url.split('?')[0].replace('&#x200b;', '').trim()
+  // Removes '&#x200b;' as Reddit seems to add them randomly in self posts?
+  // In uppercase or lowercase too depending on reddit platform...
+  // Trims whitespace
+  // Replaces annoying  preview URLs (https://preview.redd.it/4l3hm6mhezl61.png?width=1920&format=png&auto=webp&s=763dbf14da80516b2559cd1ffec8610a7b67359e)
+  // With versions that work without the query params (https://i.redd.it/4l3hm6mhezl61.png)
+  return url.split('?')[0]
+    .replace(/&#x200b;/ig, '')
+    .trim()
+    .replace(/(?<=https?:\/\/)(preview)(?=\.redd\.it\/)/ig, 'i')
 }
 
 export const getSearchUrl = (imageUrl: string): string => {
-  const url = trimImageURL(imageUrl).split('?')[0]
+  const url = trimImageURL(imageUrl)
   if(!isImageURL(url)) return undefined
   return `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
 }
