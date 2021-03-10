@@ -2,7 +2,7 @@ import { Logger } from "../Logger";
 import { RedditBot } from "../RedditBot";
 
 const thresholds: [number, string][] = [
-  [1, '#7EFF7B'], [5, '#7BCAFF'], [10, '#FFE47B'],
+  [1, '#7EFF7B'], [5, '#68B4E7'], [10, '#FFE47B'],
   [20, '#FFBC7B'], [50, '#7B9BFF'], [100, '#C07BFF'],
   [200, '#FF7BD0'], [500, '#FF7B85'], [1000, '#FFDA7B'],
   [2000, '#7B82FF'], [5000, '#FF25D3']
