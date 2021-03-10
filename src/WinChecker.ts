@@ -1,7 +1,7 @@
 import snoowrap from "snoowrap";
 import ScoreManager from "./scores/Scoremanager";
 import { RedditBot } from "./RedditBot";
-import { isImageURL } from "./GoogleImageSearcher";
+import { trimImageURL } from "./GoogleImageSearcher";
 import { Logger } from "./Logger";
 import { getConfig } from './config'
 
@@ -21,8 +21,8 @@ export default (bot: RedditBot) => ({
 
     if(await submission.is_self) {
       const body = await submission.selftext
-      const isImageUrl = isImageURL(body)
-      if(!isImageUrl) return false
+      const url = trimImageURL(body)
+      if(!url) return false
 
       Logger.verbose(`'${comment.body}' is a self post but looks like an image URL`)
     }

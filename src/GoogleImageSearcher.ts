@@ -1,26 +1,21 @@
 import axios, { AxiosInstance } from 'axios'
 import { Logger } from './Logger'
 
-export const isImageURL = (url: string): boolean => {
-  return /^(http(s?):\/\/)([/|.|\w|\s|-])*\.(?:jpg|jpeg|gif|png|bmp|tiff)$/i.test(trimImageURL(url))
-}
-
-const trimImageURL = (url: string): string => {
+export const trimImageURL = (url: string): string => {
   if(!url) return url
-  // Removes '&#x200b;' as Reddit seems to add them randomly in self posts?
-  // In uppercase or lowercase too depending on reddit platform...
-  // Trims whitespace
+  // Extract the first valid URL from the post
+  // In case of inside markdown [](), or with whitespace, or two images, or whatever
   // Replaces annoying  preview URLs (https://preview.redd.it/4l3hm6mhezl61.png?width=1920&format=png&auto=webp&s=763dbf14da80516b2559cd1ffec8610a7b67359e)
   // With versions that work without the query params (https://i.redd.it/4l3hm6mhezl61.png)
-  return url.split('?')[0]
-    .replace(/&#x200b;/ig, '')
+  return url
+    .match(/https?:\/\/([^ ?])+?(png|jpg|jpeg|gif|bmp|tiff)/i)?.[0]
     .trim()
     .replace(/(?<=https?:\/\/)(preview)(?=\.redd\.it\/)/ig, 'i')
 }
 
 export const getSearchUrl = (imageUrl: string): string => {
   const url = trimImageURL(imageUrl)
-  if(!isImageURL(url)) return undefined
+  if(!url) return undefined
   return `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
 }
 
