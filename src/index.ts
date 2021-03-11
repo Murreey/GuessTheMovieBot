@@ -4,6 +4,7 @@ import * as RedditBot from './RedditBot';
 import WinChecker from './WinChecker';
 import processWin from './WinProcessor'
 import newPostProcessor from "./NewPostProcessor";
+import CommandProcessor, { COMMAND_PREFIX } from './commands/CommandProcessor';
 
 const args = yargs(process.argv.slice(2))
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
@@ -45,14 +46,27 @@ const processNewComments = async () => {
   }
 }
 
+const processNewReports = async () => {
+  const reportedComments = await bot.fetchNewReports()
+  for(const comment of reportedComments) {
+    for(const report of comment.mod_reports) {
+      if(report[0] && report[0].trim().startsWith(COMMAND_PREFIX)) {
+        Logger.verbose(`Processing new report '${report[0]}' on ${comment.name}`)
+        await CommandProcessor(bot, comment, report[0])
+      }
+    }
+  }
+}
+
 if(args['read-only']) Logger.warn('Starting in read only mode!')
 
 let running = false
 const run = async () => {
   if(running) return Logger.verbose("Skipping run as previous is still running (probably hit the rate limit)")
   running = true
-  await processNewSubmissions()
-  await processNewComments()
+  // await processNewSubmissions()
+  // await processNewComments()
+  await processNewReports()
   running = false
 }
 

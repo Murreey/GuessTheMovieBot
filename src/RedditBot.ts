@@ -65,6 +65,9 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         .filter(sub => sub.created_utc > oneDayAgo)
         .filter(sub => !sub.link_flair_text)
     },
+    fetchNewReports: async () => (await subreddit
+      .getReports({ only: "comments" }) as snoowrap.Comment[])
+      .filter(c => c.mod_reports.length > 0),
     reply: async (content, body, sticky = false) => {
       if(readOnly) {
         Logger.warn('reply() ignored, read only mode is enabled')
@@ -137,6 +140,7 @@ export type RedditBot = {
   fetchPostFromComment: (comment: snoowrap.Comment) => snoowrap.Submission
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
   fetchNewSubmissions: () => Promise<snoowrap.Submission[]>,
+  fetchNewReports: () => Promise<snoowrap.Comment[]>,
   reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string, sticky?: boolean) => Promise<void>,
   createPost: (title: string, text: string, sticky: boolean) => Promise<void>,
   setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
