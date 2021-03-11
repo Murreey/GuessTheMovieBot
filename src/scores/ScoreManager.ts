@@ -21,7 +21,7 @@ export default (bot: RedditBot) => {
 
   return {
     getUserPoints,
-    addScore: async (guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
+    recordWin: async (guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
       if(bot.readOnly) {
@@ -40,5 +40,15 @@ export default (bot: RedditBot) => {
 
       return points
     },
+    addPoints: async (username: string, pointsEarned: number): Promise<void> => {
+      if(bot.readOnly) {
+        Logger.warn(`Skipping score updates as read-only mode is enabled`)
+        return
+      }
+
+      const points = await getUserPoints(username)
+      await flairManager.setPoints(username, points + pointsEarned)
+      await fileManager.recordPoints(username, pointsEarned)
+    }
   }
 }

@@ -45,7 +45,7 @@ describe('WinProcessor', () =>  {
   beforeEach(() => {
     redditBot = mockRedditBot({});
     mockScoreManager = {
-      addScore: jest.fn().mockResolvedValue({ guesser: 8, submitter: 5 }),
+      recordWin: jest.fn().mockResolvedValue({ guesser: 8, submitter: 5 }),
     }
     mocked(ScoreManager).mockReturnValue(mockScoreManager)
     mockGoogleSearcher.mockClear()
@@ -83,13 +83,13 @@ describe('WinProcessor', () =>  {
 
   it('invokes the score manager', async () => {
     await processWin(redditBot, mockComment)
-    expect(mockScoreManager.addScore).toHaveBeenCalledWith("guesser", "submitter", false)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("guesser", "submitter", false)
   })
 
   it('invokes the score manager if the image was found on google', async () => {
     mockGoogleSearcher.mockResolvedValue(true)
     await processWin(redditBot, mockComment)
-    expect(mockScoreManager.addScore).toHaveBeenCalledWith("guesser", "submitter", true)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("guesser", "submitter", true)
   })
 
   it('replies with the correctly formatted reply', async () => {

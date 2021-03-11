@@ -123,6 +123,109 @@ const mockPath = mocked(path)
     })
   })
 
+  describe('recordPoints', () => {
+    it('fetches the correct score file for the month', () => {
+      fileManager.recordPoints("username", 3)
+      expect(mockFs.readFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", "utf8")
+    })
+
+    it('creates users scores with the correct totals', () => {
+      fileManager.recordPoints("username", 3)
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", JSON.stringify({
+        username: {
+          points: 3,
+          guesses: 0,
+          submissions: 0
+        }
+      }, null, 2))
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/total.json", JSON.stringify({
+        username: {
+          points: 3,
+          guesses: 0,
+          submissions: 0
+        }
+      }, null, 2))
+    })
+
+    it('updates saved users scores with the correct new totals', () => {
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({
+        username: {
+          points: 38,
+          submissions: 8,
+          guesses: 25
+        }
+      }))
+
+      fileManager.recordPoints("username", 3)
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", JSON.stringify({
+        username: {
+          points: 41,
+          submissions: 8,
+          guesses: 25
+        }
+      }, null, 2))
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/total.json", JSON.stringify({
+        username: {
+          points: 41,
+          submissions: 8,
+          guesses: 25
+        }
+      }, null, 2))
+    })
+
+    it('works with negative numbers', () => {
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({
+        username: {
+          points: 38,
+          submissions: 8,
+          guesses: 25
+        }
+      }))
+
+      fileManager.recordPoints("username", -12)
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", JSON.stringify({
+        username: {
+          points: 26,
+          submissions: 8,
+          guesses: 25
+        }
+      }, null, 2))
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/total.json", JSON.stringify({
+        username: {
+          points: 26,
+          submissions: 8,
+          guesses: 25
+        }
+      }, null, 2))
+    })
+
+    it('does not go below 0 points', () => {
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({
+        username: {
+          points: 38,
+          submissions: 8,
+          guesses: 25
+        }
+      }))
+
+      fileManager.recordPoints("username", -500)
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/monthly/2021-jun.json", JSON.stringify({
+        username: {
+          points: 0,
+          submissions: 8,
+          guesses: 25
+        }
+      }, null, 2))
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith("root/scores/total.json", JSON.stringify({
+        username: {
+          points: 0,
+          submissions: 8,
+          guesses: 25
+        }
+      }, null, 2))
+    })
+  })
+
   describe('getFileName', () => {
     it('formats correctly', () => {
       expect(fileManager.getMonthlyFileName()).toBe('root/scores/monthly/2021-jun.json')

@@ -68,6 +68,18 @@ export const recordSubmission = (username: string, pointsEarned: number) => {
   });
 }
 
+export const recordPoints = (username: string, pointsEarned: number) => {
+  [getMonthlyFileName(), getTotalFileName()].forEach(fileName => {
+    const scores = initUserScore(getScoreData(fileName), username)
+    scores[username].points += pointsEarned
+    if(scores[username].points < 0) {
+      // this can be used to deduct points too
+      scores[username].points = 0
+    }
+    saveScoreData(fileName, scores)
+  });
+}
+
 export type ScoreData = {
   [username: string]: UserScores
 }

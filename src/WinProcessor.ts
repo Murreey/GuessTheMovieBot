@@ -24,7 +24,7 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
   Logger.verbose(`Image was ${foundOnGoogle ? '' : 'not '}found on Google`)
 
   Logger.debug('Sending win to ScoreManager')
-  const points = await ScoreManager(bot).addScore(guesser, submitter, !!foundOnGoogle)
+  const points = await ScoreManager(bot).recordWin(guesser, submitter, !!foundOnGoogle)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({
