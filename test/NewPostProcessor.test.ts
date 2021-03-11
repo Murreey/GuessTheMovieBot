@@ -6,7 +6,6 @@ import { mocked } from 'ts-jest/utils'
 jest.mock('../src/config')
 
 mocked(getConfig).mockReturnValue({
-  bot_username:  'bot-username',
   linkFlairTemplates: {
     easy: 'easy-template',
     hard: 'hard-template'
@@ -19,6 +18,7 @@ describe('NewPostProcessor', () => {
 
   beforeEach(() => {
     redditBot = {
+      username: 'bot-username',
       reply: jest.fn(),
       hasReplied: jest.fn().mockReturnValue(false)
     }

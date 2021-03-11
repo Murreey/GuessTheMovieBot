@@ -15,7 +15,6 @@ describe('WinChecker', () => {
   }
 
   mocked(getConfig).mockReturnValue({
-    bot_username: "bot-username",
     linkFlairTemplates: {
       easy: "easyTemplate",
       hard: "hardTemplate",
@@ -191,6 +190,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
   }
 
   return {
+    username: 'bot-username',
     isCommentAReply: jest.fn().mockReturnValue(true),
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockReturnValue(mockSubmission),

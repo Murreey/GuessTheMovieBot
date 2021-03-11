@@ -15,7 +15,7 @@ export default (bot: RedditBot) => ({
     if(guessComment.is_submitter) return false
 
     const config = getConfig()
-    if(guessComment.author.name === config.bot_username) return false
+    if(guessComment.author.name === bot.username) return false
 
     const submission = bot.fetchPostFromComment(comment)
 

@@ -23,6 +23,8 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     comment.author.name === "[deleted]"
 
   return {
+    username: config.bot_username,
+    readOnly,
     fetchComment: async (id) => {
       const comment = await (r.getComment(id) as any).fetch()
       return () => comment
@@ -130,12 +132,13 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       return (expanded.comments || expanded.replies || [])
         .some(comment => comment.author.name === config.bot_username && !comment.removed)
     },
-    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
-    isReadOnly: () => readOnly
+    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_")
   }
 }
 
 export type RedditBot = {
+  username: string,
+  readOnly: boolean,
   fetchComment: (id: string) => Promise<() => snoowrap.Comment>
   fetchPostFromComment: (comment: snoowrap.Comment) => snoowrap.Submission
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
@@ -148,7 +151,6 @@ export type RedditBot = {
   setUserFlair: (username: string, options: { text?: string, css_class?: string, background_color?: string, text_color?: 'light' | 'dark' }) => Promise<void>,
   hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
-  isReadOnly: () => boolean
 }
 
 export type RedditBotOptions = {

@@ -11,7 +11,7 @@ jest.mock('../../src/scores/ScoreFlairManager')
 jest.mock('../../src/scores/ScoreFileManager')
 
 describe('ScoreManager', () => {
-  const mockRedditBot = ({ isReadOnly: () => false } as any)
+  const mockRedditBot = ({ readOnly: false } as any)
   let mockFlairManager
 
   beforeEach(() => {
@@ -61,7 +61,7 @@ describe('ScoreManager', () => {
     })
 
     it('does not update anything if the bot is in read-only mode', async () => {
-      await ScoreManager({ isReadOnly: () => true } as any).addScore("guesser", "submitter", false)
+      await ScoreManager({ readOnly: true } as any).addScore("guesser", "submitter", false)
       expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
       expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
       expect(fileManager.recordGuess).not.toHaveBeenCalled()

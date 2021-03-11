@@ -31,7 +31,7 @@ export default (bot: RedditBot) => ({
       }
     }
 
-    if(submission.author.name === config.bot_username) {
+    if(submission.author.name === bot.username) {
       return
     }
 

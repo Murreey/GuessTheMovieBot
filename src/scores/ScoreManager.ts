@@ -24,7 +24,7 @@ export default (bot: RedditBot) => {
     addScore: async (guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
-      if(bot.isReadOnly()) {
+      if(bot.readOnly) {
         Logger.warn(`Skipping score updates as read-only mode is enabled`)
         return points
       }

@@ -9,7 +9,7 @@ import { Logger } from './Logger';
 import ScoreManager from './scores/ScoreManager';
 import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
 
-export default async (bot: RedditBot, comment: snoowrap.Comment, readOnly = false): Promise<void> => {
+export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
