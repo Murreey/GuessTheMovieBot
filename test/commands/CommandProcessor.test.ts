@@ -13,6 +13,9 @@ describe('CommandProcessor', () => {
     jest.resetAllMocks()
   })
 
+  const bot: any = { readOnly: false }
+  const comment: any = { approve: jest.fn() }
+
   it.each([
     ["!correct", ForceCorrect],
     ["!gis", CorrectGIS],
@@ -21,17 +24,18 @@ describe('CommandProcessor', () => {
     ["!remove", Undo],
     ["!CORRECT", ForceCorrect],
     ["    !correct   ", ForceCorrect],
-  ])(`calls the correct command processor for '%s'`, (input, processor) => {
-    CommandProcessor({} as any, {} as any, input)
+  ])(`calls the correct command processor for '%s'`, async (input, processor) => {
+    await CommandProcessor(bot, comment, input)
     expect(processor).toHaveBeenCalledTimes(1)
+    expect(comment.approve).toHaveBeenCalled()
   })
 
   it.each([
     ["!correct", ForceCorrect],
     ["!gis", CorrectGIS],
     ["!undo", Undo],
-  ])(`does not call other command processors`, (input, processor) => {
-    CommandProcessor({} as any, {} as any, input);
+  ])(`does not call other command processors`, async (input, processor) => {
+    await CommandProcessor(bot, comment, input);
     [CorrectGIS, ForceCorrect, Undo]
       .filter(p => p !== processor)
       .forEach(p => expect(p).not.toHaveBeenCalled())
@@ -42,8 +46,9 @@ describe('CommandProcessor', () => {
     ["! correct"],
     ["correct"],
     ["foo"],
-  ])(`does not call a command processor for an invalid input`, (input) => {
-    CommandProcessor({} as any, {} as any, input);
+  ])(`does not call a command processor or approve the comment for an invalid input`, async (input) => {
+    await CommandProcessor(bot, comment, input);
+    expect(comment.approve).not.toHaveBeenCalled();
     [CorrectGIS, ForceCorrect, Undo]
       .forEach(p => expect(p).not.toHaveBeenCalled())
   })

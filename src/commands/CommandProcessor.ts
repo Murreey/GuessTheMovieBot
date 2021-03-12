@@ -24,11 +24,17 @@ const COMMANDS: CommandMatchers[] = [
 
 export default async (bot: RedditBot, comment: Comment, input: string) => {
   for (const command of COMMANDS) {
-    if(command.matchers.some(matches(input)))  {
+    if(command.matchers.some(matches(input))) {
       Logger.info(`Executing mod command '${input}' on ${comment.name}`)
       await command.process(bot, comment)
+
+      if(!bot.readOnly) {
+        Logger.verbose(`Command ran, approving comment`)
+        await (comment as any).approve()
+      }
     }
   }
+
 }
 
 const matches = (test) => (matcher) => `${COMMAND_PREFIX}${matcher.toLowerCase()}` === test.toLowerCase().trim()
