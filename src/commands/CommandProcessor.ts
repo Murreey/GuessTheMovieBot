@@ -25,7 +25,7 @@ const COMMANDS: CommandMatchers[] = [
 export default async (bot: RedditBot, comment: Comment, input: string) => {
   for (const command of COMMANDS) {
     if(command.matchers.some(matches(input)))  {
-      Logger.info(`Executing mod command '${input}' on ${comment.name}!`)
+      Logger.info(`Executing mod command '${input}' on ${comment.name}`)
       await command.process(bot, comment)
     }
   }

@@ -41,7 +41,7 @@ const processNewComments = async () => {
 
     Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
     Logger.info('Win confirmed!')
-    await processWin(bot, comment, args['read-only'])
+    await processWin(bot, comment)
     Logger.info("")
   }
 }

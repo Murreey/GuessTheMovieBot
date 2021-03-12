@@ -21,7 +21,7 @@ describe('CommandProcessor', () => {
     ["!remove", Undo],
     ["!CORRECT", ForceCorrect],
     ["    !correct   ", ForceCorrect],
-  ])(`calls the command processor for '%s'`, (input, processor) => {
+  ])(`calls the correct command processor for '%s'`, (input, processor) => {
     CommandProcessor({} as any, {} as any, input)
     expect(processor).toHaveBeenCalledTimes(1)
   })
@@ -42,7 +42,7 @@ describe('CommandProcessor', () => {
     ["! correct"],
     ["correct"],
     ["foo"],
-  ])(`does not call a command processor for an invalid inpit`, (input) => {
+  ])(`does not call a command processor for an invalid input`, (input) => {
     CommandProcessor({} as any, {} as any, input);
     [CorrectGIS, ForceCorrect, Undo]
       .forEach(p => expect(p).not.toHaveBeenCalled())

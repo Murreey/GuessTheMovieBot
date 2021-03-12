@@ -49,7 +49,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   }
 }
 
-const createWinComment = (args: {
+export const createWinComment = (args: {
   postID: string,
   guesser: { name: string, points: number },
   submitter: { name: string, points: number },
