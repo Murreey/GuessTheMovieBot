@@ -6,7 +6,7 @@ import ScoreManager from "../scores/ScoreManager";
 import { createWinComment } from "../WinProcessor";
 import { getSearchUrl } from "../GoogleImageSearcher";
 
-export default async (bot: RedditBot, comment: Comment) => {
+export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
   if(comment.author.name !== bot.username) return false
   if(!await bot.isCommentAReply(comment)) return false
   const previouslyFoundOnGoogle = comment?.body?.toLowerCase().includes("found on google") || false
