@@ -64,8 +64,8 @@ let running = false
 const run = async () => {
   if(running) return Logger.verbose("Skipping run as previous is still running (probably hit the rate limit)")
   running = true
-  // await processNewSubmissions()
-  // await processNewComments()
+  await processNewSubmissions()
+  await processNewComments()
   await processNewReports()
   running = false
 }

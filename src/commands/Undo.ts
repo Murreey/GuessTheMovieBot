@@ -31,6 +31,7 @@ export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
   }
 
   const scoreManager = ScoreManager(bot)
+  await scoreManager.deductWin(guesser, submitter)
   await scoreManager.addPoints(submitter, -points.submitter)
   await scoreManager.addPoints(guesser, -points.guesser)
 

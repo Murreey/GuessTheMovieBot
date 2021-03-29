@@ -108,4 +108,24 @@ describe('ScoreManager', () => {
       expect(fileManager.recordPoints).not.toHaveBeenCalled()
     })
   })
+
+  describe('deductWin', () => {
+    it('does nothing if no usernames are provided', async () => {
+      await ScoreManager(mockRedditBot).deductWin()
+      expect(fileManager.deductGuess).not.toHaveBeenCalled()
+      expect(fileManager.deductSubmission).not.toHaveBeenCalled()
+    })
+
+    it(`removes wins from files`, async () => {
+      await ScoreManager(mockRedditBot).deductWin("guesser", "submitter")
+      expect(fileManager.deductGuess).toHaveBeenCalledWith("guesser")
+      expect(fileManager.deductSubmission).toHaveBeenCalledWith("submitter")
+    })
+
+    it('does not update anything if the bot is in read-only mode', async () => {
+      await ScoreManager({ readOnly: true } as any).deductWin("guesser", "submitter")
+      expect(fileManager.deductGuess).not.toHaveBeenCalled()
+      expect(fileManager.deductSubmission).not.toHaveBeenCalled()
+    })
+  })
 })

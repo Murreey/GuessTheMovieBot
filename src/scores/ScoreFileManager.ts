@@ -50,34 +50,58 @@ export const getScoreData = (fileName: string): ScoreData => {
   }
 }
 
-export const recordGuess = (username: string, pointsEarned: number) => {
+const editScores = (username: string, modify: (scores: ScoreData) => ScoreData) => {
   [getMonthlyFileName(), getTotalFileName()].forEach(fileName => {
     const scores = initUserScore(getScoreData(fileName), username)
+    saveScoreData(fileName, modify(scores))
+  });
+}
+
+export const recordGuess = (username: string, pointsEarned: number) => {
+  editScores(username, scores => {
     scores[username].guesses++
     scores[username].points += pointsEarned
-    saveScoreData(fileName, scores)
-  });
+    return scores
+  })
 }
 
 export const recordSubmission = (username: string, pointsEarned: number) => {
-  [getMonthlyFileName(), getTotalFileName()].forEach(fileName => {
-    const scores = initUserScore(getScoreData(fileName), username)
+  editScores(username, scores => {
     scores[username].submissions++
     scores[username].points += pointsEarned
-    saveScoreData(fileName, scores)
-  });
+    return scores
+  })
+}
+
+export const deductGuess = (username: string) => {
+  editScores(username, scores => {
+    scores[username].guesses--
+    if(scores[username].guesses < 0) {
+      scores[username].guesses = 0
+    }
+    return scores
+  })
+}
+
+export const deductSubmission = (username: string) => {
+  editScores(username, scores => {
+    scores[username].submissions--
+    if(scores[username].submissions < 0) {
+      scores[username].submissions = 0
+    }
+    return scores
+  })
 }
 
 export const recordPoints = (username: string, pointsEarned: number) => {
-  [getMonthlyFileName(), getTotalFileName()].forEach(fileName => {
-    const scores = initUserScore(getScoreData(fileName), username)
+  editScores(username, scores => {
     scores[username].points += pointsEarned
     if(scores[username].points < 0) {
       // this can be used to deduct points too
       scores[username].points = 0
     }
-    saveScoreData(fileName, scores)
-  });
+    return scores
+  })
 }
 
 export type ScoreData = {

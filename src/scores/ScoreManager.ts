@@ -49,6 +49,17 @@ export default (bot: RedditBot) => {
       const points = await getUserPoints(username)
       await flairManager.setPoints(username, points + pointsEarned)
       await fileManager.recordPoints(username, pointsEarned)
+    },
+    deductWin: async (guesser?: string, submitter?: string): Promise<void> => {
+      if(!guesser && !submitter) return
+
+      if(bot.readOnly) {
+        Logger.warn(`Skipping score updates as read-only mode is enabled`)
+        return
+      }
+
+      if(guesser) await fileManager.deductGuess(guesser)
+      if(submitter) await fileManager.deductSubmission(submitter)
     }
   }
 }
