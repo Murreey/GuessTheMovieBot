@@ -12,7 +12,7 @@ describe('Scoreboards', () => {
 
   const mockDate = new Date(1623495600000)
   const _Date = global.Date
-  jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown as string)
+  jest.spyOn(global, 'Date').mockImplementation(() => new _Date(mockDate.getTime()) as unknown as string)
 
   const mockFileManager = mocked(fileManager)
   const mockMustache = mocked(Mustache)
@@ -50,7 +50,7 @@ describe('Scoreboards', () => {
     it('calls the bot with the correctly sorted and formatted data', async () => {
       await Scoreboards(redditBot).postScoreboard()
       expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
-        month: "April",
+        month: "May",
         year: "2021",
         guesses: [
           { score: 80, username: "player4", },
@@ -71,10 +71,35 @@ describe('Scoreboards', () => {
           { score: 40, username: "player2", },
           { score: 10, username: "player1", },
           { score: 10, username: "player4", },
-          { score: 0, username: "player5", },
         ]
       })
-      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie April 2021 Leaderboard', 'rendered-template', true)
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
+    })
+
+    it(`filters out values of 0 even if they're in the top 5`, async () => {
+      mockFileManager.getScoreData.mockReturnValue({
+        player1: { points: 10, guesses: 10, submissions: 10 },
+        player2: { points: 0, guesses: 0, submissions: 0 },
+        player3: { points: 70, guesses: 60, submissions: 50 },
+      })
+      await Scoreboards(redditBot).postScoreboard()
+      expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
+        month: "May",
+        year: "2021",
+        guesses: [
+          { score: 60, username: "player3", },
+          { score: 10, username: "player1", },
+        ],
+        points: [
+          { score: 70, username: "player3", },
+          { score: 10, username: "player1", },
+        ],
+        submissions: [
+          { score: 50, username: "player3", },
+          { score: 10, username: "player1", }
+        ]
+      })
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
     })
 
     it('does not post if the score file is empty', async () => {

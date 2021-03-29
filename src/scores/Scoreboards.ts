@@ -27,6 +27,7 @@ const generateScoreboardData = (date): ScoreboardData => {
 
 const sortScores = (rawScores: ScoreData, fieldName: 'points' | 'submissions' | 'guesses'): Score[] => {
   return Object.keys(rawScores).map(key => ({ username: key, score: rawScores[key][fieldName] }))
+    .filter(data => data.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5)
 }
@@ -41,7 +42,7 @@ export default (bot: RedditBot) => ({
     const postTemplate = fs.readFileSync(path.resolve(__dirname, `../../templates/scoreboard_template.md`), 'utf-8')
     const title = `/r/GuessTheMovie ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
     const body = Mustache.render(postTemplate, scoreboardData)
-    Logger.info(`Posting new scoreboard: ${scoreboardData.month} ${scoreboardData.year}`)
+    Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
     await bot.createPost(title, body, true)
   }
 })
