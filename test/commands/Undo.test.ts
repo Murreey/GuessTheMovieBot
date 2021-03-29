@@ -13,7 +13,8 @@ jest.mock('../../src/scores/ScoreManager')
 
 describe('Undo', () => {
   const mockScoreManager = {
-    addPoints: jest.fn()
+    addPoints: jest.fn(),
+    deductWin: jest.fn()
   }
   beforeEach(() => {
     jest.resetAllMocks()
@@ -81,6 +82,7 @@ describe('Undo', () => {
     await Undo(mockRedditBot() as any, mockComment())
     expect(mockScoreManager.addPoints).toHaveBeenNthCalledWith(1, "submitter", -4)
     expect(mockScoreManager.addPoints).toHaveBeenNthCalledWith(2, "guesser", -10)
+    expect(mockScoreManager.deductWin).toHaveBeenCalledWith("guesser", "submitter")
   })
 
   it('deletes the bot comment', async () => {

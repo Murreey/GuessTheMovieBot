@@ -12,12 +12,18 @@ const initUserScore = (scores: ScoreData, username: string): ScoreData => {
   return scores
 }
 
-const saveScoreData = (fileName: string, newData: ScoreData) => {
+const ensureFileExists = (fileName: string) => {
+  const monthlyDirectory = path.resolve(__dirname, '../../scores/monthly/')
+  if(!fs.existsSync(monthlyDirectory)) fs.mkdirSync(monthlyDirectory)
+
   if(!fs.existsSync(fileName)) {
     Logger.verbose(`Created new score file ${fileName}`)
     fs.openSync(fileName, 'w')
   }
+}
 
+const saveScoreData = (fileName: string, newData: ScoreData) => {
+  ensureFileExists(fileName)
   fs.writeFileSync(fileName, JSON.stringify(newData, null, 2))
   Logger.verbose(`Saving file ${fileName}...`)
 }
@@ -25,21 +31,16 @@ const saveScoreData = (fileName: string, newData: ScoreData) => {
 export const getMonthlyFileName = (date = new Date) => {
   const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
   const directory = path.resolve(__dirname, '../../scores/')
-  if(!fs.existsSync(directory)) fs.mkdirSync(directory)
   return `${directory}/monthly/${date.getUTCFullYear()}-${months[date.getUTCMonth()]}.json`
 }
 
 export const getTotalFileName = () => {
   const directory = path.resolve(__dirname, '../../scores/')
-  if(!fs.existsSync(directory)) fs.mkdirSync(directory)
   return `${directory}/total.json`
 }
 
 export const getScoreData = (fileName: string): ScoreData => {
-  if(!fs.existsSync(fileName)) {
-    Logger.verbose(`Created new score file ${fileName}`)
-    fs.openSync(fileName, 'w')
-  }
+  ensureFileExists(fileName)
 
   const data = fs.readFileSync(fileName, "utf8")
   Logger.verbose(`Loaded scores from ${fileName}`)
