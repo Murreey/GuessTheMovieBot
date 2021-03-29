@@ -106,8 +106,12 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         Logger.warn('setPostFlair() ignored, read only mode is enabled')
         return
       }
-
-      await (post as any).selectFlair({ flair_template_id: template })
+      if(!template) {
+        // You can't remove flair with selectFlair so have to do this
+        await (post as any).assignFlair({ text: "", cssClass: "" })
+      } else {
+        await (post as any).selectFlair({ flair_template_id: template })
+      }
       Logger.verbose(`Setting flair ${template} on ${post.name}`)
     },
     getUserFlair: async (username) => subreddit.getUserFlair(username).then(flair => flair.flair_text),

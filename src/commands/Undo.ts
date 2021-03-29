@@ -41,7 +41,7 @@ export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
   } else if(flairTemplate === config.linkFlairTemplates.identified.hard) {
     await bot.setPostFlair(submission, config.linkFlairTemplates.hard)
   } else {
-    await bot.setPostFlair(submission, "")
+    await bot.setPostFlair(submission, null)
   }
 
   return true
