@@ -97,6 +97,12 @@ describe('WinProcessor', () =>  {
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/guesser gets +8"))
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/submitter gets +5"))
   })
+
+  it('uses custom reply args if provided', async () => {
+    await processWin(redditBot, mockComment, { submitter: { name: 'changed', points: 20 }})
+    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/guesser gets +8"))
+    expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/changed gets +20"))
+  })
 })
 
 const mockRedditBot = (guessComment = {}, submission = {}) => {

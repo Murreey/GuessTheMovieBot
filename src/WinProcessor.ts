@@ -9,7 +9,7 @@ import { Logger } from './Logger';
 import ScoreManager from './scores/ScoreManager';
 import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
 
-export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> => {
+export default async (bot: RedditBot, comment: snoowrap.Comment, winCommentArgs = {}): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
@@ -31,7 +31,8 @@ export default async (bot: RedditBot, comment: snoowrap.Comment): Promise<void> 
     postID: await submission.id,
     guesser: { name: guesser, points: points.guesser },
     submitter: { name: submitter, points: points.submitter },
-    googleUrl: foundOnGoogle ? getSearchUrl(imageUrl) : undefined
+    googleUrl: foundOnGoogle ? getSearchUrl(imageUrl) : undefined,
+    ...winCommentArgs
   }))
 }
 

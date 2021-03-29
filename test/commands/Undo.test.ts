@@ -93,7 +93,7 @@ describe('Undo', () => {
     it('removes all flair if the post had no difficulty', async () => {
       const bot = mockRedditBot()
       await Undo(bot as any, mockComment())
-      expect(bot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "")
+      expect(bot.setPostFlair).toHaveBeenCalledWith(expect.anything(), null)
     })
 
     it('sets the easy flair if the post was easy', async () => {
