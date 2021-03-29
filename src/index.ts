@@ -1,10 +1,12 @@
 import yargs from 'yargs'
+import * as scheduler from 'node-cron';
 import { Logger, LogLevel } from './Logger';
 import * as RedditBot from './RedditBot';
 import WinChecker from './WinChecker';
 import processWin from './WinProcessor'
 import newPostProcessor from "./NewPostProcessor";
 import CommandProcessor, { COMMAND_PREFIX } from './commands/CommandProcessor';
+import Scoreboards from './scores/Scoreboards';
 
 const args = yargs(process.argv.slice(2))
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
@@ -69,6 +71,12 @@ const run = async () => {
   await processNewReports()
   running = false
 }
+
+scheduler.schedule("1 0 1 * *", async () => {
+  running = true
+  await Scoreboards(bot).postScoreboard()
+  running = false
+})
 
 run()
 setInterval(run, 15000)
