@@ -27,6 +27,8 @@
     "mustache": "^4.1.0",
     "node-cron": "^2.0.3",
     "snoowrap": "^1.22.0",
+    "sqlite": "^4.0.19",
+    "sqlite3": "^5.0.2",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.9.0",
     "yargs": "^16.2.0"
