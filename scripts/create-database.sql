@@ -19,4 +19,12 @@ CREATE TABLE IF NOT EXISTS points (
   UNIQUE (post_id, user_id) ON CONFLICT REPLACE,
   FOREIGN KEY (post_id) REFERENCES wins(post_id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-)
+);
+
+CREATE TABLE IF NOT EXISTS legacy_imports (
+  user_id INTEGER PRIMARY KEY NOT NULL,
+  points INTEGER NOT NULL,
+  guesses INTEGER NOT NULL,
+  submissions INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+);

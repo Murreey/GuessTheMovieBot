@@ -34,6 +34,7 @@ export default async () => {
 
   return {
     db,
+    getUserID,
     saveScore: async (postID: string, guesser: string, submitter: string, scores: Scores) => {
       const guesserID = await getUserID(guesser)
       const submitterID = await getUserID(submitter)
@@ -61,7 +62,18 @@ export default async () => {
         AND wins.timestamp >= datetime(?)
         AND wins.timestamp < datetime(?)`, username, timeRange.from, timeRange.to)
 
-      return data.total ?? 0
+      let result = data?.total ?? 0
+
+      if(timeRange.from === defaultTimeRange.from) {
+        const legacyData = await db.get(`
+          SELECT points FROM legacy_imports
+          INNER JOIN users ON legacy_imports.user_id = users.user_id
+          WHERE users.username = ?`, username)
+
+        result += (legacyData?.points ?? 0)
+      }
+
+      return result
     },
     getUserSubmissionCount: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }
@@ -73,7 +85,18 @@ export default async () => {
         AND wins.timestamp >= datetime(?)
         AND wins.timestamp < datetime(?)`, username, timeRange.from, timeRange.to)
 
-      return data.count ?? 0
+      let result = data?.count ?? 0
+
+      if(timeRange.from === defaultTimeRange.from) {
+        const legacyData = await db.get(`
+          SELECT submissions FROM legacy_imports
+          INNER JOIN users ON legacy_imports.user_id = users.user_id
+          WHERE users.username = ?`, username)
+
+        result += (legacyData?.submissions ?? 0)
+      }
+
+      return result
     },
     getUserGuessCount: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }
@@ -85,7 +108,18 @@ export default async () => {
         AND wins.timestamp >= datetime(?)
         AND wins.timestamp < datetime(?)`, username, timeRange.from, timeRange.to)
 
-      return data.count ?? 0
+      let result = data?.total ?? 0
+
+      if(timeRange.from === defaultTimeRange.from) {
+        const legacyData = await db.get(`
+          SELECT guesses FROM legacy_imports
+          INNER JOIN users ON legacy_imports.user_id = users.user_id
+          WHERE users.username = ?`, username)
+
+        result += (legacyData?.guesses ?? 0)
+      }
+
+      return result
     }
   }
 }
