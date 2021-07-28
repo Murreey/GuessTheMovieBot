@@ -6,3 +6,5 @@ logs
 /scores
 
 *.db
+*.db-shm
+*.db-wal

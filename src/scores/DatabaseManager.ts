@@ -52,10 +52,25 @@ export default async () => {
       )
     },
     deleteWin: async (postID: string) => {
-      // TODO
+      await db.run(`DELETE FROM wins WHERE post_id = ?`, postID)
     },
     editPoints: async (postID: string, scores: Scores) => {
-      // TODO
+      await db.run(`
+        UPDATE points
+        SET points = ?
+        WHERE EXISTS
+          (SELECT post_id FROM wins WHERE wins.guesser_id = points.user_id)
+        AND post_id = ?`,
+        scores.guesser, postID
+      )
+      await db.run(`
+        UPDATE points
+        SET points = ?
+        WHERE EXISTS
+          (SELECT post_id FROM wins WHERE wins.submitter_id = points.user_id)
+        AND post_id = ?`,
+        scores.submitter, postID
+      )
     },
     getUserScore: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }

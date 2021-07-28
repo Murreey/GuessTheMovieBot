@@ -51,12 +51,13 @@ const processNewComments = async () => {
 }
 
 const processNewReports = async () => {
+  const scoreManager = await ScoreManager(bot)
   const reportedComments = await bot.fetchNewReports()
   for(const comment of reportedComments) {
     for(const report of comment.mod_reports) {
       if(report[0] && report[0].trim().startsWith(COMMAND_PREFIX)) {
         Logger.verbose(`Processing new report '${report[0]}' on ${comment.name}`)
-        await CommandProcessor(bot, comment, report[0])
+        await CommandProcessor(bot, scoreManager, comment, report[0])
       }
     }
   }

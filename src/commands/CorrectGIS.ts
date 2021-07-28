@@ -1,12 +1,11 @@
 import { RedditBot } from "../RedditBot";
 import { Comment, Submission } from "snoowrap";
 import { Logger } from "../Logger";
-import { getScores } from "../scores/Scores";
-import ScoreManager from "../scores/ScoreManager";
 import { createWinComment } from "../WinProcessor";
 import { getSearchUrl } from "../GoogleImageSearcher";
+import { ScoreManager } from "../types";
 
-export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
+export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
   if(comment.author.name !== bot.username) return false
   if(!await bot.isCommentAReply(comment)) return false
   const previouslyFoundOnGoogle = comment?.body?.toLowerCase().includes("found on google") || false
@@ -20,21 +19,12 @@ export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
   const submitter = await submission.author.name
   const guesser =  guessComment.author.name
 
-  const originalPoints = getScores(previouslyFoundOnGoogle)
-  const newPoints = getScores(!previouslyFoundOnGoogle)
-  const pointChange = {
-    submitter: newPoints.submitter - originalPoints.submitter,
-    guesser: newPoints.guesser - originalPoints.guesser
-  }
-
   if(bot.readOnly) {
     Logger.warn(`Skipping command actions as bot is in read-only mode`)
     return true
   }
 
-  const scoreManager = ScoreManager(bot)
-  // await scoreManager.addPoints(submitter, pointChange.submitter) // TODO
-  // await scoreManager.addPoints(guesser, pointChange.guesser)
+  const newPoints = await scoreManager.updatePoints(await submission.id, !previouslyFoundOnGoogle)
 
   const imageUrl = await submission.is_self ? await submission.selftext : await submission.url
   Logger.verbose('Editing bot comment for GIS adjustment')

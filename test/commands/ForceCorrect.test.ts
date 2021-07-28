@@ -1,17 +1,17 @@
 import ForceCorrect from '../../src/commands/ForceCorrect'
 
-// import { getScores } from '../../src/scores/Scores'
-// import ScoreManager from '../../src/scores/ScoreManager'
-// import  { getSearchUrl } from '../../src/GoogleImageSearcher'
 import WinProcessor from '../../src/WinProcessor'
 
 import { mocked } from 'ts-jest/utils'
 import { RedditBot, create } from '../../src/RedditBot'
 import { Comment } from 'snoowrap'
 
-// jest.mock('../../src/scores/Scores')
-// jest.mock('../../src/scores/Scoremanager')
 jest.mock('../../src/WinProcessor')
+
+const mockWinProcessor = jest.fn()
+mocked(WinProcessor).mockReturnValue(mockWinProcessor)
+
+const mockScoreManager: any = jest.fn()
 
 describe('CorrectGIS', () => {
   afterEach(() => {
@@ -21,7 +21,7 @@ describe('CorrectGIS', () => {
   it('returns false if the comment was not from the OP', async () => {
     const comment = mockComment(false)
     const bot = mockRedditBot()
-    const result = await ForceCorrect(bot, comment)
+    const result = await ForceCorrect(bot, comment, mockScoreManager)
     expect(result).toBe(false)
   })
 
@@ -29,23 +29,24 @@ describe('CorrectGIS', () => {
     const comment = mockComment()
     const bot = mockRedditBot()
     bot.isCommentAReply.mockReturnValueOnce(false)
-    const result = await ForceCorrect(bot, comment)
+    const result = await ForceCorrect(bot, comment, mockScoreManager)
     expect(result).toBe(false)
   })
 
   it('returns false if the comment was not a reply to another user', async () => {
     const comment = mockComment()
     const bot = mockRedditBot(mockComment(true))
-    const result = await ForceCorrect(bot, comment)
+    const result = await ForceCorrect(bot, comment, mockScoreManager)
     expect(result).toBe(false)
   })
 
   it('sends the comment to the WinProcessor if it is valid', async () => {
     const comment = mockComment()
     const bot = mockRedditBot()
-    const result = await ForceCorrect(bot, comment)
+    const result = await ForceCorrect(bot, comment, mockScoreManager)
 
-    expect(WinProcessor).toHaveBeenCalledWith(bot, comment, { forced: true })
+    expect(WinProcessor).toHaveBeenCalledWith(bot, mockScoreManager)
+    expect(mockWinProcessor).toHaveBeenCalledWith(comment, { forced: true })
     expect(result).toBe(true)
   })
 })

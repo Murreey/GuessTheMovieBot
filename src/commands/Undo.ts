@@ -2,10 +2,10 @@ import { RedditBot } from "../RedditBot";
 import { Comment, Submission } from "snoowrap";
 import { getConfig } from '../config'
 import { getScores } from "../scores/Scores";
-import ScoreManager from "../scores/ScoreManager";
 import { Logger } from "../Logger";
+import { ScoreManager } from "../types";
 
-export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
+export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
   if(comment.author.name !== bot.username) return false
   if(!await bot.isCommentAReply(comment)) return false
 
@@ -30,10 +30,9 @@ export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
     return true
   }
 
-  const scoreManager = ScoreManager(bot)
-  // await scoreManager.deductWin(guesser, submitter) // TODO
-  // await scoreManager.addPoints(submitter, -points.submitter)
-  // await scoreManager.addPoints(guesser, -points.guesser)
+  await scoreManager.removeWin(await submission.id)
+
+  // TODO update user flairs
 
   await (comment as any).delete()
 

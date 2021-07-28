@@ -5,6 +5,7 @@ import { RedditBot } from "../RedditBot"
 import ForceCorrect from './ForceCorrect'
 import CorrectGIS from './CorrectGIS'
 import Undo from './Undo'
+import { ScoreManager } from "../types"
 
 export const COMMAND_PREFIX = '!'
 const COMMANDS: CommandMatchers[] = [
@@ -22,11 +23,11 @@ const COMMANDS: CommandMatchers[] = [
   },
 ]
 
-export default async (bot: RedditBot, comment: Comment, input: string) => {
+export default async (bot: RedditBot, scoreManager: ScoreManager, comment: Comment, input: string) => {
   for (const command of COMMANDS) {
     if(command.matchers.some(matches(input))) {
       Logger.info(`Executing mod command '${input}' on ${comment.name}`)
-      const result = await command.process(bot, comment)
+      const result = await command.process(bot, comment, scoreManager)
 
       if(result && !bot.readOnly) {
         Logger.verbose(`Command ran, approving comment`)
@@ -43,5 +44,5 @@ const matches = (test) => (matcher) => `${COMMAND_PREFIX}${matcher.toLowerCase()
 
 type CommandMatchers = {
   matchers: string[],
-  process: (bot: RedditBot, comment: Comment) => Promise<any>
+  process: (bot: RedditBot, comment: Comment, scoreManager?: ScoreManager) => Promise<any>
 }
