@@ -4,6 +4,7 @@ import { Logger } from "../Logger";
 import { createWinComment } from "../WinProcessor";
 import { getSearchUrl } from "../GoogleImageSearcher";
 import { ScoreManager } from "../types";
+import ScoreFlairManager from "../scores/ScoreFlairManager";
 
 export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
   if(comment.author.name !== bot.username) return false
@@ -25,6 +26,10 @@ export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManag
   }
 
   const newPoints = await scoreManager.updatePoints(await submission.id, !previouslyFoundOnGoogle)
+
+  const flairManager = ScoreFlairManager(bot, scoreManager)
+  await flairManager.syncPoints(guesser)
+  await flairManager.syncPoints(submitter)
 
   const imageUrl = await submission.is_self ? await submission.selftext : await submission.url
   Logger.verbose('Editing bot comment for GIS adjustment')

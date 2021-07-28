@@ -1,5 +1,6 @@
 import { Logger } from "../Logger";
 import { RedditBot } from "../RedditBot";
+import { ScoreManager } from "../types";
 
 const thresholds: [number, string][] = [
   [1, '#7EFF7B'], [5, '#68B4E7'], [10, '#FFE47B'],
@@ -20,15 +21,11 @@ const chooseTextColour = (colour: string): 'light' | 'dark' => {
 
 const getThresholdInfo = (points: number) => [...thresholds].reverse().find(threshold => threshold[0] <= points) || thresholds[0]
 
-export default (bot: RedditBot) => {
-  const getPoints = async (user: string): Promise<number> => {
-    const flair = await bot.getUserFlair(user)
-    if(flair === null) return 0
-    return parseInt(flair.match(/^\D*([\d,]+)/)?.[1].replace(/,/g, '')) || 0
-  }
-
+export default (bot: RedditBot, scoreManager?: ScoreManager) => {
   const setPoints = async (user: string, amount: number): Promise<void> => {
-    if(amount < 0) amount = 0
+    if(bot.readOnly) return
+
+    if(amount < 0 || !amount) amount = 0
 
     const [ threshold, colour ] = getThresholdInfo(amount)
 
@@ -45,7 +42,10 @@ export default (bot: RedditBot) => {
   }
 
   return {
-    getPoints,
-    setPoints
+    setPoints,
+    syncPoints: async (username: string) => {
+      if(!scoreManager) return
+      await setPoints(username, await scoreManager.getUserPoints(username))
+    }
   }
 }

@@ -19,11 +19,8 @@ export default async (bot: RedditBot) => {
         return points
       }
 
-      const guesserPoints = await db.getUserScore(guesser)
-      const submitterPoints = await db.getUserScore(submitter)
-
-      await flairManager.setPoints(guesser, guesserPoints + points.guesser)
-      await flairManager.setPoints(submitter, submitterPoints + points.submitter)
+      await flairManager.syncPoints(guesser)
+      await flairManager.syncPoints(submitter)
 
       await db.recordWin(postID, guesser, submitter, points)
 
@@ -36,8 +33,6 @@ export default async (bot: RedditBot) => {
       }
 
       await db.deleteWin(postID)
-
-      // TODO flair updates
     },
     updatePoints: async (postID: string, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
@@ -48,8 +43,6 @@ export default async (bot: RedditBot) => {
       }
 
       await db.editPoints(postID, points)
-
-      // TODO flair updates
 
       return points
     }

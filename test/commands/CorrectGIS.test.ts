@@ -2,23 +2,28 @@ import CorrectGIS from '../../src/commands/CorrectGIS'
 
 import  { createWinComment } from '../../src/WinProcessor'
 import  { getSearchUrl } from '../../src/GoogleImageSearcher'
+import ScoreFlairManager from "../../src/scores/ScoreFlairManager";
 
 import { mocked } from 'ts-jest/utils'
 import { Comment } from 'snoowrap'
 
-jest.mock('../../src/scores/Scores')
-jest.mock('../../src/scores/Scoremanager')
 jest.mock('../../src/WinProcessor')
 jest.mock('../../src/GoogleImageSearcher')
+jest.mock('../../src/scores/ScoreFlairManager')
 
 const mockScoreManager: any = {
   updatePoints: jest.fn().mockResolvedValue({ guesser: 8, submitter: 12 })
+}
+
+const mockFlairManager = {
+  syncPoints: jest.fn()
 }
 
 describe('CorrectGIS', () => {
   beforeEach(() => {
     mocked(createWinComment).mockReturnValue("new comment body")
     mocked(getSearchUrl).mockReturnValue("https://google")
+    mocked(ScoreFlairManager).mockReturnValue(mockFlairManager as any)
   });
 
   afterEach(() => {
@@ -30,6 +35,7 @@ describe('CorrectGIS', () => {
       const comment = mockComment("unknown")
       const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
       expect(mockScoreManager.updatePoints).not.toHaveBeenCalled()
+      expect(mockFlairManager.syncPoints).not.toHaveBeenCalled()
       expect(comment.edit).not.toHaveBeenCalled()
       expect(result).toBe(false)
     })
@@ -40,6 +46,7 @@ describe('CorrectGIS', () => {
       bot.isCommentAReply.mockResolvedValue(false)
       const result = await CorrectGIS(bot as any, comment, mockScoreManager)
       expect(mockScoreManager.updatePoints).not.toHaveBeenCalled()
+      expect(mockFlairManager.syncPoints).not.toHaveBeenCalled()
       expect(comment.edit).not.toHaveBeenCalled()
       expect(result).toBe(false)
     })
@@ -50,6 +57,7 @@ describe('CorrectGIS', () => {
       bot.isCommentAReply.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
       const result = await CorrectGIS(bot as any, comment, mockScoreManager)
       expect(mockScoreManager.updatePoints).not.toHaveBeenCalled()
+      expect(mockFlairManager.syncPoints).not.toHaveBeenCalled()
       expect(comment.edit).not.toHaveBeenCalled()
       expect(result).toBe(false)
     })
@@ -60,6 +68,7 @@ describe('CorrectGIS', () => {
       const comment = mockComment()
       const result = await CorrectGIS(bot as any, comment, mockScoreManager)
       expect(mockScoreManager.updatePoints).not.toHaveBeenCalled()
+      expect(mockFlairManager.syncPoints).not.toHaveBeenCalled()
       expect(comment.edit).not.toHaveBeenCalled()
       expect(result).toBe(true)
     })
@@ -70,6 +79,14 @@ describe('CorrectGIS', () => {
       const comment = mockComment(undefined, "this post was found on google")
       const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
       expect(mockScoreManager.updatePoints).toHaveBeenCalledWith("post-id", false)
+      expect(result).toBe(true)
+    })
+
+    it('syncs flair scores', async () => {
+      const comment = mockComment(undefined, "this post was found on google")
+      const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
+      expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(1, "guesser")
+      expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(2, "submitter")
       expect(result).toBe(true)
     })
 
@@ -92,6 +109,14 @@ describe('CorrectGIS', () => {
       const comment = mockComment(undefined, "win confirmed")
       const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
       expect(mockScoreManager.updatePoints).toHaveBeenCalledWith("post-id", true)
+      expect(result).toBe(true)
+    })
+
+    it('syncs flair scores', async () => {
+      const comment = mockComment(undefined, "this post was found on google")
+      const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
+      expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(1, "guesser")
+      expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(2, "submitter")
       expect(result).toBe(true)
     })
 

@@ -3,20 +3,25 @@ import Undo from '../../src/commands/Undo'
 import { Comment } from "snoowrap";
 import { getConfig } from "../../src/config"
 import { getScores } from "../../src/scores/Scores"
-import ScoreManager from "../../src/scores/ScoreManager"
+import ScoreFlairManager from "../../src/scores/ScoreFlairManager";
 
 import { mocked } from 'ts-jest/utils'
 
 jest.mock('../../src/config')
 jest.mock('../../src/scores/Scores')
+jest.mock('../../src/scores/ScoreFlairManager')
 
 describe('Undo', () => {
   const mockScoreManager: any = {
     removeWin: jest.fn()
   }
 
+  const mockFlairManager = {
+    syncPoints: jest.fn()
+  }
+
   beforeEach(() => {
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     mocked(getConfig).mockReturnValue({
       linkFlairTemplates: {
@@ -33,6 +38,7 @@ describe('Undo', () => {
       guesser: 10,
       submitter: 4
     })
+    mocked(ScoreFlairManager).mockReturnValue(mockFlairManager as any)
   })
 
   describe('does not delete the comment or edit scores', () => {
@@ -59,11 +65,27 @@ describe('Undo', () => {
       expect(comment.delete).not.toHaveBeenCalled()
       expect(result).toBe(false)
     })
+
+    it('if the bot is in read only mode', async () => {
+      const bot = mockRedditBot()
+      bot.readOnly = true
+      const comment = mockComment()
+      const result = await Undo(bot as any, comment, mockScoreManager)
+      expect(mockFlairManager.syncPoints).not.toHaveBeenCalled()
+      expect(comment.delete).not.toHaveBeenCalled()
+      expect(result).toBe(true)
+    })
   })
 
   it('removes the win from the database', async () => {
     await Undo(mockRedditBot() as any, mockComment(), mockScoreManager)
     expect(mockScoreManager.removeWin).toHaveBeenCalledWith("submission-id")
+  })
+
+  it('syncs flair scores', async () => {
+    await Undo(mockRedditBot() as any, mockComment(), mockScoreManager)
+    expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(1, "guesser")
+    expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(2, "submitter")
   })
 
   it('deletes the bot comment', async () => {
@@ -92,8 +114,8 @@ describe('Undo', () => {
     })
   })
 
-  it('returns true if everything was successful', () => {
-    expect(Undo(mockRedditBot() as any, mockComment(), mockScoreManager)).resolves.toBe(true)
+  it('returns true if everything was successful', async () => {
+    expect(await Undo(mockRedditBot() as any, mockComment(), mockScoreManager)).toBe(true)
   })
 })
 
