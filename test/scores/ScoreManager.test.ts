@@ -2,30 +2,39 @@ import ScoreManager from '../../src/scores/ScoreManager'
 
 import { getScores } from '../../src/scores/Scores'
 import FlairManager from '../../src/scores/ScoreFlairManager'
-import * as fileManager from '../../src/scores/ScoreFileManager'
+import DatabaseManager from '../../src/scores/DatabaseManager'
 
 import { mocked } from 'ts-jest/utils'
+import { ScoreManager as ScoreManagerType } from '../../src/types'
 
 jest.mock('../../src/scores/Scores')
 jest.mock('../../src/scores/ScoreFlairManager')
-jest.mock('../../src/scores/ScoreFileManager')
+jest.mock('../../src/scores/DatabaseManager')
 
 describe('ScoreManager', () => {
   const mockRedditBot = ({ readOnly: false } as any)
-  let mockFlairManager
+  let mockFlairManager, mockDatabaseManager
+  let scoreManager: ScoreManagerType
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mocked(getScores).mockReturnValue({ guesser: 3, submitter: 7 })
-    mocked(fileManager).getTotalFileName.mockReturnValue("file.json")
-    mocked(fileManager).getScoreData.mockReturnValue({
-      guesser: { points: 45 },
-      submitter: { points: 23 }
-    })
     mockFlairManager = {
       getPoints: jest.fn().mockReturnValue(13),
       setPoints: jest.fn()
     }
+    mockDatabaseManager = {
+      getUserID: jest.fn(),
+      recordWin: jest.fn(),
+      editPoints: jest.fn(),
+      deleteWin: jest.fn(),
+      getUserScore: jest.fn().mockResolvedValue(45),
+      getUserGuessCount: jest.fn(),
+      getUserSubmissionCount: jest.fn()
+    }
     mocked(FlairManager).mockReturnValue(mockFlairManager)
+    mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager)
+
+    scoreManager = await ScoreManager(mockRedditBot)
   })
 
   afterEach(() => {
@@ -33,99 +42,69 @@ describe('ScoreManager', () => {
   })
 
   describe('getUserPoints', () => {
-    it('returns the users points from file if it exists', async () => {
-      const points = await ScoreManager(mockRedditBot).getUserPoints("guesser")
+    it('calls the database method', async () => {
+      const points = await scoreManager.getUserPoints("guesser")
       expect(points).toBe(45)
-      expect(mockFlairManager.getPoints).not.toHaveBeenCalled()
-    })
-
-    it('fetches points from flair if not in the file', async () => {
-      const points = await ScoreManager(mockRedditBot).getUserPoints("unknown")
-      expect(mockFlairManager.getPoints).toHaveBeenCalled()
-      expect(points).toBe(13)
-    })
-
-    it('returns 0 if flair could not be found', async () => {
-      mockFlairManager.getPoints.mockReturnValue(undefined)
-      const points = await ScoreManager(mockRedditBot).getUserPoints("unknown")
-      expect(mockFlairManager.getPoints).toHaveBeenCalled()
-      expect(points).toBe(0)
+      expect(mockDatabaseManager.getUserScore).toHaveBeenCalledWith("guesser")
     })
   })
 
   describe('recordWin', () => {
-    describe(`fetches the user's existing score`, () => {
-      it('from file', async () => {
-        await ScoreManager(mockRedditBot).recordWin("guesser", "submitter", false)
-        expect(fileManager.getScoreData).toHaveBeenCalledWith("file.json")
-        expect(mockFlairManager.getPoints).not.toHaveBeenCalled()
-      })
-
-      it('from flair if not present in the file', async () => {
-        mocked(fileManager).getScoreData.mockReturnValue({})
-        await ScoreManager(mockRedditBot).recordWin("guesser", "submitter", false)
-        expect(mockFlairManager.getPoints).toHaveBeenCalledWith("guesser")
-        expect(mockFlairManager.getPoints).toHaveBeenCalledWith("submitter")
-      })
+    it(`fetches the user's existing score from the database`, async () => {
+      await scoreManager.recordWin("postID", "guesser", "submitter", false)
+      expect(mockDatabaseManager.getUserScore).toHaveBeenCalledTimes(2)
+      expect(mockDatabaseManager.getUserScore).toHaveBeenCalledWith("guesser")
+      expect(mockDatabaseManager.getUserScore).toHaveBeenCalledWith("submitter")
     })
 
     it(`sets user's flair to their new total`, async () => {
-      await ScoreManager(mockRedditBot).recordWin("guesser", "submitter", false)
+      await scoreManager.recordWin("postID", "guesser", "submitter", false)
       expect(mockFlairManager.setPoints).toHaveBeenCalledWith("guesser", 48)
-      expect(mockFlairManager.setPoints).toHaveBeenCalledWith("submitter", 30)
+      expect(mockFlairManager.setPoints).toHaveBeenCalledWith("submitter", 52)
     })
 
-    it(`sends new points to the file manager`, async () => {
-      await ScoreManager(mockRedditBot).recordWin("guesser", "submitter", false)
-      expect(fileManager.recordGuess).toHaveBeenCalledWith("guesser", 3)
-      expect(fileManager.recordSubmission).toHaveBeenCalledWith("submitter", 7)
+    it(`sends win to the database manager`, async () => {
+      await scoreManager.recordWin("postID", "guesser", "submitter", false)
+      expect(mockDatabaseManager.recordWin).toHaveBeenCalledWith("postID", "guesser", "submitter", { guesser: 3, submitter: 7 })
     })
 
     it('does not update anything if the bot is in read-only mode', async () => {
-      await ScoreManager({ readOnly: true } as any).recordWin("guesser", "submitter", false)
+      await (await ScoreManager({ readOnly: true } as any)).recordWin("postID", "guesser", "submitter", false)
       expect(mockFlairManager.getPoints).not.toHaveBeenCalled()
       expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
-      expect(fileManager.recordGuess).not.toHaveBeenCalled()
-      expect(fileManager.recordSubmission).not.toHaveBeenCalled()
+      expect(mockDatabaseManager.recordWin).not.toHaveBeenCalled()
     })
   })
 
-  describe('addPoints', () => {
-    it(`sets user's flair to their new total`, async () => {
-      await ScoreManager(mockRedditBot).addPoints("guesser", 15)
-      expect(mockFlairManager.setPoints).toHaveBeenCalledWith("guesser", 60)
+  describe('removeWin', () => {
+    it('removes the win from the database', async () => {
+      await scoreManager.removeWin("postID")
+      expect(mockDatabaseManager.deleteWin).toHaveBeenCalledWith("postID")
     })
 
-    it('sends new points to the file manager', async () => {
-      await ScoreManager(mockRedditBot).addPoints("guesser", 15)
-      expect(fileManager.recordPoints).toHaveBeenCalledWith("guesser", 15)
-    })
+    it.todo('updates the user flairs')
 
     it('does not update anything if the bot is in read-only mode', async () => {
-      await ScoreManager({ readOnly: true } as any).addPoints("guesser", 15)
+      await (await ScoreManager({ readOnly: true } as any)).removeWin("postID")
       expect(mockFlairManager.getPoints).not.toHaveBeenCalled()
       expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
-      expect(fileManager.recordPoints).not.toHaveBeenCalled()
+      expect(mockDatabaseManager.deleteWin).not.toHaveBeenCalled()
     })
   })
 
-  describe('deductWin', () => {
-    it('does nothing if no usernames are provided', async () => {
-      await ScoreManager(mockRedditBot).deductWin()
-      expect(fileManager.deductGuess).not.toHaveBeenCalled()
-      expect(fileManager.deductSubmission).not.toHaveBeenCalled()
+  describe('updatePoints', () => {
+    it('updates the points in the database', async () => {
+      await scoreManager.updatePoints("postID", true)
+      expect(mockDatabaseManager.editPoints).toHaveBeenCalledWith("postID", { guesser: 3, submitter: 7 })
     })
 
-    it(`removes wins from files`, async () => {
-      await ScoreManager(mockRedditBot).deductWin("guesser", "submitter")
-      expect(fileManager.deductGuess).toHaveBeenCalledWith("guesser")
-      expect(fileManager.deductSubmission).toHaveBeenCalledWith("submitter")
-    })
+    it.todo('updates the user flairs')
 
     it('does not update anything if the bot is in read-only mode', async () => {
-      await ScoreManager({ readOnly: true } as any).deductWin("guesser", "submitter")
-      expect(fileManager.deductGuess).not.toHaveBeenCalled()
-      expect(fileManager.deductSubmission).not.toHaveBeenCalled()
+      await (await ScoreManager({ readOnly: true } as any)).updatePoints("postID", true)
+      expect(mockFlairManager.getPoints).not.toHaveBeenCalled()
+      expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
+      expect(mockDatabaseManager.editPoints).not.toHaveBeenCalled()
     })
   })
 })

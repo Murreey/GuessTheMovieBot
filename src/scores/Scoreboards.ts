@@ -2,8 +2,6 @@ import fs from 'fs'
 import path from 'path'
 import Mustache from "mustache";
 import { RedditBot } from "../RedditBot";
-import * as fileManager from './ScoreFileManager'
-import { ScoreData } from './ScoreFileManager';
 import { Logger } from '../Logger';
 
 const generateScoreboardData = (date): ScoreboardData => {

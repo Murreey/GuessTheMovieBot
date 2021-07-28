@@ -1,14 +1,12 @@
 import processWin from '../src/WinProcessor'
 
 import fs from 'fs'
-import ScoreManager from "../src/scores/ScoreManager";
 import { checkGoogleForImage } from "../src/GoogleImageSearcher"
 import { getScores } from "../src/scores/Scores"
 import { getConfig } from '../src/config'
 
 import { mocked } from 'ts-jest/utils'
 
-jest.mock('../src/scores/ScoreManager')
 jest.mock('../src/scores/Scores')
 jest.mock('../src/GoogleImageSearcher')
 jest.mock('../src/config')
@@ -47,59 +45,58 @@ describe('WinProcessor', () =>  {
     mockScoreManager = {
       recordWin: jest.fn().mockResolvedValue({ guesser: 8, submitter: 5 }),
     }
-    mocked(ScoreManager).mockReturnValue(mockScoreManager)
     mockGoogleSearcher.mockClear()
   })
 
   describe('sets the correct flair', () => {
     it('when the post has no flair', async () => {
-      await processWin(redditBot, mockComment)
+      await processWin(redditBot, mockScoreManager)(mockComment)
       expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "identifiedTemplate")
     })
 
     it('when the post has `easy` flair', async () => {
       redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("easy") })
-      await processWin(redditBot, mockComment)
+      await processWin(redditBot, mockScoreManager)(mockComment)
       expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "easyIdentifiedTemplate")
     })
 
     it('when the post has `hard` flair', async () => {
       redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("hard") })
-      await processWin(redditBot, mockComment)
+      await processWin(redditBot, mockScoreManager)(mockComment)
       expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "hardIdentifiedTemplate")
     })
   })
 
   it('checks the image on google', async () => {
-    await processWin(redditBot, mockComment)
+    await processWin(redditBot, mockScoreManager)(mockComment)
     expect(mockGoogleSearcher).toHaveBeenCalledWith("image-url")
   })
 
   it('searches for the body text if it is a self post', async () => {
     redditBot = mockRedditBot(null, { is_self: true, selftext: "body text" })
-    await processWin(redditBot, mockComment)
+    await processWin(redditBot, mockScoreManager)(mockComment)
     expect(mockGoogleSearcher).toHaveBeenCalledWith("body text")
   })
 
   it('invokes the score manager', async () => {
-    await processWin(redditBot, mockComment)
-    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("guesser", "submitter", false)
+    await processWin(redditBot, mockScoreManager)(mockComment)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", "guesser", "submitter", false)
   })
 
   it('invokes the score manager if the image was found on google', async () => {
     mockGoogleSearcher.mockResolvedValue(true)
-    await processWin(redditBot, mockComment)
-    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("guesser", "submitter", true)
+    await processWin(redditBot, mockScoreManager)(mockComment)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", "guesser", "submitter", true)
   })
 
   it('replies with the correctly formatted reply', async () => {
-    await processWin(redditBot, mockComment)
+    await processWin(redditBot, mockScoreManager)(mockComment)
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/guesser gets +8"))
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/submitter gets +5"))
   })
 
   it('uses custom reply args if provided', async () => {
-    await processWin(redditBot, mockComment, { submitter: { name: 'changed', points: 20 }})
+    await processWin(redditBot, mockScoreManager)(mockComment, { submitter: { name: 'changed', points: 20 }})
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/guesser gets +8"))
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining("/u/changed gets +20"))
   })
