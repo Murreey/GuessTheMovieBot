@@ -80,13 +80,13 @@ describe('WinProcessor', () =>  {
 
   it('invokes the score manager', async () => {
     await processWin(redditBot, mockScoreManager)(mockComment)
-    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", "guesser", "submitter", false)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", 12345678, "guesser", "submitter", false)
   })
 
   it('invokes the score manager if the image was found on google', async () => {
     mockGoogleSearcher.mockResolvedValue(true)
     await processWin(redditBot, mockScoreManager)(mockComment)
-    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", "guesser", "submitter", true)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", 12345678, "guesser", "submitter", true)
   })
 
   it('replies with the correctly formatted reply', async () => {
@@ -116,6 +116,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     author: {
       name: "submitter"
     },
+    created_utc: 12345678,
     url: 'image-url',
     link_flair_text: Promise.resolve(null),
     ...submission

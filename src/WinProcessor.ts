@@ -23,7 +23,7 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
   Logger.verbose(`Image was ${foundOnGoogle ? '' : 'not '}found on Google`)
 
   Logger.debug('Sending win to ScoreManager')
-  const points = await scoreManager.recordWin(await submission.id, guesser, submitter, !!foundOnGoogle)
+  const points = await scoreManager.recordWin(await submission.id, await submission.created_utc, guesser, submitter, !!foundOnGoogle)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({

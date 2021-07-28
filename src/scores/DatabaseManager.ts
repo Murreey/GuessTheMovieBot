@@ -35,12 +35,12 @@ export default async () => {
   return {
     db,
     getUserID,
-    recordWin: async (postID: string, guesser: string, submitter: string, scores: Scores) => {
+    recordWin: async (postID: string, postCreatedAt: number, guesser: string, submitter: string, scores: Scores) => {
       const guesserID = await getUserID(guesser)
       const submitterID = await getUserID(submitter)
       await db.run(
-        `INSERT OR IGNORE INTO wins (post_id, guesser_id, submitter_id) VALUES (?, ?, ?)`,
-        postID, guesserID, submitterID
+        `INSERT OR IGNORE INTO wins (post_id, guesser_id, submitter_id, createdAt) VALUES (?, ?, ?, ?)`,
+        postID, guesserID, submitterID, postCreatedAt
       )
       await db.run(
         `INSERT OR IGNORE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,

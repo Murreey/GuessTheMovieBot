@@ -11,7 +11,7 @@ export default async (bot: RedditBot) => {
 
   return {
     getUserPoints: db.getUserScore,
-    recordWin: async (postID: string, guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
+    recordWin: async (postID: string, postCreatedAt: number, guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
       if(bot.readOnly) {
@@ -22,7 +22,7 @@ export default async (bot: RedditBot) => {
       await flairManager.syncPoints(guesser)
       await flairManager.syncPoints(submitter)
 
-      await db.recordWin(postID, guesser, submitter, points)
+      await db.recordWin(postID, postCreatedAt, guesser, submitter, points)
 
       return points
     },
