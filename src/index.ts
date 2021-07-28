@@ -7,6 +7,7 @@ import processWin from './WinProcessor'
 import newPostProcessor from "./NewPostProcessor";
 import CommandProcessor, { COMMAND_PREFIX } from './commands/CommandProcessor';
 import Scoreboards from './scores/Scoreboards';
+import ScoreManager from './scores/ScoreManager';
 
 const args = yargs(process.argv.slice(2))
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
@@ -29,12 +30,13 @@ const processNewSubmissions = async () => {
 }
 
 const processNewComments = async () => {
+  const scoreManager = await ScoreManager(bot)
   const comments = await bot.fetchNewConfirmations()
   for(const comment of comments) {
     Logger.verbose(`Processing new comment by ${comment.author.name}:`)
     Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
 
-    const validWin = await WinChecker(bot).isValidWin(comment)
+    const validWin = await WinChecker(bot, scoreManager).isValidWin(comment)
     if(!validWin) {
       Logger.verbose('No win detected, ignoring')
       Logger.verbose("")
@@ -43,7 +45,7 @@ const processNewComments = async () => {
 
     Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
     Logger.info('Win confirmed!')
-    await processWin(bot, comment)
+    await processWin(bot, scoreManager)(comment)
     Logger.info("")
   }
 }

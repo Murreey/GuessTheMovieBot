@@ -1,3 +1,5 @@
+import ScoreManager from './scores/ScoreManager'
+
 export interface Config {
   userAgent: string,
   refreshToken: string,
@@ -32,3 +34,10 @@ export enum PointLevel {
   NORMAL = "normal",
   GOOGLE = "google"
 }
+
+export type AsyncReturnType<T extends (...args: any) => any> =
+	T extends (...args: any) => Promise<infer U> ? U :
+	T extends (...args: any) => infer U ? U :
+	any
+
+export type ScoreManager = AsyncReturnType<typeof ScoreManager>

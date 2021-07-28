@@ -35,7 +35,7 @@ export default async () => {
   return {
     db,
     getUserID,
-    saveScore: async (postID: string, guesser: string, submitter: string, scores: Scores) => {
+    recordWin: async (postID: string, guesser: string, submitter: string, scores: Scores) => {
       const guesserID = await getUserID(guesser)
       const submitterID = await getUserID(submitter)
       await db.run(
@@ -50,6 +50,12 @@ export default async () => {
         `INSERT OR IGNORE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
         postID, submitterID, scores.submitter
       )
+    },
+    deleteWin: async (postID: string) => {
+      // TODO
+    },
+    editPoints: async (postID: string, scores: Scores) => {
+      // TODO
     },
     getUserScore: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }

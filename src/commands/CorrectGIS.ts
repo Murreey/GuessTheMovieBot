@@ -33,8 +33,8 @@ export default async (bot: RedditBot, comment: Comment): Promise<boolean> => {
   }
 
   const scoreManager = ScoreManager(bot)
-  await scoreManager.addPoints(submitter, pointChange.submitter)
-  await scoreManager.addPoints(guesser, pointChange.guesser)
+  // await scoreManager.addPoints(submitter, pointChange.submitter) // TODO
+  // await scoreManager.addPoints(guesser, pointChange.guesser)
 
   const imageUrl = await submission.is_self ? await submission.selftext : await submission.url
   Logger.verbose('Editing bot comment for GIS adjustment')

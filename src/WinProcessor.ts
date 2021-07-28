@@ -1,4 +1,3 @@
-
 import path from 'path'
 import { readFileSync, existsSync } from 'fs'
 import snoowrap from 'snoowrap';
@@ -6,10 +5,10 @@ import Mustache from 'mustache';
 import { getConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
-import ScoreManager from './scores/ScoreManager';
 import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
+import { ScoreManager } from './types';
 
-export default async (bot: RedditBot, comment: snoowrap.Comment, winCommentArgs = {}): Promise<void> => {
+export default (bot: RedditBot, scoreManager: ScoreManager) => async(comment: snoowrap.Comment, winCommentArgs = {}): Promise<void> => {
   const submission = bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
@@ -24,7 +23,7 @@ export default async (bot: RedditBot, comment: snoowrap.Comment, winCommentArgs 
   Logger.verbose(`Image was ${foundOnGoogle ? '' : 'not '}found on Google`)
 
   Logger.debug('Sending win to ScoreManager')
-  const points = await ScoreManager(bot).recordWin(guesser, submitter, !!foundOnGoogle)
+  const points = await scoreManager.recordWin(await submission.id, guesser, submitter, !!foundOnGoogle)
 
   Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({
