@@ -3,10 +3,11 @@ import path from 'path'
 import sqlite3 from 'sqlite3'
 import { Database, open } from 'sqlite'
 import { Scores } from './Scores'
+import { Score, TimeRange } from '../types'
 
-const defaultTimeRange = {
-  from: '2000-01-01',
-  to: 'now'
+const defaultTimeRange: TimeRange = {
+  from: new Date('2000-01-01'),
+  to: new Date()
 }
 
 export default async () => {
@@ -72,7 +73,7 @@ export default async () => {
         scores.submitter, postID
       )
     },
-    getUserScore: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
+    getUserScore: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }
 
       const data = await db.get(`
@@ -80,12 +81,12 @@ export default async () => {
         INNER JOIN points ON wins.post_id = points.post_id
         INNER JOIN users ON points.user_id = users.user_id
         WHERE users.username = ?
-        AND wins.timestamp >= datetime(?)
-        AND wins.timestamp < datetime(?)`, username, timeRange.from, timeRange.to)
+        AND wins.solvedAt >= ?
+        AND wins.solvedAt < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.total ?? 0
 
-      if(timeRange.from === defaultTimeRange.from) {
+      if(timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
           SELECT points FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
@@ -96,19 +97,19 @@ export default async () => {
 
       return result
     },
-    getUserSubmissionCount: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
+    getUserSubmissionCount: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }
 
       const data = await db.get(`
         SELECT COUNT(wins.post_id) as count FROM wins
         LEFT JOIN users ON wins.submitter_id = users.user_id
         WHERE users.username = ?
-        AND wins.timestamp >= datetime(?)
-        AND wins.timestamp < datetime(?)`, username, timeRange.from, timeRange.to)
+        AND wins.solvedAt >= ?
+        AND wins.solvedAt < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.count ?? 0
 
-      if(timeRange.from === defaultTimeRange.from) {
+      if(timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
           SELECT submissions FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
@@ -119,19 +120,19 @@ export default async () => {
 
       return result
     },
-    getUserGuessCount: async (username: string, timeRange?: { from?: string, to?: string }): Promise<number> =>  {
+    getUserGuessCount: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> =>  {
       timeRange = { ...defaultTimeRange, ...timeRange }
 
       const data = await db.get(`
         SELECT COUNT(wins.post_id) as count FROM wins
         LEFT JOIN users ON wins.guesser_id = users.user_id
         WHERE users.username = ?
-        AND wins.timestamp >= datetime(?)
-        AND wins.timestamp < datetime(?)`, username, timeRange.from, timeRange.to)
+        AND wins.solvedAt >= ?
+        AND wins.solvedAt < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.total ?? 0
 
-      if(timeRange.from === defaultTimeRange.from) {
+      if(timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
           SELECT guesses FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id

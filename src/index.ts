@@ -8,6 +8,7 @@ import newPostProcessor from "./NewPostProcessor";
 import CommandProcessor, { COMMAND_PREFIX } from './commands/CommandProcessor';
 import Scoreboards from './scores/Scoreboards';
 import ScoreManager from './scores/ScoreManager';
+import DatabaseManager from './scores/DatabaseManager';
 
 const args = yargs(process.argv.slice(2))
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
@@ -18,6 +19,7 @@ const args = yargs(process.argv.slice(2))
 Logger.setup({ file: LogLevel.INFO, console: args['log-level'] })
 
 const bot = RedditBot.create({ debug: args['debug-requests'], readOnly: args['read-only'] })
+const databaseManager = DatabaseManager()
 
 const processNewSubmissions = async () => {
   const newPosts = await bot.fetchNewSubmissions()
@@ -30,7 +32,7 @@ const processNewSubmissions = async () => {
 }
 
 const processNewComments = async () => {
-  const scoreManager = await ScoreManager(bot)
+  const scoreManager = await ScoreManager(bot, await databaseManager)
   const comments = await bot.fetchNewConfirmations()
   for(const comment of comments) {
     Logger.verbose(`Processing new comment by ${comment.author.name}:`)
@@ -51,7 +53,7 @@ const processNewComments = async () => {
 }
 
 const processNewReports = async () => {
-  const scoreManager = await ScoreManager(bot)
+  const scoreManager = await ScoreManager(bot, await databaseManager)
   const reportedComments = await bot.fetchNewReports()
   for(const comment of reportedComments) {
     for(const report of comment.mod_reports) {

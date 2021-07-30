@@ -4,10 +4,11 @@ import { RedditBot } from "../RedditBot";
 import { getScores, Scores } from './Scores'
 import FlairManager from './ScoreFlairManager'
 import DatabaseManager from "./DatabaseManager";
+import { DatabaseManager as DatabaseManagerType } from "../types";
 
-export default async (bot: RedditBot) => {
-  const db = await DatabaseManager()
+export default async (bot: RedditBot, db?: DatabaseManagerType) => {
   const flairManager = FlairManager(bot)
+  if(!db) db = await DatabaseManager()
 
   return {
     getUserPoints: db.getUserScore,
