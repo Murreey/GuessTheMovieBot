@@ -142,6 +142,44 @@ export default async () => {
       }
 
       return result
+    },
+    getHighScores: async (timeRange: TimeRange, limit = 5) => {
+      const allScores = await db.all(`
+        SELECT username, SUM(points) AS score
+        FROM wins
+        INNER JOIN points ON wins.post_id = points.post_id
+        INNER JOIN users ON points.user_id = users.user_id
+        AND wins.createdAt >= ? AND wins.createdAt < ?
+        GROUP BY users.user_id
+        ORDER BY points DESC
+        LIMIT ?
+      `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
+
+      const topGuessers = await db.all(`
+        SELECT username, COUNT(post_id) AS score
+        FROM wins
+        INNER JOIN users ON wins.guesser_id = users.user_id
+        WHERE solvedAt >= ? AND solvedAt < ?
+        GROUP BY guesser_id
+        ORDER BY guesses DESC
+        LIMIT ?
+      `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
+
+      const topSubmitters = await db.all(`
+        SELECT username, COUNT(post_id) AS score
+        FROM wins
+        INNER JOIN users ON wins.submitter_id = users.user_id
+        WHERE solvedAt >= ? AND solvedAt < ?
+        GROUP BY submitter_id
+        ORDER BY submissions DESC
+        LIMIT ?
+      `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
+
+      return {
+        scores: allScores,
+        guessers: topGuessers,
+        submitters: topSubmitters
+      }
     }
   }
 }

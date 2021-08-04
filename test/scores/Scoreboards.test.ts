@@ -2,111 +2,108 @@ import Scoreboards from '../../src/scores/Scoreboards'
 import Mustache from 'mustache'
 
 import { mocked } from 'ts-jest/utils'
+import { DatabaseManager } from '../../src/types'
+import { RedditBot } from '../../src/RedditBot'
 
 jest.mock('Mustache')
 
-describe.skip('Scoreboards', () => {
-  let redditBot
+describe('Scoreboards', () => {
+  let redditBot: Partial<RedditBot> = {
+    createPost: jest.fn()
+  }
 
-  const mockDate = new Date(1623495600000)
+  const mockDate = new Date(1623495600000) // 12/06/2021
   const _Date = global.Date
-  jest.spyOn(global, 'Date').mockImplementation(() => new _Date(mockDate.getTime()) as unknown as string)
+  global.Date = jest.fn((args) => new _Date(args || mockDate.getTime())) as any
+  global.Date.UTC = _Date.UTC;
 
-  const mockFileManager = mocked(fileManager)
+  const mockDatabaseManager: Partial<DatabaseManager> = {
+    getHighScores: jest.fn().mockResolvedValue({
+      scores: [
+        { username: 'player3', score: 25 },
+        { username: 'player2', score: 12 },
+        { username: 'player1', score: 5 }
+      ],
+      guessers: [
+        { username: 'player3', score: 25 },
+        { username: 'player2', score: 12 },
+        { username: 'player1', score: 5 }
+      ],
+      submitters: [
+        { username: 'player3', score: 25 },
+        { username: 'player2', score: 12 },
+        { username: 'player1', score: 5 }
+      ]
+    })
+  }
+
   const mockMustache = mocked(Mustache)
+  mockMustache.render.mockReturnValue('rendered-template')
 
   beforeEach(() => {
-    redditBot = {
-      createPost: jest.fn()
-    }
-
-    mockFileManager.getMonthlyFileName.mockClear()
-    mockFileManager.getScoreData.mockClear()
-    mockFileManager.getScoreData.mockReturnValue({
-      player1: { points: 10, guesses: 10, submissions: 10 },
-      player2: { points: 20, guesses: 30, submissions: 40 },
-      player3: { points: 70, guesses: 60, submissions: 50 },
-      player4: { points: 20, guesses: 80, submissions: 10 },
-      player5: { points: 1, guesses: 0, submissions: 0 },
-      player6: { points: 0, guesses: 1, submissions: 0 },
-    })
-    mockMustache.render.mockClear()
-    mockMustache.render.mockReturnValue('rendered-template')
+    jest.clearAllMocks()
   })
 
-  describe('postScoreboard', () => {
+  describe('postMonthlyScoreboard', () => {
     it('defaults to last month if no date specified', async () => {
-      await Scoreboards(redditBot).postScoreboard()
-      expect(mockFileManager.getMonthlyFileName).toHaveBeenCalledWith(new _Date("2021-05-31T11:00:00.000Z"))
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard()
+      expect(mockDatabaseManager.getHighScores).toHaveBeenCalledWith({
+        from: new _Date('2021-05-01T00:00:00.000Z'),
+        to: new _Date('2021-06-01T00:00:00.000Z')
+      }, 5)
     })
 
-    it('opens the specified file if date is provided', async () => {
-      await Scoreboards(redditBot).postScoreboard(new _Date(2010, 2, 5))
-      expect(mockFileManager.getMonthlyFileName).toHaveBeenCalledWith(new _Date("2010-03-05T00:00:00.000Z"))
+    it('requests the right time range if a month is provided', async () => {
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard(new _Date(2010, 2, 5))
+      expect(mockDatabaseManager.getHighScores).toHaveBeenCalledWith({
+        from: new _Date('2010-02-01T00:00:00.000Z'),
+        to: new _Date('2010-03-01T00:00:00.000Z')
+      }, 5)
     })
 
-    it('calls the bot with the correctly sorted and formatted data', async () => {
-      await Scoreboards(redditBot).postScoreboard()
+    it('calls the bot with the correctly formatted data', async () => {
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard()
       expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
         month: "May",
         year: "2021",
         guesses: [
-          { score: 80, username: "player4", },
-          { score: 60, username: "player3", },
-          { score: 30, username: "player2", },
-          { score: 10, username: "player1", },
-          { score: 1, username: "player6", },
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
         ],
         points: [
-          { score: 70, username: "player3", },
-          { score: 20, username: "player2", },
-          { score: 20, username: "player4", },
-          { score: 10, username: "player1", },
-          { score: 1, username: "player5", },
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
         ],
         submissions: [
-          { score: 50, username: "player3", },
-          { score: 40, username: "player2", },
-          { score: 10, username: "player1", },
-          { score: 10, username: "player4", },
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
         ]
       })
       expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
     })
 
-    it(`filters out values of 0 even if they're in the top 5`, async () => {
-      mockFileManager.getScoreData.mockReturnValue({
-        player1: { points: 10, guesses: 10, submissions: 10 },
-        player2: { points: 0, guesses: 0, submissions: 0 },
-        player3: { points: 70, guesses: 60, submissions: 50 },
+    it('does not post if the database returns missing data', async () => {
+      (mockDatabaseManager.getHighScores as any).mockReturnValue({
+        scores: [],
+        guessers: [{ username: 'player1', score: 5 }],
+        submitters: [{ username: 'player1', score: 5 }]
       })
-      await Scoreboards(redditBot).postScoreboard()
-      expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
-        month: "May",
-        year: "2021",
-        guesses: [
-          { score: 60, username: "player3", },
-          { score: 10, username: "player1", },
-        ],
-        points: [
-          { score: 70, username: "player3", },
-          { score: 10, username: "player1", },
-        ],
-        submissions: [
-          { score: 50, username: "player3", },
-          { score: 10, username: "player1", }
-        ]
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
+      (mockDatabaseManager.getHighScores as any).mockReturnValue({
+        scores: [{ username: 'player1', score: 5 }],
+        guessers: [],
+        submitters: [{ username: 'player1', score: 5 }]
+      });
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
+      (mockDatabaseManager.getHighScores as any).mockReturnValue({
+        scores: [{ username: 'player1', score: 5 }],
+        guessers: [{ username: 'player1', score: 5 }],
+        submitters: [],
       })
-      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
-    })
-
-    it('does not post if the score file is empty', async () => {
-      mockFileManager.getScoreData.mockReturnValue(undefined)
-      await Scoreboards(redditBot).postScoreboard()
-      mockFileManager.getScoreData.mockReturnValue(null)
-      await Scoreboards(redditBot).postScoreboard()
-      mockFileManager.getScoreData.mockReturnValue({})
-      await Scoreboards(redditBot).postScoreboard()
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard()
       expect(redditBot.createPost).not.toHaveBeenCalled()
     })
   })

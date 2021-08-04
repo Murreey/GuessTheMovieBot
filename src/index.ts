@@ -79,7 +79,7 @@ const run = async () => {
 
 scheduler.schedule("1 0 1 * *", async () => {
   running = true
-  await Scoreboards(bot).postScoreboard()
+  await Scoreboards(bot, await databaseManager).postMonthlyScoreboard()
   running = false
 })
 
