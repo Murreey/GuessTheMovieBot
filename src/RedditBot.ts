@@ -10,7 +10,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     clientId: config.clientId,
     clientSecret: config.clientSecret
   })
-  r.config({ continueAfterRatelimitError: true, debug })
+  r.config({ continueAfterRatelimitError: true, proxies: false, debug })
 
   const subreddit = r.getSubreddit(config.subreddit)
 
@@ -52,14 +52,35 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     },
     fetchNewSubmissions: async () => {
       const fetchOptions = {}
-      if(lastFetchedSubmission) fetchOptions["before"] = lastFetchedSubmission
+
+      if(lastFetchedSubmission) {
+        // If the post was removed, fetching 'before' it will always return empty listing
+        // So before using it, check if it was deleted
+        // No easy way to do that unfortunately (Doesn't 404)
+        let wasDeleted = false
+        try {
+          // @ts-ignore
+          const s = await r.getSubmission(lastFetchedSubmission).fetch()
+          wasDeleted = !s.author || s.author === '[deleted]' || !s.is_robot_indexable
+        } catch (ex) {
+          // It was probably deleted
+          Logger.error(ex.message)
+          wasDeleted = true
+        }
+
+        if(!wasDeleted) {
+          fetchOptions["before"] = lastFetchedSubmission
+        } else {
+          Logger.verbose(`Previous submission '${lastFetchedSubmission}' doesn't exist anymore, fetching all`)
+          lastFetchedSubmission = undefined
+        }
+      }
       Logger.verbose(`Fetching new submissions ${lastFetchedSubmission ? `since ${lastFetchedSubmission}`: ''}`)
       const newSubmissions = await (await subreddit.getNew(fetchOptions)).fetchAll()
 
-      if(newSubmissions.length === 0) {
-        Logger.debug('No new submissions fetched')
-        return []
-      }
+      Logger.debug(`${newSubmissions.length} new submissions fetched`)
+
+      if(newSubmissions.length === 0) return []
 
       lastFetchedSubmission = newSubmissions[0].name
       const oneDayAgo = (new Date().getTime() / 1000) - 86400
