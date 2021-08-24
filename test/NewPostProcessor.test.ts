@@ -20,20 +20,20 @@ describe('NewPostProcessor', () => {
     redditBot = {
       username: 'bot-username',
       reply: jest.fn(),
-      hasReplied: jest.fn().mockReturnValue(false)
+      hasReplied: jest.fn().mockReturnValue(false),
+      setPostFlair: jest.fn()
     }
 
     mockSubmission = {
       expandReplies: () => ({ comments: [] }),
-      author: { name: 'foo' },
-      selectFlair: jest.fn()
+      author: { name: 'foo' }
     }
   })
 
   it('does not reply if the bot has already replied', async () => {
     redditBot.hasReplied.mockReturnValue(true)
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).not.toHaveBeenCalled()
+    expect(redditBot.setPostFlair).not.toHaveBeenCalled()
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
@@ -41,7 +41,7 @@ describe('NewPostProcessor', () => {
     mockSubmission.title = '[meta] post title'
 
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).not.toHaveBeenCalled()
+    expect(redditBot.setPostFlair).not.toHaveBeenCalled()
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
@@ -49,28 +49,28 @@ describe('NewPostProcessor', () => {
     mockSubmission.title = '[meta] post title'
 
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).not.toHaveBeenCalled()
+    expect(redditBot.setPostFlair).not.toHaveBeenCalled()
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
   it('flairs the post if it has an easy difficilty flair', async () => {
     mockSubmission.title = '[easy] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).toHaveBeenCalledWith({ flair_template_id: 'easy-template' })
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template' )
 
     mockSubmission.title = 'post title [easy]'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).toHaveBeenCalledWith({ flair_template_id: 'easy-template' })
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template' )
   })
 
   it('flairs the post if it has a hard difficilty flair', async () => {
     mockSubmission.title = '[hard] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).toHaveBeenCalledWith({ flair_template_id: 'hard-template' })
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template' )
 
     mockSubmission.title = 'post title [hard]'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(mockSubmission.selectFlair).toHaveBeenCalledWith({ flair_template_id: 'hard-template' })
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template' )
   })
 
   it('does not reply if the bot is the submission author', async () => {

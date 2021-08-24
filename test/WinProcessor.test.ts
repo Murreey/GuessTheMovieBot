@@ -124,7 +124,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
 
   return {
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
-    fetchPostFromComment: jest.fn().mockReturnValue(mockSubmission),
+    fetchPostFromComment: jest.fn().mockReturnValue({ fetch: jest.fn().mockResolvedValue(mockSubmission) }),
     setPostFlair: jest.fn(),
     reply: jest.fn()
   }

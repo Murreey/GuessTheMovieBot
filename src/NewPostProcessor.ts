@@ -27,7 +27,7 @@ export default (bot: RedditBot) => ({
       const template = config.linkFlairTemplates?.[hasEasyTag ? 'easy' : 'hard']
       if (template) {
         Logger.info(`Setting flair on ${submission.permalink}`);
-        (await (submission as any)).selectFlair({ flair_template_id: template })
+        await bot.setPostFlair(submission, template)
       }
     }
 
