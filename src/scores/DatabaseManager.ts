@@ -151,7 +151,7 @@ export default async () => {
         INNER JOIN users ON points.user_id = users.user_id
         AND wins.createdAt >= ? AND wins.createdAt < ?
         GROUP BY users.user_id
-        ORDER BY points DESC
+        ORDER BY score DESC
         LIMIT ?
       `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
 
@@ -161,7 +161,7 @@ export default async () => {
         INNER JOIN users ON wins.guesser_id = users.user_id
         WHERE solvedAt >= ? AND solvedAt < ?
         GROUP BY guesser_id
-        ORDER BY guesses DESC
+        ORDER BY score DESC
         LIMIT ?
       `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
 
@@ -171,7 +171,7 @@ export default async () => {
         INNER JOIN users ON wins.submitter_id = users.user_id
         WHERE solvedAt >= ? AND solvedAt < ?
         GROUP BY submitter_id
-        ORDER BY submissions DESC
+        ORDER BY score DESC
         LIMIT ?
       `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
 

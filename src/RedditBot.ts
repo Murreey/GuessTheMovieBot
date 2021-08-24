@@ -120,7 +120,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         sendReplies: false
       }) as any)
       if(post && sticky) await post.sticky({ num: 2 })
-      Logger.verbose(`Created new self post - ${await post.id}`)
+      Logger.verbose(`Created new self post - '${title}'`)
     },
     setPostFlair: async (post, template) => {
       if(readOnly) {
@@ -157,7 +157,8 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       return (expanded.comments || expanded.replies || [])
         .some(comment => comment.author.name === config.bot_username && !comment.removed)
     },
-    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_")
+    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
+    rateLimitInfo: () => `${r.ratelimitRemaining} requests till rate limit, resets at ${new Date(r.ratelimitExpiration)}`
   }
 }
 
@@ -176,6 +177,7 @@ export type RedditBot = {
   setUserFlair: (username: string, options: { text?: string, css_class?: string, background_color?: string, text_color?: 'light' | 'dark' }) => Promise<void>,
   hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
+  rateLimitInfo: () => string
 }
 
 export type RedditBotOptions = {
