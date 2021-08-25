@@ -45,7 +45,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
 
       lastFetchedComment = newComments[0].name
       return newComments
-        .filter(comment => comment.body.toLowerCase().startsWith("correct"))
+        .filter(comment => /^[^a-z0-9]*correct/ig.test(comment?.body))
         .filter(comment => comment.is_submitter)
         .filter(comment => !isDeleted(comment))
     },
