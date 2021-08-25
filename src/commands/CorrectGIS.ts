@@ -7,8 +7,16 @@ import { ScoreManager } from "../types";
 import ScoreFlairManager from "../scores/ScoreFlairManager";
 
 export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
-  if(comment.author.name !== bot.username) return false
-  if(!await bot.isCommentAReply(comment)) return false
+  Logger.debug(`Running CorrectGIS command on ${comment.id}`)
+
+  if(comment.author.name !== bot.username) {
+    Logger.verbose(`Ignoring CorrectGIS as comment was not posted by the bot`)
+    return false
+  }
+  if(!await bot.isCommentAReply(comment)) {
+    Logger.verbose(`Ignoring CorrectGIS as comment is not a reply`)
+    return false
+  }
   const previouslyFoundOnGoogle = comment?.body?.toLowerCase().includes("found on google") || false
   Logger.verbose(`Post was originally ${previouslyFoundOnGoogle ? '' : 'not '}found on Google, ${previouslyFoundOnGoogle ? 'increasing' : 'reducing'} points`)
 
@@ -16,7 +24,8 @@ export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManag
   if(!await bot.isCommentAReply(correctionComment)) return false // ?? bot replied to a top level comment ??
   const guessComment = (await bot.fetchComment(correctionComment.parent_id))() // yuck
 
-  const submission = (await (bot as any).fetchPostFromComment(comment)) as Submission
+  // @ts-ignore
+  const submission = await bot.fetchPostFromComment(comment).fetch()
   const submitter = await submission.author.name
   const guesser =  guessComment.author.name
 
