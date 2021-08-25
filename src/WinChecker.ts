@@ -17,7 +17,8 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => ({
     const config = getConfig()
     if(guessComment.author.name === bot.username) return false
 
-    const submission = bot.fetchPostFromComment(comment)
+    //@ts-expect-error
+    const submission = await bot.fetchPostFromComment(comment)
 
     if(await submission.is_self) {
       const body = await submission.selftext

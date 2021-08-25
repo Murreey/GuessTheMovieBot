@@ -32,14 +32,14 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       // snoowrap.Comment extends Promise, rather than getComment returning one
       // This prevents needing the 'as any' everywhere we need this function
     },
-    fetchPostFromComment: (comment) => r.getSubmission(comment.link_id),
+    fetchPostFromComment: (comment) => r.getSubmission(comment.link_id).fetch(),
     fetchNewConfirmations: async () => {
       const fetchOptions = {}
       if(lastFetchedComment) fetchOptions["before"] = lastFetchedComment
       Logger.verbose(`Fetching new comments ${lastFetchedComment ? `since ${lastFetchedComment}`: ''}`)
       const newComments = await (await subreddit.getNewComments(fetchOptions)).fetchAll()
 
-      Logger.debug(`${newComments.length} new submissions fetched`)
+      Logger.debug(`${newComments.length} new comments fetched`)
 
       if(newComments.length === 0) return []
 
@@ -165,7 +165,7 @@ export type RedditBot = {
   username: string,
   readOnly: boolean,
   fetchComment: (id: string) => Promise<() => snoowrap.Comment>
-  fetchPostFromComment: (comment: snoowrap.Comment) => snoowrap.Submission
+  fetchPostFromComment: (comment: snoowrap.Comment) => Promise<snoowrap.Submission>
   fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
   fetchNewSubmissions: () => Promise<snoowrap.Submission[]>,
   fetchNewReports: () => Promise<snoowrap.Comment[]>,

@@ -17,8 +17,8 @@ export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManag
     return false
   }
 
-  // @ts-ignore
-  const submission = await bot.fetchPostFromComment(comment).fetch()
+  // @ts-expect-error
+  const submission = await bot.fetchPostFromComment(comment)
 
   const config = getConfig()
   const flairTemplate = await submission.link_flair_template_id

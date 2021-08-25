@@ -190,7 +190,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     username: 'bot-username',
     isCommentAReply: jest.fn().mockReturnValue(true),
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
-    fetchPostFromComment: jest.fn().mockReturnValue(mockSubmission),
+    fetchPostFromComment: jest.fn().mockResolvedValue(mockSubmission),
     hasReplied: jest.fn().mockResolvedValue(false)
   }
 }

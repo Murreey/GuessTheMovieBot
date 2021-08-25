@@ -9,8 +9,8 @@ import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
 import { ScoreManager } from './types';
 
 export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: snoowrap.Comment, winCommentArgs = {}): Promise<void> => {
-  // @ts-ignore
-  const submission = await bot.fetchPostFromComment(comment).fetch()
+  //@ts-expect-error
+  const submission = await bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
   Logger.verbose('Updating post flair')

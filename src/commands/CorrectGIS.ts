@@ -24,8 +24,8 @@ export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManag
   if(!await bot.isCommentAReply(correctionComment)) return false // ?? bot replied to a top level comment ??
   const guessComment = (await bot.fetchComment(correctionComment.parent_id))() // yuck
 
-  // @ts-ignore
-  const submission = await bot.fetchPostFromComment(comment).fetch()
+  // @ts-expect-error
+  const submission = await bot.fetchPostFromComment(comment)
   const submitter = await submission.author.name
   const guesser =  guessComment.author.name
 
