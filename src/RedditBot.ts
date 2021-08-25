@@ -39,10 +39,9 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       Logger.verbose(`Fetching new comments ${lastFetchedComment ? `since ${lastFetchedComment}`: ''}`)
       const newComments = await (await subreddit.getNewComments(fetchOptions)).fetchAll()
 
-      if(newComments.length === 0) {
-        Logger.debug('No new comments fetched')
-        return []
-      }
+      Logger.debug(`${newComments.length} new submissions fetched`)
+
+      if(newComments.length === 0) return []
 
       lastFetchedComment = newComments[0].name
       return newComments
@@ -158,7 +157,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         .some(comment => comment.author.name === config.bot_username && !comment.removed)
     },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
-    rateLimitInfo: () => `${r.ratelimitRemaining} requests till rate limit, resets at ${new Date(r.ratelimitExpiration)}`
+    rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) })
   }
 }
 
@@ -177,7 +176,7 @@ export type RedditBot = {
   setUserFlair: (username: string, options: { text?: string, css_class?: string, background_color?: string, text_color?: 'light' | 'dark' }) => Promise<void>,
   hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
-  rateLimitInfo: () => string
+  rateLimit: () => { requestsRemaining: number, resetsAt: Date }
 }
 
 export type RedditBotOptions = {
