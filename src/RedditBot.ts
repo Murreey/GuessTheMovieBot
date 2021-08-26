@@ -17,12 +17,6 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
   let lastFetchedComment = startFromComment
   let lastFetchedSubmission = startFromSubmission
 
-  const isDeleted = (comment: snoowrap.Comment) =>
-    comment.removed ||
-    comment.body === "[deleted]" ||
-    (comment.author as any) === "[deleted]" || // Seen this happen before for whatever reason
-    comment.author.name === "[deleted]"
-
   return {
     username: config.bot_username,
     readOnly,
@@ -35,28 +29,16 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     },
     fetchPostFromComment: (comment) => r.getSubmission(comment.link_id).fetch(),
     fetchNewConfirmations: async () => {
-      // TODO: refactor all of this
       const fetchOptions = {}
       if(lastFetchedComment) {
-        // If the comment was removed, fetching 'before' it will always return empty listing
-        // So before using it, check if it was deleted
-        // No easy way to do that unfortunately (Doesn't 404)
-        let wasDeleted = false
-        try {
-          // @ts-ignore
-          const c: snoowrap.Comment = await r.getComment(lastFetchedComment).fetch()
-          wasDeleted = isDeleted(c)
-        } catch (ex) {
-          // It was probably deleted
-          Logger.error(ex.message)
-          wasDeleted = true
-        }
-
-        if(!wasDeleted) {
-          fetchOptions["before"] = lastFetchedComment
-        } else {
+        // If an item was deleted, using it as the `before` in a listing request
+        // will always return an empty listing. We need to check if it
+        // still exists before using it, otherwise fetch everything.
+        if(await isDeleted(r.getComment(lastFetchedComment))) {
           Logger.verbose(`Previous comment '${lastFetchedComment}' doesn't exist anymore, fetching all`)
           lastFetchedComment = undefined
+        } else {
+          fetchOptions["before"] = lastFetchedComment
         }
       }
       Logger.verbose(`Fetching new comments ${lastFetchedComment ? `since ${lastFetchedComment}`: ''}`)
@@ -77,25 +59,14 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       const fetchOptions = {}
 
       if(lastFetchedSubmission) {
-        // If the post was removed, fetching 'before' it will always return empty listing
-        // So before using it, check if it was deleted
-        // No easy way to do that unfortunately (Doesn't 404)
-        let wasDeleted = false
-        try {
-          // @ts-ignore
-          const s: snoowrap.Submission = await r.getSubmission(lastFetchedSubmission).fetch()
-          wasDeleted = !s.author || s.author.name === '[deleted]' || !s.is_robot_indexable
-        } catch (ex) {
-          // It was probably deleted
-          Logger.error(ex.message)
-          wasDeleted = true
-        }
-
-        if(!wasDeleted) {
-          fetchOptions["before"] = lastFetchedSubmission
-        } else {
+        // If an item was deleted, using it as the `before` in a listing request
+        // will always return an empty listing. We need to check if it
+        // still exists before using it, otherwise fetch everything.
+        if(await isDeleted(r.getSubmission(lastFetchedSubmission))) {
           Logger.verbose(`Previous submission '${lastFetchedSubmission}' doesn't exist anymore, fetching all`)
           lastFetchedSubmission = undefined
+        } else {
+          fetchOptions["before"] = lastFetchedSubmission
         }
       }
       Logger.verbose(`Fetching new submissions ${lastFetchedSubmission ? `since ${lastFetchedSubmission}`: ''}`)
@@ -182,6 +153,33 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) })
+  }
+}
+
+const isComment = (thing: { id: string }): thing is snoowrap.Comment => thing.id.startsWith('t1_')
+const isSubmission = (thing: { id: string }): thing is snoowrap.Submission => thing.id.startsWith('t3_')
+
+const isDeleted = async (content: snoowrap.Comment | snoowrap.Submission): Promise<boolean> => {
+  // Deleted content doesn't 404, but needs fetched before author can be checked
+  // And fetch does sometimes error if it's been deleted (not sure why)
+  try {
+    // @ts-expect-error
+    content = await content.fetch()
+  } catch (ex) {
+    return true
+  }
+
+  if(isComment(content)) {
+    return content.removed ||
+      content.body === "[deleted]" ||
+      (content.author as any) === "[deleted]" || // Seen this happen before for whatever reason
+      content.author.name === "[deleted]"
+  } else if(isSubmission(content)) {
+    return !content.author ||
+      content.author.name === '[deleted]' ||
+      !content.is_robot_indexable
+  } else {
+    throw new Error('Unknown Reddit content type')
   }
 }
 
