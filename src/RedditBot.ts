@@ -18,6 +18,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
   let lastFetchedSubmission = startFromSubmission
 
   const isDeleted = (comment: snoowrap.Comment) =>
+    comment.removed ||
     comment.body === "[deleted]" ||
     (comment.author as any) === "[deleted]" || // Seen this happen before for whatever reason
     comment.author.name === "[deleted]"
@@ -34,10 +35,33 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     },
     fetchPostFromComment: (comment) => r.getSubmission(comment.link_id).fetch(),
     fetchNewConfirmations: async () => {
+      // TODO: refactor all of this
       const fetchOptions = {}
-      if(lastFetchedComment) fetchOptions["before"] = lastFetchedComment
+      if(lastFetchedComment) {
+        // If the comment was removed, fetching 'before' it will always return empty listing
+        // So before using it, check if it was deleted
+        // No easy way to do that unfortunately (Doesn't 404)
+        let wasDeleted = false
+        try {
+          // @ts-ignore
+          const c: snoowrap.Comment = await r.getComment(lastFetchedComment).fetch()
+          wasDeleted = isDeleted(c)
+        } catch (ex) {
+          // It was probably deleted
+          Logger.error(ex.message)
+          wasDeleted = true
+        }
+
+        if(!wasDeleted) {
+          fetchOptions["before"] = lastFetchedComment
+        } else {
+          Logger.verbose(`Previous comment '${lastFetchedComment}' doesn't exist anymore, fetching all`)
+          lastFetchedComment = undefined
+        }
+      }
       Logger.verbose(`Fetching new comments ${lastFetchedComment ? `since ${lastFetchedComment}`: ''}`)
-      const newComments = await (await subreddit.getNewComments(fetchOptions)).fetchAll()
+      const newComments = (await (await subreddit.getNewComments(fetchOptions)).fetchAll())
+        .filter(comment => !isDeleted(comment))
 
       Logger.debug(`${newComments.length} new comments fetched`)
 
@@ -47,7 +71,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       return newComments
         .filter(comment => /^[^a-z0-9]*correct/ig.test(comment?.body))
         .filter(comment => comment.is_submitter)
-        .filter(comment => !isDeleted(comment))
+
     },
     fetchNewSubmissions: async () => {
       const fetchOptions = {}
@@ -59,8 +83,8 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
         let wasDeleted = false
         try {
           // @ts-ignore
-          const s = await r.getSubmission(lastFetchedSubmission).fetch()
-          wasDeleted = !s.author || s.author === '[deleted]' || !s.is_robot_indexable
+          const s: snoowrap.Submission = await r.getSubmission(lastFetchedSubmission).fetch()
+          wasDeleted = !s.author || s.author.name === '[deleted]' || !s.is_robot_indexable
         } catch (ex) {
           // It was probably deleted
           Logger.error(ex.message)
