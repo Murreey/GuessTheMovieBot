@@ -40,6 +40,14 @@ describe('CorrectGIS', () => {
     expect(result).toBe(false)
   })
 
+  it('returns false if the bot has already replied to that comment', async () => {
+    const comment = mockComment()
+    const bot = mockRedditBot(mockComment(true))
+    bot.hasReplied.mockResolvedValueOnce(true)
+    const result = await ForceCorrect(bot, comment, mockScoreManager)
+    expect(result).toBe(false)
+  })
+
   it('sends the comment to the WinProcessor if it is valid', async () => {
     const comment = mockComment()
     const bot = mockRedditBot()
@@ -49,11 +57,22 @@ describe('CorrectGIS', () => {
     expect(mockWinProcessor).toHaveBeenCalledWith(comment, { forced: true })
     expect(result).toBe(true)
   })
+
+  it('does not send the comment as forced if it contained a confirmation', async () => {
+    const comment = mockComment(true, 'Correct!')
+    const bot = mockRedditBot()
+    const result = await ForceCorrect(bot, comment, mockScoreManager)
+
+    expect(WinProcessor).toHaveBeenCalledWith(bot, mockScoreManager)
+    expect(mockWinProcessor).toHaveBeenCalledWith(comment, { forced: false })
+    expect(result).toBe(true)
+  })
 })
 
 
-const mockComment = (is_submitter = true) => ({
-  is_submitter
+const mockComment = (is_submitter = true, body?: string) => ({
+  is_submitter,
+  body
 } as unknown as Comment)
 
 const mockRedditBot = (confirmationComment = {}, guessComment = {}, submission = {}) => ({
@@ -67,6 +86,7 @@ const mockRedditBot = (confirmationComment = {}, guessComment = {}, submission =
     url: "https://url",
     ...submission
   }),
+  hasReplied: jest.fn().mockResolvedValue(false),
   fetchComment: jest.fn()
     .mockResolvedValueOnce(() => confirmationComment)
     .mockResolvedValueOnce(() => ({
