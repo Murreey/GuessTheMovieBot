@@ -52,8 +52,8 @@ describe('ScoreManager', () => {
   describe('recordWin', () => {
     it(`sets user's flair to their new total`, async () => {
       await scoreManager.recordWin("postID", 123456789000, "guesser", "submitter", false)
-      expect(mockFlairManager.syncPoints).toHaveBeenCalledWith("guesser")
-      expect(mockFlairManager.syncPoints).toHaveBeenCalledWith("submitter")
+      expect(mockFlairManager.setPoints).toHaveBeenCalledWith("guesser", 45)
+      expect(mockFlairManager.setPoints).toHaveBeenCalledWith("submitter", 45)
     })
 
     it(`sends win to the database manager`, async () => {
@@ -68,7 +68,7 @@ describe('ScoreManager', () => {
 
     it('does not update anything if the bot is in read-only mode', async () => {
       await (await ScoreManager({ readOnly: true } as any)).recordWin("postID", 123456789000, "guesser", "submitter", false)
-      expect(mockFlairManager.syncPoints).not.toHaveBeenCalled()
+      expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
       expect(mockDatabaseManager.recordWin).not.toHaveBeenCalled()
     })
   })

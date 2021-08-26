@@ -20,9 +20,6 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
         return points
       }
 
-      await flairManager.syncPoints(guesser)
-      await flairManager.syncPoints(submitter)
-
       if(postCreatedAt.toString().length < 12) {
         // postCreatedAt must be in seconds, so needs converted
         // All DB timestamps are millis, for easier use of .getTime()
@@ -31,6 +28,9 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
       }
 
       await db.recordWin(postID, postCreatedAt, guesser, submitter, points)
+
+      await flairManager.setPoints(guesser, await db.getUserScore(guesser))
+      await flairManager.setPoints(submitter, await db.getUserScore(submitter))
 
       return points
     },

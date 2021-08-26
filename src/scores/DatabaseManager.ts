@@ -6,8 +6,15 @@ import { Scores } from './Scores'
 import { Score, TimeRange } from '../types'
 
 const defaultTimeRange: TimeRange = {
+  // Bit lazy, but is essentially 'no time range',
+  // without needing to have two queries.
+  // `to` is the far future (rather than now)
+  // because it is created at the same time as
+  // the instance, not when the query is run.
+  // This will stop working in the year 3000, but
+  // by then we'll all live underwater anyway.
   from: new Date('2000-01-01'),
-  to: new Date()
+  to: new Date('3000-01-01'),
 }
 
 export default async () => {
@@ -40,15 +47,15 @@ export default async () => {
       const guesserID = await getUserID(guesser)
       const submitterID = await getUserID(submitter)
       await db.run(
-        `INSERT OR IGNORE INTO wins (post_id, guesser_id, submitter_id, createdAt) VALUES (?, ?, ?, ?)`,
+        `INSERT OR REPLACE INTO wins (post_id, guesser_id, submitter_id, createdAt) VALUES (?, ?, ?, ?)`,
         postID, guesserID, submitterID, postCreatedAt
       )
       await db.run(
-        `INSERT OR IGNORE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
+        `INSERT OR REPLACE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
         postID, guesserID, scores.guesser
       )
       await db.run(
-        `INSERT OR IGNORE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
+        `INSERT OR REPLACE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
         postID, submitterID, scores.submitter
       )
     },
