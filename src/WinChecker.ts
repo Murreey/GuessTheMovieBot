@@ -5,8 +5,12 @@ import { Logger } from "./Logger";
 import { getConfig } from './config'
 import { ScoreManager } from "./types";
 
+const confirmationFormat = /^[^a-z0-9]*correct/i
+
 export default (bot: RedditBot, scoreManager: ScoreManager) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
+    if(!comment.is_submitter) return false
+    if(!confirmationFormat.test(comment?.body)) return false
     if(!bot.isCommentAReply(comment)) return false
     if(await bot.hasReplied(comment)) return false
 

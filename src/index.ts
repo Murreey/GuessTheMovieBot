@@ -33,7 +33,7 @@ const processNewSubmissions = async () => {
 
 const processNewComments = async () => {
   const scoreManager = await ScoreManager(bot, await databaseManager)
-  const comments = await bot.fetchNewConfirmations()
+  const comments = await bot.fetchNewComments()
   for(const comment of comments) {
     Logger.verbose(`Processing new comment by ${comment.author.name}:`)
     Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)

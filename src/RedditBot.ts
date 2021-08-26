@@ -28,7 +28,7 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
       // This prevents needing the 'as any' everywhere we need this function
     },
     fetchPostFromComment: (comment) => r.getSubmission(comment.link_id).fetch(),
-    fetchNewConfirmations: async () => {
+    fetchNewComments: async () => {
       const fetchOptions = {}
       if(lastFetchedComment) {
         // If an item was deleted, using it as the `before` in a listing request
@@ -47,13 +47,8 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
 
       Logger.debug(`${newComments.length} new comments fetched`)
 
-      if(newComments.length === 0) return []
-
-      lastFetchedComment = newComments[0].name
+      lastFetchedComment = newComments?.[0]?.name
       return newComments
-        .filter(comment => /^[^a-z0-9]*correct/ig.test(comment?.body))
-        .filter(comment => comment.is_submitter)
-
     },
     fetchNewSubmissions: async () => {
       const fetchOptions = {}
@@ -188,7 +183,7 @@ export type RedditBot = {
   readOnly: boolean,
   fetchComment: (id: string) => Promise<() => snoowrap.Comment>
   fetchPostFromComment: (comment: snoowrap.Comment) => Promise<snoowrap.Submission>
-  fetchNewConfirmations: () => Promise<snoowrap.Comment[]>,
+  fetchNewComments: () => Promise<snoowrap.Comment[]>,
   fetchNewSubmissions: () => Promise<snoowrap.Submission[]>,
   fetchNewReports: () => Promise<snoowrap.Comment[]>,
   reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string, sticky?: boolean) => Promise<void>,
