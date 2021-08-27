@@ -42,7 +42,7 @@ const processNewComments = async () => {
     if(!validWin) {
       Logger.verbose('No win detected, ignoring')
       Logger.verbose("")
-      return
+      continue
     }
 
     Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
