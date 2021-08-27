@@ -12,26 +12,26 @@ import DatabaseManager from '../src/scores/DatabaseManager'
     } = fs
         .readdirSync(scoreDir)
         .map(file => JSON.parse(fs.readFileSync(path.resolve(scoreDir, file), 'utf-8')))
-        .reduce((data, newData) => {
-            for(const user in data) {
-                const scores = data[user]
-                if(!newData[user]) {
-                    newData[user] = {
+        .reduce((allScores, fileData) => {
+            for(const user in fileData) {
+                const scores = fileData[user]
+                if(!allScores[user]) {
+                    allScores[user] = {
                         points: 0,
                         guesses: 0,
                         submissions: 0,
                         ...scores
                     }
                 } else {
-                    newData[user].guesses = (newData[user]?.guesses || 0) + (scores.guesses || 0)
-                    newData[user].submissions = (newData[user]?.submissions || 0) + (scores.submissions || 0)
-                    if(scores.total > (newData[user]?.total || 0)) {
-                        newData[user].total = scores.total
+                    allScores[user].guesses = (allScores[user]?.guesses || 0) + (scores.guesses || 0)
+                    allScores[user].submissions = (allScores[user]?.submissions || 0) + (scores.submissions || 0)
+                    if(scores.total > (allScores[user]?.total || 0)) {
+                        allScores[user].total = scores.total
                     }
                 }
             }
 
-            return newData
+            return allScores
         }, {})
 
     const db = await DatabaseManager()
