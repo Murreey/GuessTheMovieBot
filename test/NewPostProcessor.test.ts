@@ -7,6 +7,7 @@ jest.mock('../src/config')
 
 mocked(getConfig).mockReturnValue({
   linkFlairTemplates: {
+    meta: 'meta-template',
     easy: 'easy-template',
     hard: 'hard-template'
   }
@@ -37,19 +38,17 @@ describe('NewPostProcessor', () => {
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
-  it('does not reply if the post is tagged meta', async () => {
+  it('flairs the post is it has a meta flair', async () => {
     mockSubmission.title = '[meta] post title'
 
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).not.toHaveBeenCalled()
-    expect(redditBot.reply).not.toHaveBeenCalled()
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'meta-template' )
   })
 
   it('does not reply if the post is tagged meta', async () => {
     mockSubmission.title = '[meta] post title'
 
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).not.toHaveBeenCalled()
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
@@ -73,6 +72,16 @@ describe('NewPostProcessor', () => {
     expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template' )
   })
 
+  it('prioritises the right flairs if the title has multiple', async () => {
+    mockSubmission.title = '[easy] [hard] [meta] post title'
+    await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'meta-template' )
+
+    mockSubmission.title = '[hard] post title [easy]'
+    await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template' )
+  })
+
   it('does not reply if the bot is the submission author', async () => {
     mockSubmission.author.name = 'bot-username'
 
@@ -90,18 +99,18 @@ describe('NewPostProcessor', () => {
   it('replies if the post is missing the GTM tag', async () => {
     mockSubmission.title = 'post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, '/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.')
+    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, '/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.', true)
   })
 
   it('replies if the post has an easy tag', async () => {
     mockSubmission.title = '[GTM] [easy] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with less than 10 points!')
+    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with **less than 10 points**!', true)
   })
 
   it('replies if the post has an easy tag and is missing GTM', async () => {
     mockSubmission.title = '[easy] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with less than 10 points!\n&nbsp;\n***\n&nbsp;/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.')
+    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with **less than 10 points**!\n&nbsp;\n***\n&nbsp;/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.', true)
   })
 })
