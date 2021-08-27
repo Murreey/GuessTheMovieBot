@@ -10,6 +10,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "scores": "ts-node scripts/fetch-scores.ts",
+    "scoreboard": "ts-node scripts/post-scoreboard.ts",
     "test": "jest"
   },
   "author": "",

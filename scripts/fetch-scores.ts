@@ -1,7 +1,5 @@
 import yargs from 'yargs'
 import { Logger, LogLevel } from '../src/Logger';
-import * as RedditBot from '../src/RedditBot';
-import ScoreManager from '../src/scores/ScoreManager';
 import DatabaseManager from '../src/scores/DatabaseManager';
 import { TimeRange } from '../src/types';
 
@@ -49,5 +47,3 @@ const args = yargs(process.argv.slice(2))
   .argv
 
 Logger.setup({ file: LogLevel.INFO, console: args['log-level'] })
-
-// const bot = RedditBot.create({ debug: args['debug-requests'], readOnly: args['read-only'] });
