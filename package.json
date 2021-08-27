@@ -9,6 +9,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "scores": "ts-node scripts/fetch-scores.ts",
     "test": "jest"
   },
   "author": "",
