@@ -40,7 +40,7 @@ export default async (bot: RedditBot, scoreManager: ScoreManager, comment: Comme
 
 }
 
-const matches = (test) => (matcher) => `${COMMAND_PREFIX}${matcher.toLowerCase()}` === test.toLowerCase().trim()
+const matches = (test: string) => (matcher: string) => `${COMMAND_PREFIX}${matcher.toLowerCase()}` === test.toLowerCase().trim()
 
 type CommandMatchers = {
   matchers: string[],

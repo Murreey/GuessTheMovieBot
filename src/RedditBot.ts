@@ -2,7 +2,7 @@ import snoowrap from 'snoowrap'
 import { getConfig } from './config'
 import { Logger } from './Logger'
 
-export const create = ({ readOnly, debug, startFromComment, startFromSubmission }: RedditBotOptions = { debug: false, readOnly: false }): RedditBot => {
+export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, readOnly: false }): RedditBot => {
   const config = getConfig()
   const r = new snoowrap({
     userAgent: config.userAgent,
@@ -14,8 +14,23 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
 
   const subreddit = r.getSubreddit(config.subreddit)
 
-  let lastFetchedComment = startFromComment
-  let lastFetchedSubmission = startFromSubmission
+  const processedContent: { [name in ContentTypes]: ProcessedContent[] } = {
+    comments: [],
+    submissions: []
+  }
+
+  const getContent = (name: string) => isComment({ name }) ? r.getComment(name) : r.getSubmission(name)
+  const getPreviousFetchedID = async (type: ContentTypes): Promise<string> => {
+    processedContent[type].sort((a, b) => b.time - a.time)
+    const deleted: string[] = []
+    for(const comment of processedContent[type]) {
+      if(!await isDeleted(getContent(comment.name))) break
+      deleted.push(comment.name)
+    }
+
+    processedContent[type] = processedContent[type].filter(item => !deleted.includes(item.name))
+    return processedContent[type]?.[0]?.name
+  }
 
   return {
     username: config.bot_username,
@@ -29,53 +44,27 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     },
     fetchPostFromComment: (comment) => r.getSubmission(comment.link_id).fetch(),
     fetchNewComments: async () => {
-      const fetchOptions = {}
-      if(lastFetchedComment) {
-        // If an item was deleted, using it as the `before` in a listing request
-        // will always return an empty listing. We need to check if it
-        // still exists before using it, otherwise fetch everything.
-        if(await isDeleted(r.getComment(lastFetchedComment))) {
-          Logger.verbose(`Previous comment '${lastFetchedComment}' doesn't exist anymore, fetching all`)
-          lastFetchedComment = undefined
-        } else {
-          fetchOptions["before"] = lastFetchedComment
-        }
-      }
-      Logger.verbose(`Fetching new comments ${lastFetchedComment ? `since ${lastFetchedComment}`: ''}`)
-      const newComments = (await (await subreddit.getNewComments(fetchOptions)).fetchAll())
-        .filter(comment => !isDeleted(comment))
+      const fetchSince: string = await getPreviousFetchedID('comments')
+      Logger.verbose(`Fetching new comments ${fetchSince ? `since ${fetchSince}`: ''}`)
+      const newComments = (await subreddit.getNewComments({ before: fetchSince }))
+
+      processedContent.comments.push(...newComments.map(c => ({ name: c.name, time: c.created_utc })))
 
       Logger.debug(`${newComments.length} new comments fetched`)
-
-      lastFetchedComment = newComments?.[0]?.name
       return newComments
     },
     fetchNewSubmissions: async () => {
-      const fetchOptions = {}
-
-      if(lastFetchedSubmission) {
-        // If an item was deleted, using it as the `before` in a listing request
-        // will always return an empty listing. We need to check if it
-        // still exists before using it, otherwise fetch everything.
-        if(await isDeleted(r.getSubmission(lastFetchedSubmission))) {
-          Logger.verbose(`Previous submission '${lastFetchedSubmission}' doesn't exist anymore, fetching all`)
-          lastFetchedSubmission = undefined
-        } else {
-          fetchOptions["before"] = lastFetchedSubmission
-        }
-      }
-      Logger.verbose(`Fetching new submissions ${lastFetchedSubmission ? `since ${lastFetchedSubmission}`: ''}`)
-      const newSubmissions = await (await subreddit.getNew(fetchOptions)).fetchAll()
-
-      Logger.debug(`${newSubmissions.length} new submissions fetched`)
-
-      if(newSubmissions.length === 0) return []
-
-      lastFetchedSubmission = newSubmissions[0].name
+      const fetchSince: string = await getPreviousFetchedID('submissions')
+      Logger.verbose(`Fetching new submissions ${fetchSince ? `since ${fetchSince}`: ''}`)
       const oneDayAgo = (new Date().getTime() / 1000) - 86400
-      return newSubmissions
+      const newSubmissions = (await (await subreddit.getNew({ before: fetchSince })).fetchAll())
         .filter(sub => sub.created_utc > oneDayAgo)
         .filter(sub => !sub.link_flair_text)
+
+      processedContent.submissions.push(...newSubmissions.map(c => ({ name: c.name, time: c.created_utc })))
+
+      Logger.debug(`${newSubmissions.length} new submissions fetched`)
+      return newSubmissions
     },
     fetchNewReports: async () => (await subreddit
       .getReports({ only: "comments" }) as snoowrap.Comment[])
@@ -144,38 +133,38 @@ export const create = ({ readOnly, debug, startFromComment, startFromSubmission 
     hasReplied: async (content) => {
       const expanded = await (await (content as any).expandReplies())
       return (expanded.comments || expanded.replies || [])
-        .some(comment => comment.author.name === config.bot_username && !comment.removed)
+        .some((comment: any) => comment.author.name === config.bot_username && !comment.removed)
     },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) })
   }
 }
 
-const isComment = (thing: { id: string }): thing is snoowrap.Comment => thing.id.startsWith('t1_')
-const isSubmission = (thing: { id: string }): thing is snoowrap.Submission => thing.id.startsWith('t3_')
+const isComment = (thing: { name: string }): thing is snoowrap.Comment => thing.name.startsWith('t1_')
+const isSubmission = (thing: { name: string }): thing is snoowrap.Submission => thing.name.startsWith('t3_')
 
 const isDeleted = async (content: snoowrap.Comment | snoowrap.Submission): Promise<boolean> => {
-  // Deleted content doesn't 404, but needs fetched before author can be checked
-  // And fetch does sometimes error if it's been deleted (not sure why)
-  try {
-    // @ts-expect-error
-    content = await content.fetch()
-  } catch (ex) {
-    return true
+  if(!content.id) {
+    try {
+      // @ts-expect-error
+      content = await content.fetch()
+    } catch (ex) {
+      return true
+    }
   }
 
   if(isComment(content)) {
-    return content.removed ||
-      content.body === "[deleted]" ||
-      (content.author as any) === "[deleted]" || // Seen this happen before for whatever reason
-      content.author.name === "[deleted]"
+    return await content.removed ||
+      await content.body === "[deleted]" ||
+      !content.author ||
+      content.author?.name === "[deleted]"
   } else if(isSubmission(content)) {
     return !content.author ||
-      content.author.name === '[deleted]' ||
-      !content.is_robot_indexable
-  } else {
-    throw new Error('Unknown Reddit content type')
+      !await content.is_robot_indexable ||
+      content.author?.name === '[deleted]'
   }
+
+  return true
 }
 
 export type RedditBot = {
@@ -198,8 +187,12 @@ export type RedditBot = {
 
 export type RedditBotOptions = {
   readOnly?: boolean,
-  debug?: boolean,
-  startFromComment?: string
-  startFromSubmission?: string
+  debug?: boolean
 }
 
+type ProcessedContent = {
+  name: string,
+  time: number
+}
+
+type ContentTypes = 'comments' | 'submissions'

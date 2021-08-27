@@ -40,7 +40,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   const currentFlair = await submission.link_flair_text
   const config = getConfig()
 
-  const identifiedTemplate = config?.linkFlairTemplates?.identified?.[currentFlair] ?? config?.linkFlairTemplates?.identified?.normal
+  const identifiedTemplate = config?.linkFlairTemplates?.identified?.[currentFlair as ('easy' | 'hard')] ?? config?.linkFlairTemplates?.identified?.normal
 
   if(identifiedTemplate) {
     Logger.debug(`Setting post ${await submission.id} flair to '${identifiedTemplate}'`)
