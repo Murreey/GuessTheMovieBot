@@ -26,7 +26,7 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
   Logger.debug('Sending win to ScoreManager')
   const points = await scoreManager.recordWin(await submission.id, await submission.created_utc, guesser, submitter, !!foundOnGoogle)
 
-  Logger.verbose(`Posting confirmation comment on ${await submission.id}`)
+  Logger.info(`Posting confirmation comment on ${await submission.id}`)
   bot.reply(comment, createWinComment({
     postID: await submission.id,
     guesser: { name: guesser, points: points.guesser },
@@ -46,7 +46,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
     Logger.debug(`Setting post ${await submission.id} flair to '${identifiedTemplate}'`)
     await bot.setPostFlair(submission, identifiedTemplate)
   } else {
-    Logger.warn(`Could not find valid flair template for identifying '${currentFlair}'!`)
+    Logger.warn(`Could not find valid flair template for identifying '${await submission.id}'!`)
   }
 }
 

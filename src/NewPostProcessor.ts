@@ -29,8 +29,10 @@ export default (bot: RedditBot) => ({
     if(tags.length > 0) {
       const template = config?.linkFlairTemplates?.[tags?.[0]]
       if (template) {
-        Logger.info(`Setting flair on ${submission.permalink}`);
+        Logger.info(`Setting flair on ${submission.permalink} to ${tags?.[0]}`);
         await bot.setPostFlair(submission, template)
+      } else {
+        Logger.warn(`Could not find valid flair template for '${await submission.id}'!`)
       }
     }
 

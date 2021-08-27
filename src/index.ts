@@ -41,14 +41,12 @@ const processNewComments = async () => {
     const validWin = await WinChecker(bot, scoreManager).isValidWin(comment)
     if(!validWin) {
       Logger.verbose('No win detected, ignoring')
-      Logger.verbose("")
       continue
     }
 
-    Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
     Logger.info('Win confirmed!')
+    Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
     await processWin(bot, scoreManager)(comment)
-    Logger.info("")
   }
 }
 
