@@ -32,6 +32,7 @@ export default (bot: RedditBot) => ({
     }
 
     if(submission.author.name === bot.username) {
+      Logger.debug(`Ignoring ${submission.id} as it was posted by the bot`)
       return
     }
 
@@ -42,7 +43,7 @@ export default (bot: RedditBot) => ({
 
     if(messageParts.length > 0) {
       Logger.info(`Posting bot helper comment on ${submission.permalink}`)
-      await bot.reply(submission, messageParts.join(`\n&nbsp;\n***\n&nbsp;`))
+      await bot.reply(submission, messageParts.join(`\n&nbsp;\n***\n&nbsp;`), true)
     }
   }
 })
