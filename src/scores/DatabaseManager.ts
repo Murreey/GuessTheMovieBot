@@ -47,7 +47,7 @@ export default async () => {
       const guesserID = await getUserID(guesser)
       const submitterID = await getUserID(submitter)
       await db.run(
-        `INSERT OR REPLACE INTO wins (post_id, guesser_id, submitter_id, createdAt, solvedAt) VALUES (?, ?, ?, ?, ?)`,
+        `INSERT OR REPLACE INTO wins (post_id, guesser_id, submitter_id, created_at, solved_at) VALUES (?, ?, ?, ?, ?)`,
         postID, guesserID, submitterID, postCreatedAt, postSolvedAt
       )
       await db.run(
@@ -88,8 +88,8 @@ export default async () => {
         INNER JOIN points ON wins.post_id = points.post_id
         INNER JOIN users ON points.user_id = users.user_id
         WHERE users.username = ?
-        AND wins.solvedAt >= ?
-        AND wins.solvedAt < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
+        AND wins.solved_at >= ?
+        AND wins.solved_at < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.total ?? 0
 
@@ -111,8 +111,8 @@ export default async () => {
         SELECT COUNT(wins.post_id) as count FROM wins
         LEFT JOIN users ON wins.submitter_id = users.user_id
         WHERE users.username = ?
-        AND wins.solvedAt >= ?
-        AND wins.solvedAt < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
+        AND wins.solved_at >= ?
+        AND wins.solved_at < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.count ?? 0
 
@@ -134,8 +134,8 @@ export default async () => {
         SELECT COUNT(wins.post_id) as count FROM wins
         LEFT JOIN users ON wins.guesser_id = users.user_id
         WHERE users.username = ?
-        AND wins.solvedAt >= ?
-        AND wins.solvedAt < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
+        AND wins.solved_at >= ?
+        AND wins.solved_at < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.total ?? 0
 
@@ -156,7 +156,7 @@ export default async () => {
         FROM wins
         INNER JOIN points ON wins.post_id = points.post_id
         INNER JOIN users ON points.user_id = users.user_id
-        AND wins.createdAt >= ? AND wins.createdAt < ?
+        AND wins.created_at >= ? AND wins.created_at < ?
         GROUP BY users.user_id
         ORDER BY score DESC
         LIMIT ?
@@ -166,7 +166,7 @@ export default async () => {
         SELECT username, COUNT(post_id) AS score
         FROM wins
         INNER JOIN users ON wins.guesser_id = users.user_id
-        WHERE solvedAt >= ? AND solvedAt < ?
+        WHERE solved_at >= ? AND solved_at < ?
         GROUP BY guesser_id
         ORDER BY score DESC
         LIMIT ?
@@ -176,26 +176,26 @@ export default async () => {
         SELECT username, COUNT(post_id) AS score
         FROM wins
         INNER JOIN users ON wins.submitter_id = users.user_id
-        WHERE solvedAt >= ? AND solvedAt < ?
+        WHERE solved_at >= ? AND solved_at < ?
         GROUP BY submitter_id
         ORDER BY score DESC
         LIMIT ?
       `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
 
       const fastest = await db.get(`
-        SELECT post_id AS postId, username, (solvedAt - createdAt) AS time
+        SELECT post_id AS postId, username, (solved_at - created_at) AS time
         FROM wins
         INNER JOIN users ON wins.guesser_id = users.user_id
-        WHERE solvedAt >= ? AND solvedAt < ?
+        WHERE solved_at >= ? AND solved_at < ?
         ORDER BY time ASC
         LIMIT 1
       `, timeRange.from.getTime(), timeRange.to.getTime()) as SpeedRecord
 
       const slowest = await db.get(`
-        SELECT post_id AS postId, username, (solvedAt - createdAt) AS time
+        SELECT post_id AS postId, username, (solved_at - created_at) AS time
         FROM wins
         INNER JOIN users ON wins.guesser_id = users.user_id
-        WHERE solvedAt >= ? AND solvedAt < ?
+        WHERE solved_at >= ? AND solved_at < ?
         ORDER BY time DESC
         LIMIT 1
       `, timeRange.from.getTime(), timeRange.to.getTime()) as SpeedRecord

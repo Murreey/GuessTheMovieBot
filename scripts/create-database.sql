@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS wins (
   post_id TEXT PRIMARY KEY NOT NULL,
   guesser_id INTEGER,
   submitter_id INTEGER,
-  createdAt TIMESTAMP NOT NULL,
-  solvedAt TIMESTAMP DEFAULT(strftime('%s', 'NOW')*1000) NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  solved_at TIMESTAMP DEFAULT(strftime('%s', 'NOW')*1000) NOT NULL,
   FOREIGN KEY (guesser_id) REFERENCES users(user_id),
   FOREIGN KEY (submitter_id) REFERENCES users(user_id)
 );
