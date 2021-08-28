@@ -28,6 +28,7 @@ describe('ScoreManager', () => {
     getUserSubmissionCount: jest.fn()
   }
   let scoreManager: ScoreManagerType
+  let mockSubmission, mockComment
 
   beforeEach(async () => {
     mocked(getScores).mockReturnValue({ guesser: 3, submitter: 7 })
@@ -35,6 +36,8 @@ describe('ScoreManager', () => {
     mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager as any)
 
     scoreManager = await ScoreManager(mockRedditBot)
+    mockSubmission = { id: "postID", author: { name: "submitter" }, created_utc: 123456789000 }
+    mockComment = { id: "commentID", author: { name: "guesser" }, created_utc: 987654321000 }
   })
 
   afterEach(() => {
@@ -51,25 +54,41 @@ describe('ScoreManager', () => {
 
   describe('recordWin', () => {
     it(`sets user's flair to their new total`, async () => {
-      await scoreManager.recordWin("postID", 123456789000, "guesser", "submitter", false)
+      await scoreManager.recordWin(mockSubmission, mockComment, false)
       expect(mockFlairManager.setPoints).toHaveBeenCalledWith("guesser", 45)
       expect(mockFlairManager.setPoints).toHaveBeenCalledWith("submitter", 45)
     })
 
     it(`sends win to the database manager`, async () => {
-      await scoreManager.recordWin("postID", 123456789000, "guesser", "submitter", false)
-      expect(mockDatabaseManager.recordWin).toHaveBeenCalledWith("postID", 123456789000, "guesser", "submitter", { guesser: 3, submitter: 7 })
+      await scoreManager.recordWin(mockSubmission, mockComment, false)
+      expect(mockDatabaseManager.recordWin).toHaveBeenCalledWith("postID", 123456789000, 987654321000, "guesser", "submitter", { guesser: 3, submitter: 7 })
     })
 
     it(`converts second timestamps to milliseconds if required`, async () => {
-      await scoreManager.recordWin("postID", 123456789, "guesser", "submitter", false)
-      expect(mockDatabaseManager.recordWin).toHaveBeenCalledWith("postID", 123456789000, "guesser", "submitter", { guesser: 3, submitter: 7 })
+      mockSubmission.created_utc = 123
+      mockComment.created_utc = 789
+      await scoreManager.recordWin(mockSubmission, mockComment, false)
+      expect(mockDatabaseManager.recordWin).toHaveBeenCalledWith("postID", 123000, 789000, "guesser", "submitter", { guesser: 3, submitter: 7 })
     })
 
     it('does not update anything if the bot is in read-only mode', async () => {
-      await (await ScoreManager({ readOnly: true } as any)).recordWin("postID", 123456789000, "guesser", "submitter", false)
+      await (await ScoreManager({ readOnly: true } as any)).recordWin(mockSubmission, mockComment, false)
       expect(mockFlairManager.setPoints).not.toHaveBeenCalled()
       expect(mockDatabaseManager.recordWin).not.toHaveBeenCalled()
+    })
+
+    it('throws an error if the submission has been deleted', async () => {
+      mockSubmission.author.name = "[deleted]"
+      expect(scoreManager.recordWin(mockSubmission, mockComment, false)).rejects.toThrow()
+      delete mockSubmission.author
+      expect(scoreManager.recordWin(mockSubmission, mockComment, false)).rejects.toThrow()
+    })
+
+    it('throws an error if the comment has been deleted', async () => {
+      mockComment.author.name = "[deleted]"
+      expect(scoreManager.recordWin(mockSubmission, mockComment, false)).rejects.toThrow()
+      delete mockComment.author
+      expect(scoreManager.recordWin(mockSubmission, mockComment, false)).rejects.toThrow()
     })
   })
 

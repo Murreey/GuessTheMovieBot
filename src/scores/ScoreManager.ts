@@ -5,6 +5,18 @@ import { getScores, Scores } from './Scores'
 import FlairManager from './ScoreFlairManager'
 import DatabaseManager from "./DatabaseManager";
 import { DatabaseManager as DatabaseManagerType } from "../types";
+import snoowrap from "snoowrap";
+
+const millisecondTimeStamp = (timestamp: number): number => {
+  // Convert timestamps in seconds to miliseconds
+  // All DB timestamps are millis, for easier use of .getTime()
+  // This will stop working in the year 5138, sorry in advance
+  if(timestamp.toString().length < 12) {
+    return timestamp * 1000
+  }
+
+  return timestamp
+}
 
 export default async (bot: RedditBot, db?: DatabaseManagerType) => {
   const flairManager = FlairManager(bot)
@@ -12,7 +24,7 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
 
   return {
     getUserPoints: db.getUserScore,
-    recordWin: async (postID: string, postCreatedAt: number, guesser: string, submitter: string, foundOnGoogle = false): Promise<Scores> => {
+    recordWin: async (submission: snoowrap.Submission, guessComment: snoowrap.Comment, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
       if(bot.readOnly) {
@@ -20,14 +32,17 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
         return points
       }
 
-      if(postCreatedAt.toString().length < 12) {
-        // postCreatedAt must be in seconds, so needs converted
-        // All DB timestamps are millis, for easier use of .getTime()
-        // This will stop working in the year 5138, sorry in advance
-        postCreatedAt *= 1000
+      const postCreatedAt = millisecondTimeStamp(await submission.created_utc)
+      const postSolvedAt = millisecondTimeStamp(await guessComment.created_utc)
+
+      const submitter = await submission?.author?.name
+      const guesser = await guessComment?.author?.name
+
+      if(!submitter || !guesser || submitter === "[deleted]" || guesser === "[deleted]") {
+        throw new Error(`Could not record win on post ${await submission.id}! Looks like something was deleted.`)
       }
 
-      await db.recordWin(postID, postCreatedAt, guesser, submitter, points)
+      await db.recordWin(await submission.id, postCreatedAt, postSolvedAt, guesser, submitter, points)
 
       await flairManager.setPoints(guesser, await db.getUserScore(guesser))
       await flairManager.setPoints(submitter, await db.getUserScore(submitter))

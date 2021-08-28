@@ -80,13 +80,13 @@ describe('WinProcessor', () =>  {
 
   it('invokes the score manager', async () => {
     await processWin(redditBot, mockScoreManager)(mockComment)
-    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", 12345678, "guesser", "submitter", false)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith(redditBot.mockSubmission, redditBot.mockGuessComment, false)
   })
 
   it('invokes the score manager if the image was found on google', async () => {
     mockGoogleSearcher.mockResolvedValue(true)
     await processWin(redditBot, mockScoreManager)(mockComment)
-    expect(mockScoreManager.recordWin).toHaveBeenCalledWith("submission-id", 12345678, "guesser", "submitter", true)
+    expect(mockScoreManager.recordWin).toHaveBeenCalledWith(redditBot.mockSubmission, redditBot.mockGuessComment, true)
   })
 
   it('replies with the correctly formatted reply', async () => {
@@ -126,6 +126,8 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockResolvedValue(mockSubmission),
     setPostFlair: jest.fn(),
-    reply: jest.fn()
+    reply: jest.fn(),
+    mockGuessComment,
+    mockSubmission
   }
 }
