@@ -25,9 +25,14 @@ const processNewSubmissions = async () => {
   const newPosts = await bot.fetchNewSubmissions()
   const processor = newPostProcessor(bot)
   for(const post of newPosts) {
-    Logger.verbose(`Processing new submission by ${post.author.name}:`)
-    Logger.verbose(`"${post.title}" (${post.permalink})`)
-    await processor.processNewSubmission(post)
+    try {
+      Logger.verbose(`Processing new submission by ${post.author.name}:`)
+      Logger.verbose(`"${post.title}" (${post.permalink})`)
+      await processor.processNewSubmission(post)
+    } catch (ex) {
+      Logger.error(`Failed to process new post ${post?.id}!`)
+      Logger.error(ex)
+    }
   }
 }
 
@@ -35,18 +40,23 @@ const processNewComments = async () => {
   const scoreManager = await ScoreManager(bot, await databaseManager)
   const comments = await bot.fetchNewComments()
   for(const comment of comments) {
-    Logger.verbose(`Processing new comment by ${comment.author.name}:`)
-    Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
+    try {
+      Logger.verbose(`Processing new comment by ${comment.author.name}:`)
+      Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
 
-    const validWin = await WinChecker(bot, scoreManager).isValidWin(comment)
-    if(!validWin) {
-      Logger.verbose('No win detected, ignoring')
-      continue
+      const validWin = await WinChecker(bot, scoreManager).isValidWin(comment)
+      if(!validWin) {
+        Logger.verbose('No win detected, ignoring')
+        continue
+      }
+
+      Logger.info('Win confirmed!')
+      Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
+      await processWin(bot, scoreManager)(comment)
+    } catch (ex) {
+      Logger.error(`Failed to process comment ${comment?.id}!`)
+      Logger.error(ex)
     }
-
-    Logger.info('Win confirmed!')
-    Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
-    await processWin(bot, scoreManager)(comment)
   }
 }
 
@@ -54,11 +64,16 @@ const processNewReports = async () => {
   const scoreManager = await ScoreManager(bot, await databaseManager)
   const reportedComments = await bot.fetchNewReports()
   for(const comment of reportedComments) {
-    for(const report of comment.mod_reports) {
-      if(report[0] && report[0].trim().startsWith(COMMAND_PREFIX)) {
-        Logger.verbose(`Processing new report '${report[0]}' on ${comment.name}`)
-        await CommandProcessor(bot, scoreManager, comment, report[0])
+    try {
+      for(const report of comment.mod_reports) {
+        if(report[0] && report[0].trim().startsWith(COMMAND_PREFIX)) {
+          Logger.verbose(`Processing new report '${report[0]}' on ${comment.name}`)
+          await CommandProcessor(bot, scoreManager, comment, report[0])
+        }
       }
+    } catch (ex) {
+      Logger.error(`Failed to process reports on comment ${comment?.id}!`)
+      Logger.error(ex)
     }
   }
 }
