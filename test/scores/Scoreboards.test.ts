@@ -2,7 +2,7 @@ import Scoreboards from '../../src/scores/Scoreboards'
 import Mustache from 'mustache'
 
 import { mocked } from 'ts-jest/utils'
-import { DatabaseManager } from '../../src/types'
+import { DatabaseManager, ScoreboardData } from '../../src/types'
 import { RedditBot } from '../../src/RedditBot'
 
 jest.mock('Mustache')
@@ -17,24 +17,32 @@ describe('Scoreboards', () => {
   global.Date = jest.fn((args) => new _Date(args || mockDate.getTime())) as any
   global.Date.UTC = _Date.UTC;
 
+  const mockHighScores = {
+    scores: [
+      { username: 'player3', score: 25 },
+      { username: 'player2', score: 12 },
+      { username: 'player1', score: 5 }
+    ],
+    guessers: [
+      { username: 'player3', score: 25 },
+      { username: 'player2', score: 12 },
+      { username: 'player1', score: 5 }
+    ],
+    submitters: [
+      { username: 'player3', score: 25 },
+      { username: 'player2', score: 12 },
+      { username: 'player1', score: 5 }
+    ],
+    fastest: {
+      postId: 'fastest-post', username: 'player4', time: 987654
+    },
+    slowest: {
+      postId: 'slowest-post', username: 'player5', time: 12345678910
+    }
+  }
+
   const mockDatabaseManager: Partial<DatabaseManager> = {
-    getHighScores: jest.fn().mockResolvedValue({
-      scores: [
-        { username: 'player3', score: 25 },
-        { username: 'player2', score: 12 },
-        { username: 'player1', score: 5 }
-      ],
-      guessers: [
-        { username: 'player3', score: 25 },
-        { username: 'player2', score: 12 },
-        { username: 'player1', score: 5 }
-      ],
-      submitters: [
-        { username: 'player3', score: 25 },
-        { username: 'player2', score: 12 },
-        { username: 'player1', score: 5 }
-      ]
-    })
+    getHighScores: jest.fn().mockResolvedValue(mockHighScores)
   }
 
   const mockMustache = mocked(Mustache)
@@ -80,8 +88,80 @@ describe('Scoreboards', () => {
           { score: 25, username: "player3" },
           { score: 12, username: "player2" },
           { score: 5, username: "player1" }
-        ]
+        ],
+        fastest: {
+          postId: "fastest-post", username: "player4",
+          time: 987654, timeString: '16 minutes 27 seconds'
+        },
+        slowest: {
+          postId: "slowest-post", username: "player5",
+          time: 12345678910, timeString: '142 days 21 hours 21 minutes 18 seconds'
+        },
+      } as ScoreboardData)
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
+    })
+
+    it('does not include fastest speed record if the database did not return it', async () => {
+      (mockDatabaseManager.getHighScores as any).mockReturnValue({
+        ...mockHighScores,
+        fastest: undefined
       })
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
+      expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
+        month: "May",
+        year: "2021",
+        guesses: [
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
+        ],
+        points: [
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
+        ],
+        submissions: [
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
+        ],
+        slowest: {
+          postId: "slowest-post", username: "player5",
+          time: 12345678910, timeString: '142 days 21 hours 21 minutes 18 seconds'
+        }
+      } as ScoreboardData)
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
+    })
+
+    it('does not include slowest speed record if the database did not return it', async () => {
+      (mockDatabaseManager.getHighScores as any).mockReturnValue({
+        ...mockHighScores,
+        slowest: undefined
+      })
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
+      expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
+        month: "May",
+        year: "2021",
+        guesses: [
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
+        ],
+        points: [
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
+        ],
+        submissions: [
+          { score: 25, username: "player3" },
+          { score: 12, username: "player2" },
+          { score: 5, username: "player1" }
+        ],
+        fastest: {
+          postId: "fastest-post", username: "player4",
+          time: 987654, timeString: '16 minutes 27 seconds'
+        }
+      } as ScoreboardData)
       expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
     })
 

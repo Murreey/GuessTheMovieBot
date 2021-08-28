@@ -22,11 +22,21 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
     }
 
     const scoreboardData: ScoreboardData = {
+      month: timeRange.from.toLocaleString('en-GB', { month: 'long' }),
+      year: timeRange.from.toLocaleString('en-GB', { year: 'numeric' }),
       points: rawData.scores,
       guesses: rawData.guessers,
       submissions: rawData.submitters,
-      month: timeRange.from.toLocaleString('en-GB', { month: 'long' }),
-      year: timeRange.from.toLocaleString('en-GB', { year: 'numeric' })
+      // These should never be undefined if the other 3 arrays have data
+      // But still treat them like they could be omitted just in case
+      fastest: rawData.fastest && {
+        ...rawData.fastest,
+        timeString: formatMillisecondsAsTime(rawData.fastest.time),
+      },
+      slowest: rawData.slowest && {
+        ...rawData.slowest,
+        timeString: formatMillisecondsAsTime(rawData.slowest.time),
+      }
     }
 
     const postTemplate = fs.readFileSync(path.resolve(__dirname, `../../templates/scoreboard_template.md`), 'utf-8')
@@ -40,3 +50,19 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
 const startOfMonth = (start: Date, offset = 0): Date => {
   return new Date(Date.UTC(start.getFullYear(), start.getMonth() + offset, 1, 0))
 }
+
+const formatMillisecondsAsTime = (input: number): string =>
+  [
+    { name: 'second', per: 1000, max: 60 },
+    { name: 'minute', per: 60, max: 60 },
+    { name: 'hour', per: 60, max: 24 },
+    { name: 'day', per: 24 }
+  ]
+  .map(format => {
+    input = Math.floor(input / format.per)
+    return [format.name, format.max ? input % format.max : input]
+  })
+  .filter(format => format[1])
+  .map(format => `${format[1]} ${format[0]}${format[1] > 1 ? 's' : ''}`)
+  .reverse()
+  .join(' ') || undefined

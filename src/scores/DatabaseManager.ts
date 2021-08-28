@@ -3,7 +3,7 @@ import path from 'path'
 import sqlite3 from 'sqlite3'
 import { Database, open } from 'sqlite'
 import { Scores } from './Scores'
-import { Score, TimeRange } from '../types'
+import { Score, SpeedRecord, TimeRange } from '../types'
 
 const defaultTimeRange: TimeRange = {
   // Bit lazy, but is essentially 'no time range',
@@ -182,10 +182,30 @@ export default async () => {
         LIMIT ?
       `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
 
+      const fastest = await db.get(`
+        SELECT post_id AS postId, username, (solvedAt - createdAt) AS time
+        FROM wins
+        INNER JOIN users ON wins.guesser_id = users.user_id
+        WHERE solvedAt >= ? AND solvedAt < ?
+        ORDER BY time ASC
+        LIMIT 1
+      `, timeRange.from.getTime(), timeRange.to.getTime()) as SpeedRecord
+
+      const slowest = await db.get(`
+        SELECT post_id AS postId, username, (solvedAt - createdAt) AS time
+        FROM wins
+        INNER JOIN users ON wins.guesser_id = users.user_id
+        WHERE solvedAt >= ? AND solvedAt < ?
+        ORDER BY time DESC
+        LIMIT 1
+      `, timeRange.from.getTime(), timeRange.to.getTime()) as SpeedRecord
+
       return {
         scores: allScores,
         guessers: topGuessers,
-        submitters: topSubmitters
+        submitters: topSubmitters,
+        fastest,
+        slowest
       }
     }
   }

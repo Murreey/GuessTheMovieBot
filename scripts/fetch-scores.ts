@@ -34,6 +34,11 @@ const highScores = async (args) =>  {
   console.log('  Top Submitters:')
   scores.submitters.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`))
   console.log('')
+  console.log('  Fastest Solve:')
+  console.log(`  - ${scores?.fastest?.username} on https://redd.it/${scores?.fastest?.postId} in ${scores?.fastest?.time/1000}s`)
+  console.log('  Slowest Solve:')
+  console.log(`  - ${scores?.slowest?.username} on https://redd.it/${scores?.slowest?.postId} in ${scores?.slowest?.time/1000}s`)
+  console.log('')
 }
 
 const args = yargs(process.argv.slice(2))

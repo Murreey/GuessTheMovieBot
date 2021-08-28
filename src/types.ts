@@ -44,7 +44,9 @@ export type TimeRange = {
 export type ScoreboardData = {
   points: Score[]
   guesses: Score[]
-  submissions: Score[]
+  submissions: Score[],
+  fastest?: SpeedRecord,
+  slowest?: SpeedRecord,
   month: string
   year: string
 }
@@ -52,6 +54,13 @@ export type ScoreboardData = {
 export type Score = {
   username: string,
   score: number
+}
+
+export type SpeedRecord = {
+  username: string,
+  postId: string,
+  time: number,
+  timeString?: string
 }
 
 export type AsyncReturnType<T extends (...args: any) => any> =
