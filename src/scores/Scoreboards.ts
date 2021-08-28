@@ -51,7 +51,7 @@ const startOfMonth = (start: Date, offset = 0): Date => {
   return new Date(Date.UTC(start.getFullYear(), start.getMonth() + offset, 1, 0))
 }
 
-const formatMillisecondsAsTime = (input: number): string =>
+export const formatMillisecondsAsTime = (input: number): string =>
   [
     { name: 'second', per: 1000, max: 60 },
     { name: 'minute', per: 60, max: 60 },

@@ -1,6 +1,7 @@
 import yargs from 'yargs'
 import { Logger, LogLevel } from '../src/Logger';
 import DatabaseManager from '../src/scores/DatabaseManager';
+import { formatMillisecondsAsTime } from '../src/scores/Scoreboards';
 import { TimeRange } from '../src/types';
 
 const userScore = async (args) => {
@@ -35,9 +36,9 @@ const highScores = async (args) =>  {
   scores.submitters.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`))
   console.log('')
   console.log('  Fastest Solve:')
-  console.log(`  - ${scores?.fastest?.username} on https://redd.it/${scores?.fastest?.postId} in ${scores?.fastest?.time/1000}s`)
+  console.log(`  - ${scores?.fastest?.username} on https://redd.it/${scores?.fastest?.postId} in ${formatMillisecondsAsTime(scores?.fastest?.time)}`)
   console.log('  Slowest Solve:')
-  console.log(`  - ${scores?.slowest?.username} on https://redd.it/${scores?.slowest?.postId} in ${scores?.slowest?.time/1000}s`)
+  console.log(`  - ${scores?.slowest?.username} on https://redd.it/${scores?.slowest?.postId} in ${formatMillisecondsAsTime(scores?.slowest?.time)}`)
   console.log('')
 }
 
