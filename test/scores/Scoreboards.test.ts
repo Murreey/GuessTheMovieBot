@@ -4,8 +4,10 @@ import Mustache from 'mustache'
 import { mocked } from 'ts-jest/utils'
 import { DatabaseManager, ScoreboardData } from '../../src/types'
 import { RedditBot } from '../../src/RedditBot'
+import { getConfig } from '../../src/config'
 
 jest.mock('Mustache')
+jest.mock('../../src/config')
 
 describe('Scoreboards', () => {
   let redditBot: Partial<RedditBot> = {
@@ -47,6 +49,10 @@ describe('Scoreboards', () => {
 
   const mockMustache = mocked(Mustache)
   mockMustache.render.mockReturnValue('rendered-template')
+
+  mocked(getConfig).mockReturnValue({
+    subreddit: 'subreddit_name'
+  } as any)
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -98,7 +104,7 @@ describe('Scoreboards', () => {
           time: 12345678910, timeString: '142 days 21 hours 21 minutes 18 seconds'
         },
       } as ScoreboardData)
-      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/subreddit_name May 2021 Leaderboard', 'rendered-template', true)
     })
 
     it('does not include fastest speed record if the database did not return it', async () => {
@@ -130,7 +136,7 @@ describe('Scoreboards', () => {
           time: 12345678910, timeString: '142 days 21 hours 21 minutes 18 seconds'
         }
       } as ScoreboardData)
-      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/subreddit_name May 2021 Leaderboard', 'rendered-template', true)
     })
 
     it('does not include slowest speed record if the database did not return it', async () => {
@@ -162,7 +168,7 @@ describe('Scoreboards', () => {
           time: 987654, timeString: '16 minutes 27 seconds'
         }
       } as ScoreboardData)
-      expect(redditBot.createPost).toHaveBeenCalledWith('/r/GuessTheMovie May 2021 Leaderboard', 'rendered-template', true)
+      expect(redditBot.createPost).toHaveBeenCalledWith('/r/subreddit_name May 2021 Leaderboard', 'rendered-template', true)
     })
 
     it('does not post if the database returns missing data', async () => {

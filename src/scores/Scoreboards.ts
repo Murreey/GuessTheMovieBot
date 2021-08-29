@@ -4,6 +4,7 @@ import Mustache from "mustache";
 import { RedditBot } from "../RedditBot";
 import { Logger } from '../Logger';
 import { DatabaseManager, ScoreboardData, TimeRange } from '../types';
+import { getConfig } from '../config';
 
 export default (bot: RedditBot, database: DatabaseManager) => ({
   postMonthlyScoreboard: async (month: Date = new Date()): Promise<void> => {
@@ -40,7 +41,7 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
     }
 
     const postTemplate = fs.readFileSync(path.resolve(__dirname, `../../templates/scoreboard_template.md`), 'utf-8')
-    const title = `/r/GuessTheMovie ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
+    const title = `/r/${getConfig()?.subreddit || ''} ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
     const body = Mustache.render(postTemplate, scoreboardData)
     Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
     await bot.createPost(title, body, true)
