@@ -13,6 +13,11 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
   const submission = await bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
+  if(await bot.isDeleted(submission) || await bot.isDeleted(comment) || await bot.isDeleted(guessComment)) {
+    Logger.warn(`Can't process win - looks like something was deleted. https://redd.it/${submission.id}}`)
+    return
+  }
+
   Logger.verbose('Updating post flair')
   await updateFlairToIdentified(bot, submission)
 

@@ -21,6 +21,11 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => ({
     const config = getConfig()
     if(guessComment.author.name === bot.username) return Logger.debug(`Rejected as parent comment was from the bot`) && false
 
+    if(await bot.isDeleted(comment) || await bot.isDeleted(guessComment)) {
+      Logger.warn(`Could not check win on https://redd.it/${comment.link_id?.split('_')?.[1]}, looks like something was deleted`)
+      return false
+    }
+
     //@ts-expect-error
     const submission = await bot.fetchPostFromComment(comment)
 

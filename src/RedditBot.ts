@@ -136,7 +136,8 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
         .some((comment: any) => comment.author.name === config.bot_username && !comment.removed)
     },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
-    rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) })
+    rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) }),
+    isDeleted
   }
 }
 
@@ -182,7 +183,8 @@ export type RedditBot = {
   setUserFlair: (username: string, options: { text?: string, css_class?: string, background_color?: string, text_color?: 'light' | 'dark' }) => Promise<void>,
   hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
-  rateLimit: () => { requestsRemaining: number, resetsAt: Date }
+  rateLimit: () => { requestsRemaining: number, resetsAt: Date },
+  isDeleted: (content: snoowrap.Comment | snoowrap.Submission) => Promise<boolean>
 }
 
 export type RedditBotOptions = {

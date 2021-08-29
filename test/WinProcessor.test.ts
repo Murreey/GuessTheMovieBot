@@ -48,6 +48,17 @@ describe('WinProcessor', () =>  {
     mockGoogleSearcher.mockClear()
   })
 
+  it('does nothing if any of the content has been deleted', async () => {
+    redditBot.isDeleted
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
+    await processWin(redditBot, mockScoreManager)(mockComment)
+    expect(mockScoreManager.recordWin).not.toHaveBeenCalled()
+    expect(redditBot.setPostFlair).not.toHaveBeenCalled()
+    expect(redditBot.reply).not.toHaveBeenCalled()
+  })
+
   describe('sets the correct flair', () => {
     it('when the post has no flair', async () => {
       await processWin(redditBot, mockScoreManager)(mockComment)
@@ -127,6 +138,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     fetchPostFromComment: jest.fn().mockResolvedValue(mockSubmission),
     setPostFlair: jest.fn(),
     reply: jest.fn(),
+    isDeleted: jest.fn().mockResolvedValue(false),
     mockGuessComment,
     mockSubmission
   }

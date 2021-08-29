@@ -98,6 +98,12 @@ describe('WinChecker', () => {
     expect(validWin).toBe(false)
   })
 
+  it('returns false if any of the content has been deleted', async () => {
+    redditBot.isDeleted.mockResolvedValueOnce(true)
+    const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
+    expect(validWin).toBe(false)
+  })
+
   describe('self post', () => {
     it('returns false if the body is not an image URL', async () => {
       redditBot = mockRedditBot(null, { is_self: true, selftext: "Some body text" })
@@ -223,6 +229,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     isCommentAReply: jest.fn().mockReturnValue(true),
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockResolvedValue(mockSubmission),
-    hasReplied: jest.fn().mockResolvedValue(false)
+    hasReplied: jest.fn().mockResolvedValue(false),
+    isDeleted: jest.fn().mockResolvedValue(false)
   }
 }
