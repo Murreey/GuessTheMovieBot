@@ -95,7 +95,12 @@ const run = async () => {
 
 scheduler.schedule("1 0 1 * *", async () => {
   running = true
-  await Scoreboards(bot, await databaseManager).postMonthlyScoreboard()
+  try {
+    await Scoreboards(bot, await databaseManager).postMonthlyScoreboard()
+  } catch (ex) {
+    Logger.error(`Error posting scoreboard!`)
+    Logger.error(ex)
+  }
   running = false
 })
 
