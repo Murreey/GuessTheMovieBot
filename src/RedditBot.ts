@@ -82,7 +82,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
       } catch (ex) {
         // Do nothing
         // This likely meant the parent comment was deleted or the post is now archived
-        Logger.error(`Reply failed - ${ex}`)
+        Logger.error(`Reply failed - ${ex.message}`)
       }
     },
     createPost: async (title, text, sticky = false) => {

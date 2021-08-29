@@ -31,7 +31,7 @@ const processNewSubmissions = async () => {
       await processor.processNewSubmission(post)
     } catch (ex) {
       Logger.error(`Failed to process new post ${post?.id}!`)
-      Logger.error(ex)
+      Logger.error(ex.stack)
     }
   }
 }
@@ -55,7 +55,7 @@ const processNewComments = async () => {
       await processWin(bot, scoreManager)(comment)
     } catch (ex) {
       Logger.error(`Failed to process comment ${comment?.id}!`)
-      Logger.error(ex)
+      Logger.error(ex.stack)
     }
   }
 }
@@ -72,7 +72,7 @@ const processNewReports = async () => {
       }
     } catch (ex) {
       Logger.error(`Failed to process reports on comment ${comment?.id}!`)
-      Logger.error(ex)
+      Logger.error(ex.stack)
     }
   }
 }
@@ -99,7 +99,7 @@ scheduler.schedule("1 0 1 * *", async () => {
     await Scoreboards(bot, await databaseManager).postMonthlyScoreboard()
   } catch (ex) {
     Logger.error(`Error posting scoreboard!`)
-    Logger.error(ex)
+    Logger.error(ex.stack)
   }
   running = false
 })

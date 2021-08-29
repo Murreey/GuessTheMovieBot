@@ -9,7 +9,7 @@ export const getConfig = (): Config => {
       providedConfig = require('../config.json')
   } catch(ex) {
       Logger.error('Failed to load config file:')
-      Logger.error(ex)
+      Logger.error(ex.stack)
   }
 
   return Object.assign(defaultConfig, providedConfig)
