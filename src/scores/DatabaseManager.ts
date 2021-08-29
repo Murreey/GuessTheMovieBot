@@ -36,8 +36,8 @@ export default async () => {
   }
 
   const getUserID = async (username: string): Promise<number> => {
-    await db.run(`INSERT OR IGNORE INTO users (username) VALUES (?)`, username)
-    return (await db.get(`SELECT user_id FROM users WHERE username = ?`, username)).user_id
+    await db.run(`INSERT OR IGNORE INTO users (username) VALUES (?)`, username.toString())
+    return (await db.get(`SELECT user_id FROM users WHERE username = ?`, username.toString())).user_id
   }
 
   return {
@@ -89,7 +89,7 @@ export default async () => {
         INNER JOIN users ON points.user_id = users.user_id
         WHERE users.username = ?
         AND wins.solved_at >= ?
-        AND wins.solved_at < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
+        AND wins.solved_at < ?`, username.toString(), timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.total ?? 0
 
@@ -97,7 +97,7 @@ export default async () => {
         const legacyData = await db.get(`
           SELECT points FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
-          WHERE users.username = ?`, username)
+          WHERE users.username = ?`, username.toString())
 
         result += (legacyData?.points ?? 0)
       }
@@ -112,7 +112,7 @@ export default async () => {
         LEFT JOIN users ON wins.submitter_id = users.user_id
         WHERE users.username = ?
         AND wins.solved_at >= ?
-        AND wins.solved_at < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
+        AND wins.solved_at < ?`, username.toString(), timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.count ?? 0
 
@@ -120,7 +120,7 @@ export default async () => {
         const legacyData = await db.get(`
           SELECT submissions FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
-          WHERE users.username = ?`, username)
+          WHERE users.username = ?`, username.toString())
 
         result += (legacyData?.submissions ?? 0)
       }
@@ -135,7 +135,7 @@ export default async () => {
         LEFT JOIN users ON wins.guesser_id = users.user_id
         WHERE users.username = ?
         AND wins.solved_at >= ?
-        AND wins.solved_at < ?`, username, timeRange.from.getTime(), timeRange.to.getTime())
+        AND wins.solved_at < ?`, username.toString(), timeRange.from.getTime(), timeRange.to.getTime())
 
       let result = data?.total ?? 0
 
@@ -143,7 +143,7 @@ export default async () => {
         const legacyData = await db.get(`
           SELECT guesses FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
-          WHERE users.username = ?`, username)
+          WHERE users.username = ?`, username.toString())
 
         result += (legacyData?.guesses ?? 0)
       }
