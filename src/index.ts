@@ -85,9 +85,9 @@ const run = async () => {
 
   running = true
 
+  await processNewReports()
   await processNewSubmissions()
   await processNewComments()
-  await processNewReports()
 
   Logger.debug(`${bot.rateLimit().requestsRemaining} requests till rate limit, resets at ${bot.rateLimit().resetsAt}`)
   running = false
