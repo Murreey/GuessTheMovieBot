@@ -1,4 +1,4 @@
-Guess confirmed:
+**Guess confirmed!**
 
 * winner **/u/{{ guesser.name }}** gets **+{{ guesser.points }} points**
 * poster **/u/{{ submitter.name }}** gets **+{{ submitter.points }} points**
@@ -14,6 +14,6 @@ This post was manually approved by a moderator - /u/{{ submitter.name }} please 
 
 {{/forced}}
 ***
-See [the wiki for more details](https://www.reddit.com/r/GuessTheMovie/wiki/index). If anything is incorrect, please [contact the mods!](/message/compose?to=%2Fr%2F{{ subreddit }}&subject=Bot%20error&message=https%3A%2F%2Fredd.it%2F{{ postID }}%0A%0A)
+*[^(See the wiki for bot help)](/r/GuessTheMovie/wiki/index)^. ^(Did I get something wrong?) [^(Message the mods!)](/message/compose?to=%2Fr%2F{{ subreddit }}&subject=Bot%20Error&message=%0A%0A%0Ahttps%3A%2F%2Fredd.it%2F{{ postID }})*
 
 *^(For info about the bot, see) [^(this post!)](https://redd.it/c7rp90)*
