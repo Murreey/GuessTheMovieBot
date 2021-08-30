@@ -2,12 +2,15 @@ import { Submission } from "snoowrap"
 import { getConfig } from "./config";
 import { RedditBot } from "./RedditBot";
 import { Logger } from "./Logger";
+import { DatabaseManager as DatabaseManagerType } from "./types";
+import DatabaseManager from "./scores/DatabaseManager";
 
 type OptionalTag = 'easy' | 'hard' | 'meta'
 
-export default (bot: RedditBot) => ({
+export default (bot: RedditBot, db?: DatabaseManagerType) => ({
   processNewSubmission: async (submission: Submission) => {
     const config = getConfig()
+    if(!db) db = await DatabaseManager()
 
     if(await bot.hasReplied(submission)) {
       Logger.debug(`Ignoring ${submission.id} as bot has already replied`)
@@ -43,12 +46,15 @@ export default (bot: RedditBot) => ({
       return
     }
 
-    // TODO: if the author has never submitted before, add some tips
-
     const messageParts = [
       tags.includes('easy') && `This post has been marked **easy**, so is only for new players with **less than 10 points**!`,
       needsGTMTag && `/u/${submission.author.name}, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.`
     ].filter(Boolean)
+
+    if(await db.getUserSubmissionCount(submission.author.name) < 1) {
+      messageParts.push(`Welcome to /r/GuessTheMovie, /u/${submission.author.name}! Remember to wait an hour before you start correcting guesses, and reply with 'correct' to the first person who gets it right!
+        [Check out the  wiki for more help](https://www.reddit.com/r/${config.subreddit}/wiki/index), and thanks for posting!`)
+    }
 
     if(messageParts.length > 0) {
       Logger.info(`Posting bot helper comment on ${submission.permalink}`)

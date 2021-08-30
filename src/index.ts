@@ -23,7 +23,7 @@ const databaseManager = DatabaseManager()
 
 const processNewSubmissions = async () => {
   const newPosts = await bot.fetchNewSubmissions()
-  const processor = newPostProcessor(bot)
+  const processor = newPostProcessor(bot, await databaseManager)
   for(const post of newPosts) {
     try {
       Logger.verbose(`Processing new submission by ${post.author.name}:`)

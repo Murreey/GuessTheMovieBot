@@ -1,11 +1,14 @@
 import newPostProcessor from '../src/NewPostProcessor';
 
 import { getConfig } from '../src/config'
+import DatabaseManager from '../src/scores/DatabaseManager'
 import { mocked } from 'ts-jest/utils'
 
 jest.mock('../src/config')
+jest.mock('../src/scores/DatabaseManager')
 
 mocked(getConfig).mockReturnValue({
+  subreddit: 'subreddit',
   linkFlairTemplates: {
     meta: 'meta-template',
     easy: 'easy-template',
@@ -14,8 +17,7 @@ mocked(getConfig).mockReturnValue({
 } as any)
 
 describe('NewPostProcessor', () => {
-  let redditBot
-  let mockSubmission
+  let redditBot, mockSubmission, mockDatabaseManager
 
   beforeEach(() => {
     redditBot = {
@@ -27,8 +29,15 @@ describe('NewPostProcessor', () => {
 
     mockSubmission = {
       expandReplies: () => ({ comments: [] }),
-      author: { name: 'foo' }
+      author: { name: 'foo' },
+      title: '[GTM] correct title'
     }
+
+    mockDatabaseManager = {
+      getUserSubmissionCount: jest.fn().mockResolvedValue(5)
+    }
+
+    mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager as any)
   })
 
   it('does not reply if the bot has already replied', async () => {
@@ -84,14 +93,11 @@ describe('NewPostProcessor', () => {
 
   it('does not reply if the bot is the submission author', async () => {
     mockSubmission.author.name = 'bot-username'
-
-    mockSubmission.title = 'post title [easy]'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
   it('does not reply if the post is tagged correctly', async () => {
-    mockSubmission.title = '[GTM] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
@@ -112,5 +118,11 @@ describe('NewPostProcessor', () => {
     mockSubmission.title = '[easy] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
     expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with **less than 10 points**!\n&nbsp;\n***\n&nbsp;/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.', true)
+  })
+
+  it('replies if the user has never submitted before', async () => {
+    mockDatabaseManager.getUserSubmissionCount.mockResolvedValue(0)
+    await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
+    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, expect.stringContaining('Welcome'), true)
   })
 })
