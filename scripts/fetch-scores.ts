@@ -10,10 +10,16 @@ const userScore = async (args) => {
   if(args.to) range.to = new Date(args.to)
 
   const db = await DatabaseManager()
-  const score = await db.getUserScore(args.username, range)
+  const scores = [
+    await db.getUserScore(args.username, range),
+    await db.getUserGuessCount(args.username, range),
+    await db.getUserSubmissionCount(args.username, range)
+  ]
 
-  console.log(`  ${args.username} has ${score} points${range.from ? ' from ' + range.from.toUTCString() : ''}${range.to ? ' to ' + range.to.toUTCString() : ''}`)
-  console.log('')
+  console.log(`  Totals for ${args.username}${range.from ? ' from ' + range.from.toUTCString() : ''}${range.to ? ' to ' + range.to.toUTCString() : ''}:`)
+  console.log(`  - ${scores[0]} points`)
+  console.log(`  - ${scores[1]} correct guesses`)
+  console.log(`  - ${scores[2]} submissions`)
 }
 
 const highScores = async (args) =>  {
