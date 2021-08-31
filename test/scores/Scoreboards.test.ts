@@ -6,7 +6,7 @@ import { DatabaseManager, ScoreboardData } from '../../src/types'
 import { RedditBot } from '../../src/RedditBot'
 import { getConfig } from '../../src/config'
 
-jest.mock('Mustache')
+jest.mock('mustache')
 jest.mock('../../src/config')
 
 describe('Scoreboards', () => {
