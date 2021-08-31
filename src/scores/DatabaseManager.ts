@@ -30,6 +30,9 @@ export default async () => {
     await db.exec('PRAGMA foreign_keys = ON;')
 
     await db.exec(fs.readFileSync(path.resolve(__dirname, '../../scripts/create-database.sql'), 'utf-8'))
+
+    process.on('SIGINT', async () => { await db?.close(); db = null; process.exit(0) });
+    process.on('SIGTERM', async () => { await db?.close(); db = null; process.exit(0) });
   } catch (ex) {
     console.error(ex)
     db = null
