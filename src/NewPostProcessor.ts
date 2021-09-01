@@ -52,7 +52,7 @@ export default (bot: RedditBot, db?: DatabaseManagerType) => ({
     ].filter(Boolean)
 
     if(await db.getUserSubmissionCount(submission.author.name) < 1) {
-      messageParts.push(`Welcome to /r/GuessTheMovie, /u/${submission.author.name}! Remember to wait an hour before you start correcting guesses, and reply with 'correct' to the first person who gets it right!
+      messageParts.push(`Welcome to /r/GuessTheMovie, /u/${submission.author.name}! Remember to wait an hour after posting before you start correcting guesses, and reply with 'correct' to the first person who gets it right!
         [Check out the  wiki for more help](https://www.reddit.com/r/${config.subreddit}/wiki/index), and thanks for posting!`)
     }
 
