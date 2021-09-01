@@ -19,7 +19,7 @@ export default (bot: RedditBot, db?: DatabaseManagerType) => ({
 
     const title = submission.title.trim()
 
-    const needsGTMTag = !/^\[GTM\]/i.test(title)
+    const needsGTMTag = !/^\[?GTM\]?/i.test(title)
 
     const tags: OptionalTag[] = Object.entries({
       'meta': /\[meta\]/i,
@@ -48,17 +48,13 @@ export default (bot: RedditBot, db?: DatabaseManagerType) => ({
 
     const messageParts = [
       tags.includes('easy') && `This post has been marked **easy**, so is only for new players with **less than 10 points**!`,
+      (await db.getUserSubmissionCount(submission.author.name) < 1) && `Welcome to /r/GuessTheMovie, /u/${submission.author.name}! Remember to wait an hour after posting before you start correcting guesses, and reply with 'correct' to the first person who gets it right!\n[Check out the  wiki for more help](https://www.reddit.com/r/${config.subreddit}/wiki/index), and thanks for posting!`,
       needsGTMTag && `/u/${submission.author.name}, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.`
     ].filter(Boolean)
 
-    if(await db.getUserSubmissionCount(submission.author.name) < 1) {
-      messageParts.push(`Welcome to /r/GuessTheMovie, /u/${submission.author.name}! Remember to wait an hour after posting before you start correcting guesses, and reply with 'correct' to the first person who gets it right!
-        [Check out the  wiki for more help](https://www.reddit.com/r/${config.subreddit}/wiki/index), and thanks for posting!`)
-    }
-
     if(messageParts.length > 0) {
       Logger.info(`Posting bot helper comment on ${submission.permalink}`)
-      await bot.reply(submission, messageParts.join(`\n&nbsp;\n***\n&nbsp;`), true)
+      await bot.reply(submission, messageParts.join(`\n\n***\n\n`), true)
     }
   }
 })

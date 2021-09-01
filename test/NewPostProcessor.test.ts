@@ -102,6 +102,12 @@ describe('NewPostProcessor', () => {
     expect(redditBot.reply).not.toHaveBeenCalled()
   })
 
+  it('allows badly formatted GTM tag', async () => {
+    mockSubmission.title = 'GTM post title'
+    await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
+    expect(redditBot.reply).not.toHaveBeenCalled()
+  })
+
   it('replies if the post is missing the GTM tag', async () => {
     mockSubmission.title = 'post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
