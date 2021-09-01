@@ -123,7 +123,7 @@ describe('NewPostProcessor', () => {
   it('replies if the post has an easy tag and is missing GTM', async () => {
     mockSubmission.title = '[easy] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with **less than 10 points**!\n&nbsp;\n***\n&nbsp;/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.', true)
+    expect(redditBot.reply).toHaveBeenCalledWith(mockSubmission, 'This post has been marked **easy**, so is only for new players with **less than 10 points**!\n\n***\n\n/u/foo, please remember to start your post titles with **[GTM]**! It helps people know your screenshot is part of the game in case it pops up out of context on homepage feeds.', true)
   })
 
   it('replies if the user has never submitted before', async () => {
