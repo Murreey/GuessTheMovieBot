@@ -6,9 +6,9 @@ import { getConfig } from './config'
 import { RedditBot } from './RedditBot';
 import { Logger } from './Logger';
 import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
-import { ScoreManager } from './types';
+import { ScoreManager, WinComment } from './types';
 
-export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: snoowrap.Comment, winCommentArgs = {}): Promise<void> => {
+export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: snoowrap.Comment, winCommentArgs: Partial<WinComment> = {}): Promise<void> => {
   //@ts-expect-error
   const submission = await bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
@@ -55,12 +55,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
   }
 }
 
-export const createWinComment = (args: {
-  postID: string,
-  guesser: { name: string, points: number },
-  submitter: { name: string, points: number },
-  googleUrl: string
-}): string => {
+export const createWinComment = (args: WinComment): string => {
   const config = getConfig()
   const templateFile = path.resolve(__dirname, `../templates/${config.replyTemplate}`)
   if(!existsSync(templateFile)) return undefined

@@ -97,7 +97,8 @@ describe('CorrectGIS', () => {
         postID: "post-id",
         guesser: { name: "guesser", points: 8 },
         submitter: { name: "submitter", points: 12 },
-        googleUrl: undefined
+        googleUrl: undefined,
+        forced: false
       })
       expect(comment.edit).toHaveBeenCalledWith("new comment body")
       expect(result).toBe(true)
@@ -128,7 +129,24 @@ describe('CorrectGIS', () => {
         postID: "post-id",
         guesser: { name: "guesser", points: 8 },
         submitter: { name: "submitter", points: 12 },
-        googleUrl: "https://google"
+        googleUrl: "https://google",
+        forced: false
+      })
+      expect(comment.edit).toHaveBeenCalledWith("new comment body")
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('when win was previously forced by a moderator', () => {
+    it('keeps the forced message in the comment', async () => {
+      const comment = mockComment(undefined, "this post was manually approved by a moderator")
+      const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
+      expect(mocked(createWinComment)).toHaveBeenCalledWith({
+        postID: "post-id",
+        guesser: { name: "guesser", points: 8 },
+        submitter: { name: "submitter", points: 12 },
+        googleUrl: "https://google",
+        forced: true
       })
       expect(comment.edit).toHaveBeenCalledWith("new comment body")
       expect(result).toBe(true)

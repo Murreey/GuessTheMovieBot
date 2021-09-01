@@ -18,6 +18,7 @@ export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManag
     return false
   }
   const previouslyFoundOnGoogle = comment?.body?.toLowerCase().includes("found on google") || false
+  const previouslyForced = comment?.body?.toLowerCase().includes("manually approved") || false
   Logger.verbose(`Post was originally ${previouslyFoundOnGoogle ? '' : 'not '}found on Google, ${previouslyFoundOnGoogle ? 'increasing' : 'reducing'} points`)
 
   const correctionComment = (await bot.fetchComment(comment.parent_id))()
@@ -47,7 +48,8 @@ export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManag
       postID: await submission.id,
       guesser: { name: guesser, points: newPoints.guesser },
       submitter: { name: submitter, points: newPoints.submitter },
-      googleUrl: previouslyFoundOnGoogle ? undefined : getSearchUrl(imageUrl)
+      googleUrl: previouslyFoundOnGoogle ? undefined : getSearchUrl(imageUrl),
+      forced: previouslyForced
     })
   )
 

@@ -63,6 +63,14 @@ export type SpeedRecord = {
   timeString?: string
 }
 
+export type WinComment = {
+  postID: string,
+  guesser: { name: string, points: number },
+  submitter: { name: string, points: number },
+  googleUrl?: string,
+  forced?: boolean
+}
+
 export type AsyncReturnType<T extends (...args: any) => any> =
 	T extends (...args: any) => Promise<infer U> ? U :
 	T extends (...args: any) => infer U ? U :
