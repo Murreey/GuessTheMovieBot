@@ -85,9 +85,14 @@ const run = async () => {
 
   running = true
 
-  await processNewReports()
-  await processNewSubmissions()
-  await processNewComments()
+  try {
+    await processNewReports()
+    await processNewSubmissions()
+    await processNewComments()
+  } catch (ex) {
+    Logger.error(`Run failed for some reason:`)
+    Logger.error(ex.stack)
+  }
 
   Logger.debug(`${bot.rateLimit().requestsRemaining} requests till rate limit, resets at ${bot.rateLimit().resetsAt}`)
   running = false
