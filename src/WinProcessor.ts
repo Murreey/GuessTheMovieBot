@@ -14,7 +14,7 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
   if(await bot.isDeleted(submission) || await bot.isDeleted(comment) || await bot.isDeleted(guessComment)) {
-    Logger.warn(`Can't process win - looks like something was deleted. https://redd.it/${submission.id}}`)
+    Logger.warn(`Can't process win - looks like something was deleted. ${bot.shortlink(submission)}`)
     return
   }
 
@@ -31,7 +31,7 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
   Logger.debug('Sending win to ScoreManager')
   const points = await scoreManager.recordWin(submission, guessComment, !!foundOnGoogle)
 
-  Logger.info(`Posting confirmation comment on ${await submission.id}`)
+  Logger.info(`Posting confirmation comment on ${bot.shortlink(submission)}`)
   bot.reply(comment, createWinComment({
     postID: await submission.id,
     guesser: { name: guesser, points: points.guesser },
@@ -51,7 +51,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
     Logger.debug(`Setting post ${await submission.id} flair to '${identifiedTemplate}'`)
     await bot.setPostFlair(submission, identifiedTemplate)
   } else {
-    Logger.warn(`Could not find valid flair template for identifying '${await submission.id}'!`)
+    Logger.warn(`Could not find valid flair template for identifying ${bot.shortlink(submission)}!`)
   }
 }
 

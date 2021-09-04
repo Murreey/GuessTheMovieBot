@@ -42,7 +42,7 @@ const processNewComments = async () => {
   for(const comment of comments) {
     try {
       Logger.verbose(`Processing new comment by ${comment.author.name}:`)
-      Logger.verbose(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
+      Logger.verbose(`"${comment.body?.substr(0, 14)?.trim()}" (${bot.shortlink(comment)})`)
 
       const validWin = await WinChecker(bot, scoreManager).isValidWin(comment)
       if(!validWin) {
@@ -51,10 +51,10 @@ const processNewComments = async () => {
       }
 
       Logger.info('Win confirmed!')
-      Logger.info(`"${comment.body.substr(0, 10)}" (${comment.permalink})`)
+      Logger.info(`"${comment.body.substr(0, 10)}" (${bot.shortlink(comment)})`)
       await processWin(bot, scoreManager)(comment)
     } catch (ex) {
-      Logger.error(`Failed to process comment ${comment?.id}!`)
+      Logger.error(`Failed to process comment ${bot.shortlink(comment)}!`)
       Logger.error(ex.stack)
     }
   }
@@ -67,7 +67,7 @@ const processNewReports = async () => {
   for(const comment of reportedComments) {
     try {
       for(const report of comment.mod_reports) {
-          Logger.verbose(`Processing new report '${report[0]}' on ${comment.name}`)
+          Logger.verbose(`Processing new report '${report[0]}' on ${bot.shortlink(comment)}`)
           await processor(comment, report[0])
       }
     } catch (ex) {
@@ -94,7 +94,7 @@ const run = async () => {
     Logger.error(ex.stack)
   }
 
-  Logger.debug(`${bot.rateLimit().requestsRemaining} requests till rate limit, resets at ${bot.rateLimit().resetsAt}`)
+  Logger.verbose(`${bot.rateLimit().requestsRemaining} requests till rate limit, resets at ${bot.rateLimit().resetsAt}`)
   running = false
 }
 

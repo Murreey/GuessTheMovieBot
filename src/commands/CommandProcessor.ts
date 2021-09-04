@@ -26,11 +26,11 @@ const COMMANDS: CommandMatchers[] = [
 export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: Comment, input: string | null) => {
   for (const command of COMMANDS) {
     if(command.matchers.some(matches(input))) {
-      Logger.info(`Executing mod command '${input}' on ${comment.name}`)
+      Logger.verbose(`Executing mod command '${input}' on ${bot.shortlink(comment)}`)
       const result = await command.process(bot, comment, scoreManager)
 
       if(result && !bot.readOnly) {
-        Logger.verbose(`Command ran, approving comment`)
+        Logger.info(`Executed ${input} command on ${bot.shortlink(comment)} successfully`)
         await (comment as any).approve()
       } else if (!result) {
         Logger.verbose(`Command failed, ignoring`)

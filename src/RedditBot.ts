@@ -45,7 +45,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
     fetchPostFromComment: (comment) => r.getSubmission(comment.link_id).fetch(),
     fetchNewComments: async () => {
       const fetchSince: string = await getPreviousFetchedID('comments')
-      Logger.verbose(`Fetching new comments ${fetchSince ? `since ${fetchSince}`: ''}`)
+      Logger.debug(`Fetching new comments ${fetchSince ? `since ${fetchSince}`: ''}`)
       const newComments = (await subreddit.getNewComments({ before: fetchSince }))
 
       processedContent.comments.push(...newComments.map(c => ({ name: c.name, time: c.created_utc })))
@@ -55,7 +55,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
     },
     fetchNewSubmissions: async () => {
       const fetchSince: string = await getPreviousFetchedID('submissions')
-      Logger.verbose(`Fetching new submissions ${fetchSince ? `since ${fetchSince}`: ''}`)
+      Logger.debug(`Fetching new submissions ${fetchSince ? `since ${fetchSince}`: ''}`)
       const oneDayAgo = (new Date().getTime() / 1000) - 86400
       const newSubmissions = (await (await subreddit.getNew({ before: fetchSince })).fetchAll())
         .filter(sub => sub.created_utc > oneDayAgo)
@@ -137,7 +137,8 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
     },
     isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
     rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) }),
-    isDeleted
+    isDeleted,
+    shortlink: (content) => isSubmission(content) ? `https://redd.it/${content?.id}` : `https://reddit.com/comments/${content?.link_id?.split('_')?.[1]}//${content?.id}`
   }
 }
 
@@ -184,7 +185,8 @@ export type RedditBot = {
   hasReplied: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>) => Promise<boolean>,
   isCommentAReply: (comment: snoowrap.Comment) => boolean,
   rateLimit: () => { requestsRemaining: number, resetsAt: Date },
-  isDeleted: (content: snoowrap.Comment | snoowrap.Submission) => Promise<boolean>
+  isDeleted: (content: snoowrap.Comment | snoowrap.Submission) => Promise<boolean>,
+  shortlink: (content: snoowrap.Comment | snoowrap.Submission) => string
 }
 
 export type RedditBotOptions = {

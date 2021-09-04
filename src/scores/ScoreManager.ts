@@ -39,7 +39,7 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
       const guesser = await guessComment?.author?.name
 
       if(!submitter || !guesser || submitter === "[deleted]" || guesser === "[deleted]") {
-        throw new Error(`Could not record win on post ${await submission.id}! Looks like something was deleted.`)
+        throw new Error(`Could not record win on post ${bot.shortlink(submission)}! Looks like something was deleted.`)
       }
 
       await db.recordWin(await submission.id, postCreatedAt, postSolvedAt, guesser, submitter, points)
