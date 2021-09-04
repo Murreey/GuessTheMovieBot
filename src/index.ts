@@ -94,7 +94,7 @@ const run = async () => {
     Logger.error(ex.stack)
   }
 
-  Logger.verbose(`${bot.rateLimit().requestsRemaining} requests till rate limit, resets at ${bot.rateLimit().resetsAt}`)
+  Logger.debug(`${bot.rateLimit().requestsRemaining} requests till rate limit, resets at ${bot.rateLimit().resetsAt}`)
   running = false
 }
 
@@ -110,4 +110,4 @@ scheduler.schedule("1 0 1 * *", async () => {
 })
 
 run()
-setInterval(run, 15000)
+setInterval(run, 10000)
