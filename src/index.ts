@@ -105,4 +105,4 @@ scheduler.schedule("1 0 1 * *", async () => {
 })
 
 run()
-setInterval(run, 20000)
+setInterval(run, 15000)
