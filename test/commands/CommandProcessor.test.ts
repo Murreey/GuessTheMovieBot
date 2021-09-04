@@ -15,7 +15,7 @@ describe('CommandProcessor', () => {
     jest.resetAllMocks()
   })
 
-  const bot: any = { readOnly: false }
+  const bot: any = { readOnly: false, shortlink: jest.fn() }
   const scoreManager: any = {}
   const comment: any = { approve: jest.fn() }
 

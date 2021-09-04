@@ -139,6 +139,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     setPostFlair: jest.fn(),
     reply: jest.fn(),
     isDeleted: jest.fn().mockResolvedValue(false),
+    shortlink: jest.fn(),
     mockGuessComment,
     mockSubmission
   }

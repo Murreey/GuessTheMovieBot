@@ -230,6 +230,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
     fetchComment: jest.fn().mockResolvedValue(() => mockGuessComment),
     fetchPostFromComment: jest.fn().mockResolvedValue(mockSubmission),
     hasReplied: jest.fn().mockResolvedValue(false),
-    isDeleted: jest.fn().mockResolvedValue(false)
+    isDeleted: jest.fn().mockResolvedValue(false),
+    shortlink: jest.fn()
   }
 }
