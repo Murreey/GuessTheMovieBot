@@ -120,15 +120,21 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
         return
       }
 
-      await r.oauthRequest({
-        uri: `/r/${subreddit.display_name}/api/selectflair`,
-        method: 'POST',
-        form: {
-          name: username,
-          text, css_class,
-          background_color, text_color
-        }
-      })
+      try {
+        await r.oauthRequest({
+          uri: `/r/${subreddit.display_name}/api/selectflair`,
+          method: 'POST',
+          form: {
+            name: username,
+            text, css_class,
+            background_color, text_color
+          }
+        })
+      } catch (ex) {
+        Logger.error(`Failed to set user flair for unknown reason, Reddit API failure`)
+        Logger.error(`username: ${username} text: ${text} css_class: ${css_class} background_color: ${background_color} text_color: ${text_color}`)
+        Logger.error(ex.stack)
+      }
     },
     hasReplied: async (content) => {
       const expanded = await (await (content as any).expandReplies())
