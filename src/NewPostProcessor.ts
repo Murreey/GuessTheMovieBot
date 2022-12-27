@@ -3,7 +3,7 @@ import { getConfig } from "./config";
 import { RedditBot } from "./RedditBot";
 import { Logger } from "./Logger";
 import { DatabaseManager as DatabaseManagerType } from "./types";
-import DatabaseManager from "./scores/DatabaseManager";
+import DatabaseManager from "./scores/database/DatabaseManager";
 
 type OptionalTag = 'easy' | 'hard' | 'meta'
 

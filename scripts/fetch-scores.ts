@@ -1,6 +1,7 @@
 import yargs from 'yargs'
 import { Logger, LogLevel } from '../src/Logger';
-import DatabaseManager from '../src/scores/DatabaseManager';
+import DatabaseManager from '../src/scores/database/DatabaseManager';
+import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve } from '../src/scores/database/queries/high-scores';
 import { formatMillisecondsAsTime } from '../src/scores/Scoreboards';
 import { TimeRange } from '../src/types';
 
@@ -28,29 +29,31 @@ const highScores = async (args) =>  {
     to: new Date(args.to)
   }
 
-  const db = await DatabaseManager()
-  const scores = await db.getHighScores(range)
+  const db = (await DatabaseManager()).db
 
   console.log(`  High scores from ${range.from.toUTCString()} to ${range.to.toUTCString()}`)
   console.log('  Top Scores:')
-  scores.scores.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`))
+  await getAllScores(db, range, args.limit).then(scores => scores.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`)))
   console.log('')
   console.log('  Top Guessers:')
-  scores.guessers.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`))
+  await getTopGuessers(db, range, args.limit).then(scores => scores.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`)))
   console.log('')
   console.log('  Top Submitters:')
-  scores.submitters.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`))
+  await getTopSubmitters(db, range, args.limit).then(scores => scores.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`)))
   console.log('')
   console.log('  Fastest Solve:')
-  console.log(`  - ${scores?.fastest?.username} on https://redd.it/${scores?.fastest?.postId} in ${formatMillisecondsAsTime(scores?.fastest?.time)}`)
+  const fastest = await fastestSolve(db, range)
+  console.log(`  - ${fastest?.username} on https://redd.it/${fastest?.postId} in ${formatMillisecondsAsTime(fastest?.time)}`)
   console.log('  Slowest Solve:')
-  console.log(`  - ${scores?.slowest?.username} on https://redd.it/${scores?.slowest?.postId} in ${formatMillisecondsAsTime(scores?.slowest?.time)}`)
+  const slowest = await longestSolve(db, range)
+  console.log(`  - ${slowest?.username} on https://redd.it/${slowest?.postId} in ${formatMillisecondsAsTime(slowest?.time)}`)
   console.log('')
 }
 
 const args = yargs(process.argv.slice(2))
   .command('user <username> [from] [to]', `check user's points total`, {}, userScore)
   .command('highscores <from> <to>', `fetch high scores`, {}, highScores)
+  .option('limit', {alias: 'l', type: 'number', description: 'number of high scores to return', default: 5})
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
   .option('read-only', {type: 'boolean', alias: 'r', description: 'block the bot from making real changes to reddit'})
   .option('debug-requests', {type: 'boolean', alias: 'd', description: 'display snoowrap request debugging'})

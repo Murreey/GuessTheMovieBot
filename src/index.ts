@@ -8,7 +8,7 @@ import newPostProcessor from "./NewPostProcessor";
 import CommandProcessor, { COMMAND_PREFIX } from './commands/CommandProcessor';
 import Scoreboards from './scores/Scoreboards';
 import ScoreManager from './scores/ScoreManager';
-import DatabaseManager from './scores/DatabaseManager';
+import DatabaseManager from './scores/database/DatabaseManager';
 
 const args = yargs(process.argv.slice(2))
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})

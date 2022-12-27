@@ -1,10 +1,10 @@
 import newPostProcessor from '../src/NewPostProcessor';
 
 import { getConfig } from '../src/config'
-import DatabaseManager from '../src/scores/DatabaseManager'
+import DatabaseManager from '../src/scores/database/DatabaseManager'
 
 jest.mock('../src/config')
-jest.mock('../src/scores/DatabaseManager')
+jest.mock('../src/scores/database/DatabaseManager')
 
 jest.mocked(getConfig).mockReturnValue({
   subreddit: 'subreddit',

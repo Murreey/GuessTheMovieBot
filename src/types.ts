@@ -1,5 +1,5 @@
 import ScoreManager from './scores/ScoreManager'
-import DatabaseManager from './scores/DatabaseManager'
+import DatabaseManager from './scores/database/DatabaseManager'
 
 export interface Config {
   userAgent: string,

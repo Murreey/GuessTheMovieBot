@@ -2,8 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import sqlite3 from 'sqlite3'
 import { Database, open } from 'sqlite'
-import { Scores } from './Scores'
-import { Score, SpeedRecord, TimeRange } from '../types'
+import { Scores } from '../Scores'
+import { TimeRange } from '../../types'
+import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve } from './queries/high-scores'
 
 const defaultTimeRange: TimeRange = {
   // Bit lazy, but is essentially 'no time range',
@@ -22,14 +23,14 @@ export default async () => {
 
   try {
     db = await open({
-      filename: path.resolve(__dirname, '../../database.db'),
+      filename: path.resolve(__dirname, '../../../database.db'),
       driver: sqlite3.cached.Database
     })
 
     await db.exec('PRAGMA journal_mode = WAL;')
     await db.exec('PRAGMA foreign_keys = ON;')
 
-    await db.exec(fs.readFileSync(path.resolve(__dirname, '../../scripts/create-database.sql'), 'utf-8'))
+    await db.exec(fs.readFileSync(path.resolve(__dirname, '../../../scripts/create-database.sql'), 'utf-8'))
 
     process.on('SIGINT', async () => { await db?.close(); db = null; process.exit(0) });
     process.on('SIGTERM', async () => { await db?.close(); db = null; process.exit(0) });
@@ -154,61 +155,12 @@ export default async () => {
       return result
     },
     getHighScores: async (timeRange: TimeRange, limit = 5) => {
-      const allScores = await db.all(`
-        SELECT username, SUM(points) AS score
-        FROM wins
-        INNER JOIN points ON wins.post_id = points.post_id
-        INNER JOIN users ON points.user_id = users.user_id
-        AND wins.created_at >= ? AND wins.created_at < ?
-        GROUP BY users.user_id
-        ORDER BY score DESC
-        LIMIT ?
-      `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
-
-      const topGuessers = await db.all(`
-        SELECT username, COUNT(post_id) AS score
-        FROM wins
-        INNER JOIN users ON wins.guesser_id = users.user_id
-        WHERE solved_at >= ? AND solved_at < ?
-        GROUP BY guesser_id
-        ORDER BY score DESC
-        LIMIT ?
-      `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
-
-      const topSubmitters = await db.all(`
-        SELECT username, COUNT(post_id) AS score
-        FROM wins
-        INNER JOIN users ON wins.submitter_id = users.user_id
-        WHERE solved_at >= ? AND solved_at < ?
-        GROUP BY submitter_id
-        ORDER BY score DESC
-        LIMIT ?
-      `, timeRange.from.getTime(), timeRange.to.getTime(), limit) as Score[]
-
-      const fastest = await db.get(`
-        SELECT post_id AS postId, username, (solved_at - created_at) AS time
-        FROM wins
-        INNER JOIN users ON wins.guesser_id = users.user_id
-        WHERE solved_at >= ? AND solved_at < ?
-        ORDER BY time ASC
-        LIMIT 1
-      `, timeRange.from.getTime(), timeRange.to.getTime()) as SpeedRecord
-
-      const slowest = await db.get(`
-        SELECT post_id AS postId, username, (solved_at - created_at) AS time
-        FROM wins
-        INNER JOIN users ON wins.guesser_id = users.user_id
-        WHERE solved_at >= ? AND solved_at < ?
-        ORDER BY time DESC
-        LIMIT 1
-      `, timeRange.from.getTime(), timeRange.to.getTime()) as SpeedRecord
-
       return {
-        scores: allScores,
-        guessers: topGuessers,
-        submitters: topSubmitters,
-        fastest,
-        slowest
+        scores: await getAllScores(db, timeRange, limit),
+        guessers: await getTopGuessers(db, timeRange, limit),
+        submitters: await getTopSubmitters(db, timeRange, limit),
+        fastest: await fastestSolve(db, timeRange),
+        slowest: await longestSolve(db, timeRange)
       }
     }
   }

@@ -3,7 +3,7 @@ import { RedditBot } from "../RedditBot";
 
 import { getScores, Scores } from './Scores'
 import FlairManager from './ScoreFlairManager'
-import DatabaseManager from "./DatabaseManager";
+import DatabaseManager from "./database/DatabaseManager";
 import { DatabaseManager as DatabaseManagerType } from "../types";
 import snoowrap from "snoowrap";
 

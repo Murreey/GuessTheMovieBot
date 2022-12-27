@@ -2,13 +2,13 @@ import ScoreManager from '../../src/scores/ScoreManager'
 
 import { getScores } from '../../src/scores/Scores'
 import FlairManager from '../../src/scores/ScoreFlairManager'
-import DatabaseManager from '../../src/scores/DatabaseManager'
+import DatabaseManager from '../../src/scores/database/DatabaseManager'
 
 import { ScoreManager as ScoreManagerType } from '../../src/types'
 
 jest.mock('../../src/scores/Scores')
 jest.mock('../../src/scores/ScoreFlairManager')
-jest.mock('../../src/scores/DatabaseManager')
+jest.mock('../../src/scores/database/DatabaseManager')
 
 describe('ScoreManager', () => {
   const mockRedditBot = ({ readOnly: false } as any)
