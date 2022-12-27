@@ -5,14 +5,12 @@ import { checkGoogleForImage } from "../src/GoogleImageSearcher"
 import { getScores } from "../src/scores/Scores"
 import { getConfig } from '../src/config'
 
-import { mocked } from 'ts-jest/utils'
-
 jest.mock('../src/scores/Scores')
 jest.mock('../src/GoogleImageSearcher')
 jest.mock('../src/config')
 
 jest.mock('fs')
-const mockFs = mocked(fs)
+const mockFs = jest.mocked(fs)
 
 describe('WinProcessor', () =>  {
   let redditBot
@@ -27,7 +25,7 @@ describe('WinProcessor', () =>  {
     * poster /u/{{ submitter.name }} gets +{{ submitter.points }} points
   `)
 
-  mocked(getConfig).mockReturnValue({
+  jest.mocked(getConfig).mockReturnValue({
     linkFlairTemplates: {
       identified: {
         normal: "identifiedTemplate",
@@ -37,8 +35,8 @@ describe('WinProcessor', () =>  {
     }
   } as any)
 
-  mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
-  const mockGoogleSearcher = mocked(checkGoogleForImage).mockResolvedValue(false)
+  jest.mocked(getScores).mockReturnValue({ guesser: 8, submitter: 5 })
+  const mockGoogleSearcher = jest.mocked(checkGoogleForImage).mockResolvedValue(false)
 
   beforeEach(() => {
     redditBot = mockRedditBot({});

@@ -4,7 +4,6 @@ import  { createWinComment } from '../../src/WinProcessor'
 import  { getSearchUrl } from '../../src/GoogleImageSearcher'
 import ScoreFlairManager from "../../src/scores/ScoreFlairManager";
 
-import { mocked } from 'ts-jest/utils'
 import { Comment } from 'snoowrap'
 
 jest.mock('../../src/WinProcessor')
@@ -21,9 +20,9 @@ const mockFlairManager = {
 
 describe('CorrectGIS', () => {
   beforeEach(() => {
-    mocked(createWinComment).mockReturnValue("new comment body")
-    mocked(getSearchUrl).mockReturnValue("https://google")
-    mocked(ScoreFlairManager).mockReturnValue(mockFlairManager as any)
+    jest.mocked(createWinComment).mockReturnValue("new comment body")
+    jest.mocked(getSearchUrl).mockReturnValue("https://google")
+    jest.mocked(ScoreFlairManager).mockReturnValue(mockFlairManager as any)
   });
 
   afterEach(() => {
@@ -93,7 +92,7 @@ describe('CorrectGIS', () => {
     it('edits the bot reply comment', async () => {
       const comment = mockComment(undefined, "this post was found on google")
       const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
-      expect(mocked(createWinComment)).toHaveBeenCalledWith({
+      expect(jest.mocked(createWinComment)).toHaveBeenCalledWith({
         postID: "post-id",
         guesser: { name: "guesser", points: 8 },
         submitter: { name: "submitter", points: 12 },
@@ -124,8 +123,8 @@ describe('CorrectGIS', () => {
     it('edits the bot reply comment', async () => {
       const comment = mockComment(undefined, "win confirmed")
       const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
-      expect(mocked(getSearchUrl)).toHaveBeenCalledWith("https://url")
-      expect(mocked(createWinComment)).toHaveBeenCalledWith({
+      expect(jest.mocked(getSearchUrl)).toHaveBeenCalledWith("https://url")
+      expect(jest.mocked(createWinComment)).toHaveBeenCalledWith({
         postID: "post-id",
         guesser: { name: "guesser", points: 8 },
         submitter: { name: "submitter", points: 12 },
@@ -141,7 +140,7 @@ describe('CorrectGIS', () => {
     it('keeps the forced message in the comment', async () => {
       const comment = mockComment(undefined, "this post was manually approved by a moderator")
       const result = await CorrectGIS(mockRedditBot() as any, comment, mockScoreManager)
-      expect(mocked(createWinComment)).toHaveBeenCalledWith({
+      expect(jest.mocked(createWinComment)).toHaveBeenCalledWith({
         postID: "post-id",
         guesser: { name: "guesser", points: 8 },
         submitter: { name: "submitter", points: 12 },
@@ -160,7 +159,7 @@ const mockComment = (author = "bot-username", body = ""): Comment => ({
   edit: jest.fn()
 } as any)
 
-const mockRedditBot = (confirmationComment = {}, guessComment = {}, submission = {}) => mocked({
+const mockRedditBot = (confirmationComment = {}, guessComment = {}, submission = {}) => jest.mocked({
   username: "bot-username",
   readOnly: false,
   isCommentAReply: jest.fn().mockResolvedValue(true),

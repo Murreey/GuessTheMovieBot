@@ -1,3 +1,3 @@
-import { Logger } from "../src/Logger";
+import { Logger, LogLevel } from "../src/Logger";
 
-Logger.setup({ console: null, file: null })
+Logger.setup({ console: undefined, file: undefined })

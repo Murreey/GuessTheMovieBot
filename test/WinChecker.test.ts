@@ -3,8 +3,6 @@ import { getConfig } from '../src/config'
 
 import { Comment } from 'snoowrap';
 
-import { mocked } from 'ts-jest/utils'
-
 jest.mock('../src/config')
 
 describe('WinChecker', () => {
@@ -12,7 +10,7 @@ describe('WinChecker', () => {
   let mockScoreManager
   let mockComment: Comment
 
-  mocked(getConfig).mockReturnValue({
+  jest.mocked(getConfig).mockReturnValue({
     linkFlairTemplates: {
       easy: "easyTemplate",
       hard: "hardTemplate",

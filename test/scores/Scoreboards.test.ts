@@ -1,7 +1,6 @@
 import Scoreboards from '../../src/scores/Scoreboards'
 import Mustache from 'mustache'
 
-import { mocked } from 'ts-jest/utils'
 import { DatabaseManager, ScoreboardData } from '../../src/types'
 import { RedditBot } from '../../src/RedditBot'
 import { getConfig } from '../../src/config'
@@ -47,10 +46,10 @@ describe('Scoreboards', () => {
     getHighScores: jest.fn().mockResolvedValue(mockHighScores)
   }
 
-  const mockMustache = mocked(Mustache)
+  const mockMustache = jest.mocked(Mustache)
   mockMustache.render.mockReturnValue('rendered-template')
 
-  mocked(getConfig).mockReturnValue({
+  jest.mocked(getConfig).mockReturnValue({
     subreddit: 'subreddit_name'
   } as any)
 

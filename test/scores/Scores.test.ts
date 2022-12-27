@@ -3,8 +3,6 @@ import { getScores } from '../../src/scores/Scores'
 import { getConfig } from '../../src/config'
 jest.mock('../../src/config')
 
-import { mocked } from 'ts-jest/utils'
-
 describe('Scores', () => {
   beforeEach(() => {
     setMockPoints(3, 5, 7, 9)
@@ -37,19 +35,19 @@ describe('Scores', () => {
       submitter: 1
     })
 
-    mocked(getConfig).mockReturnValue({} as any)
+    jest.mocked(getConfig).mockReturnValue({} as any)
     expect(getScores(false)).toEqual({
       guesser: 6,
       submitter: 3
     })
 
-    mocked(getConfig).mockReturnValue({ points: {} } as any)
+    jest.mocked(getConfig).mockReturnValue({ points: {} } as any)
     expect(getScores(false)).toEqual({
       guesser: 6,
       submitter: 3
     })
 
-    mocked(getConfig).mockReturnValue({ points: { guesser: {} } } as any)
+    jest.mocked(getConfig).mockReturnValue({ points: { guesser: {} } } as any)
     expect(getScores(false)).toEqual({
       guesser: 6,
       submitter: 3
@@ -58,7 +56,7 @@ describe('Scores', () => {
 })
 
 const setMockPoints = (...points) => {
-  mocked(getConfig).mockReturnValue({
+  jest.mocked(getConfig).mockReturnValue({
     points: {
       guesser: {
         normal: points[0],

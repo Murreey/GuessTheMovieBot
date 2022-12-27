@@ -5,8 +5,6 @@ import { getConfig } from "../../src/config"
 import { getScores } from "../../src/scores/Scores"
 import ScoreFlairManager from "../../src/scores/ScoreFlairManager";
 
-import { mocked } from 'ts-jest/utils'
-
 jest.mock('../../src/config')
 jest.mock('../../src/scores/Scores')
 jest.mock('../../src/scores/ScoreFlairManager')
@@ -23,7 +21,7 @@ describe('Undo', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    mocked(getConfig).mockReturnValue({
+    jest.mocked(getConfig).mockReturnValue({
       linkFlairTemplates: {
         identified: {
           easy: "easyIdentifiedTemplate",
@@ -34,11 +32,11 @@ describe('Undo', () => {
         hard: "hardTemplate"
       }
     } as any)
-    mocked(getScores).mockReturnValue({
+    jest.mocked(getScores).mockReturnValue({
       guesser: 10,
       submitter: 4
     })
-    mocked(ScoreFlairManager).mockReturnValue(mockFlairManager as any)
+    jest.mocked(ScoreFlairManager).mockReturnValue(mockFlairManager as any)
   })
 
   describe('does not delete the comment or edit scores', () => {

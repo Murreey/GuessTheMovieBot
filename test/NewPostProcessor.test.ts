@@ -2,12 +2,11 @@ import newPostProcessor from '../src/NewPostProcessor';
 
 import { getConfig } from '../src/config'
 import DatabaseManager from '../src/scores/DatabaseManager'
-import { mocked } from 'ts-jest/utils'
 
 jest.mock('../src/config')
 jest.mock('../src/scores/DatabaseManager')
 
-mocked(getConfig).mockReturnValue({
+jest.mocked(getConfig).mockReturnValue({
   subreddit: 'subreddit',
   linkFlairTemplates: {
     meta: 'meta-template',
@@ -37,7 +36,7 @@ describe('NewPostProcessor', () => {
       getUserSubmissionCount: jest.fn().mockResolvedValue(5)
     }
 
-    mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager as any)
+    jest.mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager as any)
   })
 
   it('does not reply if the bot has already replied', async () => {

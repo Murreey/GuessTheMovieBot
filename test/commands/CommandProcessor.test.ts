@@ -4,8 +4,6 @@ import CorrectGIS from '../../src/commands/CorrectGIS'
 import ForceCorrect from '../../src/commands/ForceCorrect'
 import Undo from '../../src/commands/Undo'
 
-import { mocked } from 'ts-jest/utils'
-
 jest.mock('../../src/commands/CorrectGIS')
 jest.mock('../../src/commands/ForceCorrect')
 jest.mock('../../src/commands/Undo')
@@ -28,7 +26,7 @@ describe('CommandProcessor', () => {
     ["!CORRECT", ForceCorrect],
     ["    !correct   ", ForceCorrect],
   ])(`calls the correct command processor for '%s'`, async (input, processor) => {
-    mocked(processor).mockResolvedValue(true)
+    jest.mocked(processor).mockResolvedValue(true)
     await CommandProcessor(bot, scoreManager)(comment, input)
     expect(processor).toHaveBeenCalledTimes(1)
     expect(comment.approve).toHaveBeenCalled()
@@ -59,7 +57,7 @@ describe('CommandProcessor', () => {
   })
 
   it(`does not approve the comment if the processor fails`, async () => {
-    mocked(ForceCorrect).mockResolvedValue(false)
+    jest.mocked(ForceCorrect).mockResolvedValue(false)
     await CommandProcessor(bot, scoreManager)(comment, "!correct");
     expect(ForceCorrect).toHaveBeenCalledTimes(1)
     expect(comment.approve).not.toHaveBeenCalled();

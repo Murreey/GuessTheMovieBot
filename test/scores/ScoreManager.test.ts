@@ -4,7 +4,6 @@ import { getScores } from '../../src/scores/Scores'
 import FlairManager from '../../src/scores/ScoreFlairManager'
 import DatabaseManager from '../../src/scores/DatabaseManager'
 
-import { mocked } from 'ts-jest/utils'
 import { ScoreManager as ScoreManagerType } from '../../src/types'
 
 jest.mock('../../src/scores/Scores')
@@ -31,9 +30,9 @@ describe('ScoreManager', () => {
   let mockSubmission, mockComment
 
   beforeEach(async () => {
-    mocked(getScores).mockReturnValue({ guesser: 3, submitter: 7 })
-    mocked(FlairManager).mockReturnValue(mockFlairManager)
-    mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager as any)
+    jest.mocked(getScores).mockReturnValue({ guesser: 3, submitter: 7 })
+    jest.mocked(FlairManager).mockReturnValue(mockFlairManager)
+    jest.mocked(DatabaseManager).mockResolvedValue(mockDatabaseManager as any)
 
     scoreManager = await ScoreManager(mockRedditBot)
     mockSubmission = { id: "postID", author: { name: "submitter" }, created_utc: 123456789000 }
