@@ -3,12 +3,12 @@ import DailyRotateFile from 'winston-daily-rotate-file'
 export class Logger {
     private static logger: winston.Logger
 
-    static setup({ console = LogLevel.INFO, file = LogLevel.INFO }: LogLevels = { console: LogLevel.INFO, file: LogLevel.INFO}): void {
+    static setup(loggers: Loggers = { console: LogLevel.INFO, file: LogLevel.INFO}): void {
       this.logger = winston.createLogger({
         transports: [
           new winston.transports.Console({
-            level: console,
-            silent: console === null,
+            level: loggers.console,
+            silent: !loggers.console,
             format: winston.format.combine(
               winston.format(info => { info.level = info.message ? info.level.padStart(10, " ") + ':' : ""; return info })(),
               winston.format.colorize(),
@@ -18,12 +18,12 @@ export class Logger {
         ]
       })
 
-      if(file) {
+      if(loggers.file) {
         this.logger.add(new DailyRotateFile({
           filename: '%DATE%.log',
           dirname: 'logs',
-          level: file,
-          silent: file === null,
+          level: loggers.file,
+          silent: !loggers.file,
           datePattern:'YYYY-MM-[week]-w',
           format: winston.format.combine(
               winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -33,8 +33,8 @@ export class Logger {
       }
     }
 
-    static get(logLevels?: LogLevels): winston.Logger {
-      if(!this.logger) this.setup(logLevels)
+    static get(loggers?: Loggers): winston.Logger {
+      if(!this.logger) this.setup(loggers)
       return this.logger
     }
 
@@ -47,7 +47,7 @@ export class Logger {
     static silly = (message: string) => Logger.get().log("silly", message)
 }
 
-type LogLevels = {
+type Loggers = {
   console?: LogLevel,
   file?: LogLevel
 }
