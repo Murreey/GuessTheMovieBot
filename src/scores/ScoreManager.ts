@@ -1,17 +1,18 @@
-import { Logger } from "../Logger";
-import { RedditBot } from "../RedditBot";
+import snoowrap from 'snoowrap'
+
+import { Logger } from '../Logger'
+import { RedditBot } from '../RedditBot'
 
 import { getScores, Scores } from './Scores'
 import FlairManager from './ScoreFlairManager'
-import DatabaseManager from "./database/DatabaseManager";
-import { DatabaseManager as DatabaseManagerType } from "../types";
-import snoowrap from "snoowrap";
+import DatabaseManager from './database/DatabaseManager'
+import { DatabaseManager as DatabaseManagerType } from '../types'
 
 const millisecondTimeStamp = (timestamp: number): number => {
   // Convert timestamps in seconds to miliseconds
   // All DB timestamps are millis, for easier use of .getTime()
   // This will stop working in the year 5138, sorry in advance
-  if(timestamp.toString().length < 12) {
+  if (timestamp.toString().length < 12) {
     return timestamp * 1000
   }
 
@@ -20,15 +21,15 @@ const millisecondTimeStamp = (timestamp: number): number => {
 
 export default async (bot: RedditBot, db?: DatabaseManagerType) => {
   const flairManager = FlairManager(bot)
-  if(!db) db = await DatabaseManager()
+  if (!db) db = await DatabaseManager()
 
   return {
     getUserPoints: db.getUserScore,
     recordWin: async (submission: snoowrap.Submission, guessComment: snoowrap.Comment, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
-      if(bot.readOnly) {
-        Logger.warn(`Skipping score updates as read-only mode is enabled`)
+      if (bot.readOnly) {
+        Logger.warn('Skipping score updates as read-only mode is enabled')
         return points
       }
 
@@ -38,7 +39,7 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
       const submitter = await submission?.author?.name
       const guesser = await guessComment?.author?.name
 
-      if(!submitter || !guesser || submitter === "[deleted]" || guesser === "[deleted]") {
+      if (!submitter || !guesser || submitter === '[deleted]' || guesser === '[deleted]') {
         throw new Error(`Could not record win on post ${bot.shortlink(submission)}! Looks like something was deleted.`)
       }
 
@@ -50,8 +51,8 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
       return points
     },
     removeWin: async (postID: string): Promise<void> => {
-      if(bot.readOnly) {
-        Logger.warn(`Skipping score updates as read-only mode is enabled`)
+      if (bot.readOnly) {
+        Logger.warn('Skipping score updates as read-only mode is enabled')
         return
       }
 
@@ -60,8 +61,8 @@ export default async (bot: RedditBot, db?: DatabaseManagerType) => {
     updatePoints: async (postID: string, foundOnGoogle = false): Promise<Scores> => {
       const points = getScores(foundOnGoogle)
 
-      if(bot.readOnly) {
-        Logger.warn(`Skipping score updates as read-only mode is enabled`)
+      if (bot.readOnly) {
+        Logger.warn('Skipping score updates as read-only mode is enabled')
         return points
       }
 

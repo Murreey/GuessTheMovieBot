@@ -1,3 +1,3 @@
-import { Logger } from "../src/Logger"
+import { Logger } from '../src/Logger'
 
 Logger.setup({ console: undefined, file: undefined })

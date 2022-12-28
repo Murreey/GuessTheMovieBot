@@ -1,19 +1,19 @@
 import path from 'path'
 import { readFileSync, existsSync } from 'fs'
-import snoowrap from 'snoowrap';
-import Mustache from 'mustache';
+import snoowrap from 'snoowrap'
+import Mustache from 'mustache'
 import { getConfig } from './config'
-import { RedditBot } from './RedditBot';
-import { Logger } from './Logger';
+import { RedditBot } from './RedditBot'
+import { Logger } from './Logger'
 import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
-import { ScoreManager, WinComment } from './types';
+import { ScoreManager, WinComment } from './types'
 
 export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: snoowrap.Comment, winCommentArgs: Partial<WinComment> = {}): Promise<void> => {
   //@ts-expect-error
   const submission = await bot.fetchPostFromComment(comment)
   const guessComment = (await bot.fetchComment(comment.parent_id))()
 
-  if(await bot.isDeleted(submission) || await bot.isDeleted(comment) || await bot.isDeleted(guessComment)) {
+  if (await bot.isDeleted(submission) || await bot.isDeleted(comment) || await bot.isDeleted(guessComment)) {
     Logger.warn(`Can't process win - looks like something was deleted. ${bot.shortlink(submission)}`)
     return
   }
@@ -47,7 +47,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
 
   const identifiedTemplate = config?.linkFlairTemplates?.identified?.[currentFlair as ('easy' | 'hard')] ?? config?.linkFlairTemplates?.identified?.normal
 
-  if(identifiedTemplate) {
+  if (identifiedTemplate) {
     Logger.debug(`Setting post ${await submission.id} flair to '${identifiedTemplate}'`)
     await bot.setPostFlair(submission, identifiedTemplate)
   } else {
@@ -58,7 +58,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
 export const createWinComment = (args: WinComment): string => {
   const config = getConfig()
   const templateFile = path.resolve(__dirname, `../templates/${config.replyTemplate}`)
-  if(!existsSync(templateFile)) return undefined
+  if (!existsSync(templateFile)) return undefined
   const replyTemplate = readFileSync(templateFile, 'utf-8')
   return Mustache.render(replyTemplate, {...args, subreddit: config.subreddit})
 }

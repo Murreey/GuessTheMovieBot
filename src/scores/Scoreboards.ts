@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import Mustache from "mustache";
-import { RedditBot } from "../RedditBot";
-import { Logger } from '../Logger';
-import { DatabaseManager, ScoreboardData, TimeRange } from '../types';
-import { getConfig } from '../config';
+import Mustache from 'mustache'
+import { RedditBot } from '../RedditBot'
+import { Logger } from '../Logger'
+import { DatabaseManager, ScoreboardData, TimeRange } from '../types'
+import { getConfig } from '../config'
 
 export default (bot: RedditBot, database: DatabaseManager) => ({
   postMonthlyScoreboard: async (month: Date = new Date()): Promise<void> => {
@@ -17,8 +17,8 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
 
     const rawData = await database.getHighScores(timeRange, 5)
 
-    if([rawData.scores, rawData.guessers, rawData.submitters].some(d => d.length === 0)) {
-      Logger.warn(`Failed to post scoreboard, database returned empty data`)
+    if ([rawData.scores, rawData.guessers, rawData.submitters].some(d => d.length === 0)) {
+      Logger.warn('Failed to post scoreboard, database returned empty data')
       return
     }
 
@@ -40,7 +40,7 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
       }
     }
 
-    const postTemplate = fs.readFileSync(path.resolve(__dirname, `../../templates/scoreboard_template.md`), 'utf-8')
+    const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/scoreboard_template.md'), 'utf-8')
     const title = `/r/${getConfig()?.subreddit || ''} ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
     const body = Mustache.render(postTemplate, scoreboardData)
     Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
@@ -48,9 +48,7 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
   }
 })
 
-const startOfMonth = (start: Date, offset = 0): Date => {
-  return new Date(Date.UTC(start.getFullYear(), start.getMonth() + offset, 1, 0))
-}
+const startOfMonth = (start: Date, offset = 0): Date => new Date(Date.UTC(start.getFullYear(), start.getMonth() + offset, 1, 0))
 
 export const formatMillisecondsAsTime = (input: number): string =>
   [
@@ -59,11 +57,11 @@ export const formatMillisecondsAsTime = (input: number): string =>
     { name: 'hour', per: 60, max: 24 },
     { name: 'day', per: 24 }
   ]
-  .map(format => {
-    input = Math.floor(input / format.per)
-    return [format.name, format.max ? input % format.max : input]
-  })
-  .filter(format => format[1])
-  .map(format => `${format[1]} ${format[0]}${format[1] > 1 ? 's' : ''}`)
-  .reverse()
-  .join(' ') || undefined
+    .map(format => {
+      input = Math.floor(input / format.per)
+      return [format.name, format.max ? input % format.max : input]
+    })
+    .filter(format => format[1])
+    .map(format => `${format[1]} ${format[0]}${format[1] > 1 ? 's' : ''}`)
+    .reverse()
+    .join(' ') || undefined

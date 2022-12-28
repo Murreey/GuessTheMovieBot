@@ -1,9 +1,9 @@
 import Undo from '../../src/commands/Undo'
 
-import { Comment } from "snoowrap";
-import { getConfig } from "../../src/config"
-import { getScores } from "../../src/scores/Scores"
-import ScoreFlairManager from "../../src/scores/ScoreFlairManager";
+import { Comment } from 'snoowrap'
+import { getConfig } from '../../src/config'
+import { getScores } from '../../src/scores/Scores'
+import ScoreFlairManager from '../../src/scores/ScoreFlairManager'
 
 jest.mock('../../src/config')
 jest.mock('../../src/scores/Scores')
@@ -24,12 +24,12 @@ describe('Undo', () => {
     jest.mocked(getConfig).mockReturnValue({
       linkFlairTemplates: {
         identified: {
-          easy: "easyIdentifiedTemplate",
-          normal: "identifiedTemplate",
-          hard: "hardIdentifiedTemplate"
+          easy: 'easyIdentifiedTemplate',
+          normal: 'identifiedTemplate',
+          hard: 'hardIdentifiedTemplate'
         },
-        easy: "easyTemplate",
-        hard: "hardTemplate"
+        easy: 'easyTemplate',
+        hard: 'hardTemplate'
       }
     } as any)
     jest.mocked(getScores).mockReturnValue({
@@ -41,7 +41,7 @@ describe('Undo', () => {
 
   describe('does not delete the comment or edit scores', () => {
     it('if the comment was not posted by the bot', async () => {
-      const comment = mockComment("unknown")
+      const comment = mockComment('unknown')
       const result = await Undo(mockRedditBot() as any, comment, mockScoreManager)
       expect(comment.delete).not.toHaveBeenCalled()
       expect(result).toBe(false)
@@ -57,7 +57,7 @@ describe('Undo', () => {
     })
 
     it('if the post is not identified', async () => {
-      const bot = mockRedditBot({ link_flair_template_id: Promise.resolve("unknown-flair") })
+      const bot = mockRedditBot({ link_flair_template_id: Promise.resolve('unknown-flair') })
       const comment = mockComment()
       const result = await Undo(bot as any, comment, mockScoreManager)
       expect(comment.delete).not.toHaveBeenCalled()
@@ -77,13 +77,13 @@ describe('Undo', () => {
 
   it('removes the win from the database', async () => {
     await Undo(mockRedditBot() as any, mockComment(), mockScoreManager)
-    expect(mockScoreManager.removeWin).toHaveBeenCalledWith("submission-id")
+    expect(mockScoreManager.removeWin).toHaveBeenCalledWith('submission-id')
   })
 
   it('syncs flair scores', async () => {
     await Undo(mockRedditBot() as any, mockComment(), mockScoreManager)
-    expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(1, "guesser")
-    expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(2, "submitter")
+    expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(1, 'guesser')
+    expect(mockFlairManager.syncPoints).toHaveBeenNthCalledWith(2, 'submitter')
   })
 
   it('deletes the bot comment', async () => {
@@ -100,15 +100,15 @@ describe('Undo', () => {
     })
 
     it('sets the easy flair if the post was easy', async () => {
-      const bot = mockRedditBot({ link_flair_template_id: Promise.resolve("easyIdentifiedTemplate") })
+      const bot = mockRedditBot({ link_flair_template_id: Promise.resolve('easyIdentifiedTemplate') })
       await Undo(bot as any, mockComment(), mockScoreManager)
-      expect(bot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "easyTemplate")
+      expect(bot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'easyTemplate')
     })
 
     it('sets the hard flair if the post was hard', async () => {
-      const bot = mockRedditBot({ link_flair_template_id: Promise.resolve("hardIdentifiedTemplate") })
+      const bot = mockRedditBot({ link_flair_template_id: Promise.resolve('hardIdentifiedTemplate') })
       await Undo(bot as any, mockComment(), mockScoreManager)
-      expect(bot.setPostFlair).toHaveBeenCalledWith(expect.anything(), "hardTemplate")
+      expect(bot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'hardTemplate')
     })
   })
 
@@ -117,24 +117,24 @@ describe('Undo', () => {
   })
 })
 
-const mockComment = (author = "bot-username", body = ""): Comment => ({
+const mockComment = (author = 'bot-username', body = ''): Comment => ({
   author: { name: author },
   body,
   delete: jest.fn()
 } as any)
 
 const mockRedditBot = (submission = {}) => ({
-  username: "bot-username",
+  username: 'bot-username',
   readOnly: false,
   isCommentAReply: jest.fn().mockResolvedValue(true),
   fetchPostFromComment: jest.fn().mockResolvedValueOnce({
-    id: "submission-id",
-    author: { name: "submitter" },
-    link_flair_template_id: Promise.resolve("identifiedTemplate"),
+    id: 'submission-id',
+    author: { name: 'submitter' },
+    link_flair_template_id: Promise.resolve('identifiedTemplate'),
     ...submission
   }),
   setPostFlair: jest.fn(),
   fetchComment: jest.fn()
-    .mockResolvedValueOnce(() => ({ parent_id: "parent" }))
-    .mockResolvedValueOnce(() => ({ author: { name: "guesser" } }))
+    .mockResolvedValueOnce(() => ({ parent_id: 'parent' }))
+    .mockResolvedValueOnce(() => ({ author: { name: 'guesser' } }))
 })

@@ -32,16 +32,16 @@ export default async () => {
 
     await db.exec(fs.readFileSync(path.resolve(__dirname, '../../../scripts/create-database.sql'), 'utf-8'))
 
-    process.on('SIGINT', async () => { await db?.close(); db = null; process.exit(0) });
-    process.on('SIGTERM', async () => { await db?.close(); db = null; process.exit(0) });
+    process.on('SIGINT', async () => { await db?.close(); db = null; process.exit(0) })
+    process.on('SIGTERM', async () => { await db?.close(); db = null; process.exit(0) })
   } catch (ex) {
     console.error(ex)
     db = null
   }
 
   const getUserID = async (username: string): Promise<number> => {
-    await db.run(`INSERT OR IGNORE INTO users (username) VALUES (?)`, username.toString())
-    return (await db.get(`SELECT user_id FROM users WHERE username = ?`, username.toString())).user_id
+    await db.run('INSERT OR IGNORE INTO users (username) VALUES (?)', username.toString())
+    return (await db.get('SELECT user_id FROM users WHERE username = ?', username.toString())).user_id
   }
 
   return {
@@ -51,20 +51,20 @@ export default async () => {
       const guesserID = await getUserID(guesser)
       const submitterID = await getUserID(submitter)
       await db.run(
-        `INSERT OR REPLACE INTO wins (post_id, guesser_id, submitter_id, created_at, solved_at) VALUES (?, ?, ?, ?, ?)`,
+        'INSERT OR REPLACE INTO wins (post_id, guesser_id, submitter_id, created_at, solved_at) VALUES (?, ?, ?, ?, ?)',
         postID, guesserID, submitterID, postCreatedAt, postSolvedAt
       )
       await db.run(
-        `INSERT OR REPLACE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
+        'INSERT OR REPLACE INTO points (post_id, user_id, points) VALUES (?, ?, ?)',
         postID, guesserID, scores.guesser
       )
       await db.run(
-        `INSERT OR REPLACE INTO points (post_id, user_id, points) VALUES (?, ?, ?)`,
+        'INSERT OR REPLACE INTO points (post_id, user_id, points) VALUES (?, ?, ?)',
         postID, submitterID, scores.submitter
       )
     },
     deleteWin: async (postID: string) => {
-      await db.run(`DELETE FROM wins WHERE post_id = ?`, postID)
+      await db.run('DELETE FROM wins WHERE post_id = ?', postID)
     },
     editPoints: async (postID: string, scores: Scores) => {
       await db.run(`
@@ -73,7 +73,7 @@ export default async () => {
         WHERE EXISTS
           (SELECT post_id FROM wins WHERE wins.guesser_id = points.user_id)
         AND post_id = ?`,
-        scores.guesser, postID
+      scores.guesser, postID
       )
       await db.run(`
         UPDATE points
@@ -81,10 +81,10 @@ export default async () => {
         WHERE EXISTS
           (SELECT post_id FROM wins WHERE wins.submitter_id = points.user_id)
         AND post_id = ?`,
-        scores.submitter, postID
+      scores.submitter, postID
       )
     },
-    getUserScore: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> =>  {
+    getUserScore: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> => {
       timeRange = { ...defaultTimeRange, ...timeRange }
 
       const data = await db.get(`
@@ -97,7 +97,7 @@ export default async () => {
 
       let result = data?.total ?? 0
 
-      if(timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
+      if (timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
           SELECT points FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
@@ -108,7 +108,7 @@ export default async () => {
 
       return result
     },
-    getUserSubmissionCount: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> =>  {
+    getUserSubmissionCount: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> => {
       timeRange = { ...defaultTimeRange, ...timeRange }
 
       const data = await db.get(`
@@ -120,7 +120,7 @@ export default async () => {
 
       let result = data?.count ?? 0
 
-      if(timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
+      if (timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
           SELECT submissions FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
@@ -131,7 +131,7 @@ export default async () => {
 
       return result
     },
-    getUserGuessCount: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> =>  {
+    getUserGuessCount: async (username: string, timeRange?: Partial<TimeRange>): Promise<number> => {
       timeRange = { ...defaultTimeRange, ...timeRange }
 
       const data = await db.get(`
@@ -143,7 +143,7 @@ export default async () => {
 
       let result = data?.total ?? 0
 
-      if(timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
+      if (timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
           SELECT guesses FROM legacy_imports
           INNER JOIN users ON legacy_imports.user_id = users.user_id
@@ -154,14 +154,12 @@ export default async () => {
 
       return result
     },
-    getHighScores: async (timeRange: TimeRange, limit = 5) => {
-      return {
-        scores: await getAllScores(db, timeRange, limit),
-        guessers: await getTopGuessers(db, timeRange, limit),
-        submitters: await getTopSubmitters(db, timeRange, limit),
-        fastest: await fastestSolve(db, timeRange),
-        slowest: await longestSolve(db, timeRange)
-      }
-    }
+    getHighScores: async (timeRange: TimeRange, limit = 5) => ({
+      scores: await getAllScores(db, timeRange, limit),
+      guessers: await getTopGuessers(db, timeRange, limit),
+      submitters: await getTopSubmitters(db, timeRange, limit),
+      fastest: await fastestSolve(db, timeRange),
+      slowest: await longestSolve(db, timeRange)
+    })
   }
 }

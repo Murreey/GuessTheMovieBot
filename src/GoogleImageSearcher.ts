@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios'
 import { Logger } from './Logger'
 
 export const trimImageURL = (url: string): string => {
-  if(!url) return url
+  if (!url) return url
   // Extract the first valid URL from the post
   // In case of inside markdown [](), or with whitespace, or two images, or whatever
   // Replaces annoying  preview URLs (https://preview.redd.it/4l3hm6mhezl61.png?width=1920&format=png&auto=webp&s=763dbf14da80516b2559cd1ffec8610a7b67359e)
@@ -15,7 +15,7 @@ export const trimImageURL = (url: string): string => {
 
 export const getSearchUrl = (imageUrl: string): string => {
   const url = trimImageURL(imageUrl)
-  if(!url) return undefined
+  if (!url) return undefined
   return `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
 }
 
@@ -25,9 +25,9 @@ export const checkGoogleForImage = async (url: string): Promise<boolean> => {
   })
 
   const searchUrl = getSearchUrl(url)
-  if(!searchUrl) return false
-  Logger.debug(`Checking GIS for image:`)
+  if (!searchUrl) return false
+  Logger.debug('Checking GIS for image:')
   Logger.debug(searchUrl)
   const searchResult = (await client.get(searchUrl)).data
-  return searchResult.indexOf("Pages that include matching images") > -1
+  return searchResult.indexOf('Pages that include matching images') > -1
 }

@@ -23,8 +23,8 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
   const getPreviousFetchedID = async (type: ContentTypes): Promise<string> => {
     processedContent[type].sort((a, b) => b.time - a.time)
     const deleted: string[] = []
-    for(const comment of processedContent[type]) {
-      if(!await isDeleted(getContent(comment.name))) break
+    for (const comment of processedContent[type]) {
+      if (!await isDeleted(getContent(comment.name))) break
       deleted.push(comment.name)
     }
 
@@ -67,16 +67,16 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
       return newSubmissions
     },
     fetchNewReports: async () => (await subreddit
-      .getReports({ only: "comments" }) as snoowrap.Comment[])
+      .getReports({ only: 'comments' }) as snoowrap.Comment[])
       .filter(c => c.mod_reports.length > 0),
     reply: async (content, body, sticky = false) => {
-      if(readOnly) {
+      if (readOnly) {
         Logger.warn('reply() ignored, read only mode is enabled')
         return
       }
 
       try {
-        const reply = (await (content as any).reply(body) as snoowrap.Comment);
+        const reply = (await (content as any).reply(body) as snoowrap.Comment)
         if (reply) await (reply as any).distinguish({ status: true, sticky })
         Logger.verbose(`Posted comment on ${content.id}`)
       } catch (ex) {
@@ -86,7 +86,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
       }
     },
     createPost: async (title, text, sticky = false) => {
-      if(readOnly) {
+      if (readOnly) {
         Logger.warn('createPost() ignored, read only mode is enabled')
         return
       }
@@ -97,17 +97,17 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
         text,
         sendReplies: false
       }) as any)
-      if(post && sticky) await post.sticky({ num: 2 })
+      if (post && sticky) await post.sticky({ num: 2 })
       Logger.verbose(`Created new self post - '${title}'`)
     },
     setPostFlair: async (post, template) => {
-      if(readOnly) {
+      if (readOnly) {
         Logger.warn('setPostFlair() ignored, read only mode is enabled')
         return
       }
-      if(!template) {
+      if (!template) {
         // You can't remove flair with selectFlair so have to do this
-        await (post as any).assignFlair({ text: "", cssClass: "" })
+        await (post as any).assignFlair({ text: '', cssClass: '' })
       } else {
         await (post as any).selectFlair({ flair_template_id: template })
       }
@@ -115,7 +115,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
     },
     getUserFlair: async (username) => subreddit.getUserFlair(username).then(flair => flair.flair_text),
     setUserFlair: async (username, { text, css_class, background_color, text_color = 'light'}) => {
-      if(readOnly) {
+      if (readOnly) {
         Logger.warn('setUserFlair() ignored, read only mode is enabled')
         return
       }
@@ -131,7 +131,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
           }
         })
       } catch (ex) {
-        Logger.error(`Failed to set user flair for unknown reason, Reddit API failure`)
+        Logger.error('Failed to set user flair for unknown reason, Reddit API failure')
         Logger.error(`username: ${username} text: ${text} css_class: ${css_class} background_color: ${background_color} text_color: ${text_color}`)
         Logger.error(ex.stack)
       }
@@ -141,7 +141,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
       return (expanded.comments || expanded.replies || [])
         .some((comment: any) => comment.author.name === config.bot_username && !comment.removed)
     },
-    isCommentAReply: (comment) => comment.parent_id.startsWith("t1_"),
+    isCommentAReply: (comment) => comment.parent_id.startsWith('t1_'),
     rateLimit: () => ({ requestsRemaining: r.ratelimitRemaining ?? 99, resetsAt: new Date(r.ratelimitExpiration) }),
     isDeleted,
     shortlink: (content) => isSubmission(content) ? `https://redd.it/${content?.id}` : `https://reddit.com/comments/${content?.link_id?.split('_')?.[1]}//${content?.id}`
@@ -152,7 +152,7 @@ const isComment = (thing: { name: string }): thing is snoowrap.Comment => thing.
 const isSubmission = (thing: { name: string }): thing is snoowrap.Submission => thing.name.startsWith('t3_')
 
 const isDeleted = async (content: snoowrap.Comment | snoowrap.Submission): Promise<boolean> => {
-  if(!content.id) {
+  if (!content.id) {
     try {
       // @ts-expect-error
       content = await content.fetch()
@@ -161,12 +161,12 @@ const isDeleted = async (content: snoowrap.Comment | snoowrap.Submission): Promi
     }
   }
 
-  if(isComment(content)) {
+  if (isComment(content)) {
     return await content.removed ||
-      await content.body === "[deleted]" ||
+      await content.body === '[deleted]' ||
       !content.author ||
-      content.author?.name === "[deleted]"
-  } else if(isSubmission(content)) {
+      content.author?.name === '[deleted]'
+  } else if (isSubmission(content)) {
     return !content.author ||
       !await content.is_robot_indexable ||
       content.author?.name === '[deleted]'

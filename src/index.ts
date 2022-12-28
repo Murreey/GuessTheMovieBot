@@ -1,14 +1,14 @@
 import yargs from 'yargs'
-import * as scheduler from 'node-cron';
-import { Logger, LogLevel } from './Logger';
-import * as RedditBot from './RedditBot';
-import WinChecker from './WinChecker';
+import * as scheduler from 'node-cron'
+import { Logger, LogLevel } from './Logger'
+import * as RedditBot from './RedditBot'
+import WinChecker from './WinChecker'
 import processWin from './WinProcessor'
-import newPostProcessor from "./NewPostProcessor";
-import CommandProcessor, { COMMAND_PREFIX } from './commands/CommandProcessor';
-import Scoreboards from './scores/Scoreboards';
-import ScoreManager from './scores/ScoreManager';
-import DatabaseManager from './scores/database/DatabaseManager';
+import newPostProcessor from './NewPostProcessor'
+import CommandProcessor from './commands/CommandProcessor'
+import Scoreboards from './scores/Scoreboards'
+import ScoreManager from './scores/ScoreManager'
+import DatabaseManager from './scores/database/DatabaseManager'
 
 const args = yargs(process.argv.slice(2))
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
@@ -24,7 +24,7 @@ const databaseManager = DatabaseManager()
 const processNewSubmissions = async () => {
   const newPosts = await bot.fetchNewSubmissions()
   const processor = newPostProcessor(bot, await databaseManager)
-  for(const post of newPosts) {
+  for (const post of newPosts) {
     try {
       Logger.verbose(`Processing new submission by ${post.author.name}:`)
       Logger.verbose(`"${post.title}" (${post.permalink})`)
@@ -39,13 +39,13 @@ const processNewSubmissions = async () => {
 const processNewComments = async () => {
   const scoreManager = await ScoreManager(bot, await databaseManager)
   const comments = await bot.fetchNewComments()
-  for(const comment of comments) {
+  for (const comment of comments) {
     try {
       Logger.verbose(`Processing new comment by ${comment.author.name}:`)
       Logger.verbose(`"${comment.body?.substr(0, 14)?.trim()}" (${bot.shortlink(comment)})`)
 
       const validWin = await WinChecker(bot, scoreManager).isValidWin(comment)
-      if(!validWin) {
+      if (!validWin) {
         Logger.verbose('No win detected, ignoring')
         continue
       }
@@ -64,11 +64,11 @@ const processNewReports = async () => {
   const scoreManager = await ScoreManager(bot, await databaseManager)
   const reportedComments = await bot.fetchNewReports()
   const processor = CommandProcessor(bot, scoreManager)
-  for(const comment of reportedComments) {
+  for (const comment of reportedComments) {
     try {
-      for(const report of comment.mod_reports) {
-          Logger.verbose(`Processing new report '${report[0]}' on ${bot.shortlink(comment)}`)
-          await processor(comment, report[0])
+      for (const report of comment.mod_reports) {
+        Logger.verbose(`Processing new report '${report[0]}' on ${bot.shortlink(comment)}`)
+        await processor(comment, report[0])
       }
     } catch (ex) {
       Logger.error(`Failed to process reports on comment ${comment?.id}!`)
@@ -77,11 +77,11 @@ const processNewReports = async () => {
   }
 }
 
-if(args['read-only']) Logger.warn('Starting in read only mode!')
+if (args['read-only']) Logger.warn('Starting in read only mode!')
 
 let running = false
 const run = async () => {
-  if (running) return Logger.verbose("Skipping run as previous is still running (probably hit the rate limit)")
+  if (running) return Logger.verbose('Skipping run as previous is still running (probably hit the rate limit)')
 
   running = true
 
@@ -90,7 +90,7 @@ const run = async () => {
     await processNewSubmissions()
     await processNewComments()
   } catch (ex) {
-    Logger.error(`Run failed for some reason:`)
+    Logger.error('Run failed for some reason:')
     Logger.error(ex.stack)
   }
 
@@ -98,12 +98,12 @@ const run = async () => {
   running = false
 }
 
-scheduler.schedule("1 0 1 * *", async () => {
+scheduler.schedule('1 0 1 * *', async () => {
   running = true
   try {
     await Scoreboards(bot, await databaseManager).postMonthlyScoreboard()
   } catch (ex) {
-    Logger.error(`Error posting scoreboard!`)
+    Logger.error('Error posting scoreboard!')
     Logger.error(ex.stack)
   }
   running = false

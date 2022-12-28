@@ -1,26 +1,26 @@
-import { RedditBot } from "../RedditBot";
-import { Comment } from "snoowrap";
-import WinProcessor from "../WinProcessor";
-import { Logger } from "../Logger";
-import { ScoreManager } from "../types";
+import { RedditBot } from '../RedditBot'
+import { Comment } from 'snoowrap'
+import WinProcessor from '../WinProcessor'
+import { Logger } from '../Logger'
+import { ScoreManager } from '../types'
 
 export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
-  if(!await comment.is_submitter) {
-    Logger.debug(`Ignoring ForceCorrect as correction was not by the submitter`)
+  if (!await comment.is_submitter) {
+    Logger.debug('Ignoring ForceCorrect as correction was not by the submitter')
     return false
   }
-  if(!bot.isCommentAReply(comment)) {
-    Logger.debug(`Ignoring ForceCorrect as reported comment is not a reply`)
+  if (!bot.isCommentAReply(comment)) {
+    Logger.debug('Ignoring ForceCorrect as reported comment is not a reply')
     return false
   }
   const guessComment = (await bot.fetchComment(comment.parent_id))()
-  if(guessComment.is_submitter) {
-    Logger.debug(`Ignoring ForceCorrect as guess was by the submitter`)
+  if (guessComment.is_submitter) {
+    Logger.debug('Ignoring ForceCorrect as guess was by the submitter')
     return false
   }
 
-  if(await bot.hasReplied(comment)) {
-    Logger.debug(`Ignoring ForceCorrect as bot has already replied to that comment`)
+  if (await bot.hasReplied(comment)) {
+    Logger.debug('Ignoring ForceCorrect as bot has already replied to that comment')
     return false
   }
 

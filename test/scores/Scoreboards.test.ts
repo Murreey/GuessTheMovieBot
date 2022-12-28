@@ -16,7 +16,7 @@ describe('Scoreboards', () => {
   const mockDate = new Date(1623495600000) // 12/06/2021
   const _Date = global.Date
   global.Date = jest.fn((args) => new _Date(args || mockDate.getTime())) as any
-  global.Date.UTC = _Date.UTC;
+  global.Date.UTC = _Date.UTC
 
   const mockHighScores = {
     scores: [
@@ -77,29 +77,29 @@ describe('Scoreboards', () => {
     it('calls the bot with the correctly formatted data', async () => {
       await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard()
       expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
-        month: "May",
-        year: "2021",
+        month: 'May',
+        year: '2021',
         guesses: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         points: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         submissions: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         fastest: {
-          postId: "fastest-post", username: "player4",
+          postId: 'fastest-post', username: 'player4',
           time: 987654, timeString: '16 minutes 27 seconds'
         },
         slowest: {
-          postId: "slowest-post", username: "player5",
+          postId: 'slowest-post', username: 'player5',
           time: 12345678910, timeString: '142 days 21 hours 21 minutes 18 seconds'
         },
       } as ScoreboardData)
@@ -111,27 +111,27 @@ describe('Scoreboards', () => {
         ...mockHighScores,
         fastest: undefined
       })
-      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard()
       expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
-        month: "May",
-        year: "2021",
+        month: 'May',
+        year: '2021',
         guesses: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         points: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         submissions: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         slowest: {
-          postId: "slowest-post", username: "player5",
+          postId: 'slowest-post', username: 'player5',
           time: 12345678910, timeString: '142 days 21 hours 21 minutes 18 seconds'
         }
       } as ScoreboardData)
@@ -143,27 +143,27 @@ describe('Scoreboards', () => {
         ...mockHighScores,
         slowest: undefined
       })
-      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
+      await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard()
       expect(mockMustache.render).toHaveBeenCalledWith(expect.anything(), {
-        month: "May",
-        year: "2021",
+        month: 'May',
+        year: '2021',
         guesses: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         points: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         submissions: [
-          { score: 25, username: "player3" },
-          { score: 12, username: "player2" },
-          { score: 5, username: "player1" }
+          { score: 25, username: 'player3' },
+          { score: 12, username: 'player2' },
+          { score: 5, username: 'player1' }
         ],
         fastest: {
-          postId: "fastest-post", username: "player4",
+          postId: 'fastest-post', username: 'player4',
           time: 987654, timeString: '16 minutes 27 seconds'
         }
       } as ScoreboardData)
@@ -181,7 +181,7 @@ describe('Scoreboards', () => {
         scores: [{ username: 'player1', score: 5 }],
         guessers: [],
         submitters: [{ username: 'player1', score: 5 }]
-      });
+      })
       await Scoreboards(redditBot as RedditBot, mockDatabaseManager as DatabaseManager).postMonthlyScoreboard();
       (mockDatabaseManager.getHighScores as any).mockReturnValue({
         scores: [{ username: 'player1', score: 5 }],

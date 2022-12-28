@@ -1,5 +1,5 @@
-import ScoreManager from './scores/ScoreManager'
-import DatabaseManager from './scores/database/DatabaseManager'
+import _ScoreManager from './scores/ScoreManager'
+import _DatabaseManager from './scores/database/DatabaseManager'
 
 export interface Config {
   userAgent: string,
@@ -27,13 +27,13 @@ export interface Config {
 }
 
 export enum WinType {
-  GUESSER = "guesser",
-  SUBMITTER = "submitter"
+  GUESSER = 'guesser',
+  SUBMITTER = 'submitter'
 }
 
 export enum PointLevel {
-  NORMAL = "normal",
-  GOOGLE = "google"
+  NORMAL = 'normal',
+  GOOGLE = 'google'
 }
 
 export type TimeRange = {
@@ -72,9 +72,7 @@ export type WinComment = {
 }
 
 export type AsyncReturnType<T extends (...args: any) => any> =
-	T extends (...args: any) => Promise<infer U> ? U :
-	T extends (...args: any) => infer U ? U :
-	any
+	T extends (...args: any) => Promise<infer U> ? U : T extends (...args: any) => infer U ? U : any
 
-export type ScoreManager = AsyncReturnType<typeof ScoreManager>
-export type DatabaseManager = AsyncReturnType<typeof DatabaseManager>
+export type ScoreManager = AsyncReturnType<typeof _ScoreManager>
+export type DatabaseManager = AsyncReturnType<typeof _DatabaseManager>

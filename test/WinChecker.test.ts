@@ -1,7 +1,7 @@
-import WinChecker from '../src/WinChecker';
+import WinChecker from '../src/WinChecker'
 import { getConfig } from '../src/config'
 
-import { Comment } from 'snoowrap';
+import { Comment } from 'snoowrap'
 
 jest.mock('../src/config')
 
@@ -12,24 +12,24 @@ describe('WinChecker', () => {
 
   jest.mocked(getConfig).mockReturnValue({
     linkFlairTemplates: {
-      easy: "easyTemplate",
-      hard: "hardTemplate",
-      meta: "metaTemplate",
+      easy: 'easyTemplate',
+      hard: 'hardTemplate',
+      meta: 'metaTemplate',
       identified: {
-        normal: "identifiedTemplate",
-        easy: "easyIdentifiedTemplate",
-        hard: "hardIdentifiedTemplate"
+        normal: 'identifiedTemplate',
+        easy: 'easyIdentifiedTemplate',
+        hard: 'hardIdentifiedTemplate'
       }
     }
   } as any)
 
   beforeEach(() => {
-    redditBot = mockRedditBot({});
+    redditBot = mockRedditBot({})
     mockScoreManager = {
       getUserPoints: jest.fn().mockResolvedValue(15),
     }
     mockComment = {
-      parent_id: "parent-id",
+      parent_id: 'parent-id',
       is_submitter: true,
       body: 'Correct!'
     } as Comment
@@ -41,8 +41,8 @@ describe('WinChecker', () => {
   })
 
   it.each([
-    `Correct`, `CORRECT!`, `**Correct**`, `correct yes`,
-    `__Correctamundo!__`, `> Correct!`, `CORRECT YOU WIN!`
+    'Correct', 'CORRECT!', '**Correct**', 'correct yes',
+    '__Correctamundo!__', '> Correct!', 'CORRECT YOU WIN!'
   ])('returns true for any valid confirmation message', async (text) => {
     mockComment.body = text
 
@@ -51,8 +51,8 @@ describe('WinChecker', () => {
   })
 
   it.each([
-    `wrong`, `that's correct`, `yes`, `you got it`, `no`,
-    `you're correct`, `not correct`, `someone else was correct`,
+    'wrong', 'that\'s correct', 'yes', 'you got it', 'no',
+    'you\'re correct', 'not correct', 'someone else was correct',
   ])('returns false if the comment does not have a valid confirmation', async (text) => {
     mockComment.body = text
 
@@ -86,11 +86,11 @@ describe('WinChecker', () => {
 
     const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
     expect(validWin).toBe(false)
-    expect(redditBot.fetchComment).toHaveBeenCalledWith("parent-id")
+    expect(redditBot.fetchComment).toHaveBeenCalledWith('parent-id')
   })
 
   it('returns false if the parent comment was from the bot', async () => {
-    redditBot = mockRedditBot({ author: { name: "bot-username" } })
+    redditBot = mockRedditBot({ author: { name: 'bot-username' } })
 
     const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
     expect(validWin).toBe(false)
@@ -104,20 +104,21 @@ describe('WinChecker', () => {
 
   describe('self post', () => {
     it('returns false if the body is not an image URL', async () => {
-      redditBot = mockRedditBot(null, { is_self: true, selftext: "Some body text" })
+      redditBot = mockRedditBot(null, { is_self: true, selftext: 'Some body text' })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(false)
     })
 
     it('approves if if it is a valid image url', async () => {
-      redditBot = mockRedditBot(null, { is_self: true, selftext: "https://images.com/an-image.png" })
+      redditBot = mockRedditBot(null, { is_self: true, selftext: 'https://images.com/an-image.png' })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(true)
     })
+
     it('approves if it is a valid image url but formatted badly', async () => {
-      redditBot = mockRedditBot(null, { is_self: true, selftext: "  https://images.com/an-image.png     " })
+      redditBot = mockRedditBot(null, { is_self: true, selftext: '  https://images.com/an-image.png     ' })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(true)
@@ -126,24 +127,24 @@ describe('WinChecker', () => {
 
   describe('flair templates', () => {
     it('returns false if the flair is any of the identified templates', async () => {
-      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("identifiedTemplate") })
+      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve('identifiedTemplate') })
 
       expect(await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)).toBe(false)
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
 
-      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("easyIdentifiedTemplate") })
+      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve('easyIdentifiedTemplate') })
 
       expect(await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)).toBe(false)
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
 
-      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("hardIdentifiedTemplate") })
+      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve('hardIdentifiedTemplate') })
 
       expect(await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)).toBe(false)
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
 
     it('returns false if the flair contains `meta`', async () => {
-      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("metaTemplate") })
+      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve('metaTemplate') })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(false)
@@ -151,28 +152,28 @@ describe('WinChecker', () => {
     })
 
     it('returns false if the flair is the easy template and the guesser has >= 10 points', async () => {
-      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("easyTemplate") })
+      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve('easyTemplate') })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(false)
-      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith('guesser')
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
 
     it('returns true for if the flair is the easy template and the guesser has < 10 points', async () => {
-      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve("easyTemplate") })
+      redditBot = mockRedditBot(null, { link_flair_template_id: Promise.resolve('easyTemplate') })
       mockScoreManager.getUserPoints.mockResolvedValue(5)
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(true)
-      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith('guesser')
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
   })
 
   describe('flair text', () => {
     it('returns false if the flair contains `identified`', async () => {
-      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("identified") })
+      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('identified') })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(false)
@@ -180,7 +181,7 @@ describe('WinChecker', () => {
     })
 
     it('returns false if the flair contains `meta`', async () => {
-      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("meta") })
+      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('meta') })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(false)
@@ -188,21 +189,21 @@ describe('WinChecker', () => {
     })
 
     it('returns false if the flair contains `easy` and the guesser has >= 10 points', async () => {
-      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("easy") })
+      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('easy') })
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(false)
-      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith('guesser')
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
 
     it('returns true for if the flair contains `easy` and the guesser has < 10 points', async () => {
-      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve("easy") })
+      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('easy') })
       mockScoreManager.getUserPoints.mockResolvedValue(5)
 
       const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
       expect(validWin).toBe(true)
-      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith("guesser")
+      expect(mockScoreManager.getUserPoints).toHaveBeenCalledWith('guesser')
       expect(redditBot.fetchPostFromComment).toHaveBeenCalledWith(mockComment)
     })
   })
@@ -212,7 +213,7 @@ const mockRedditBot = (guessComment = {}, submission = {}) => {
   const mockGuessComment = {
     is_submitter: false,
     author: {
-      name: "guesser"
+      name: 'guesser'
     },
     ...guessComment
   }

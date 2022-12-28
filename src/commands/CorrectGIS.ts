@@ -1,37 +1,37 @@
-import { RedditBot } from "../RedditBot";
-import { Comment, Submission } from "snoowrap";
-import { Logger } from "../Logger";
-import { createWinComment } from "../WinProcessor";
-import { getSearchUrl } from "../GoogleImageSearcher";
-import { ScoreManager } from "../types";
-import ScoreFlairManager from "../scores/ScoreFlairManager";
+import { RedditBot } from '../RedditBot'
+import { Comment } from 'snoowrap'
+import { Logger } from '../Logger'
+import { createWinComment } from '../WinProcessor'
+import { getSearchUrl } from '../GoogleImageSearcher'
+import { ScoreManager } from '../types'
+import ScoreFlairManager from '../scores/ScoreFlairManager'
 
 export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
   Logger.debug(`Running CorrectGIS command on ${comment.id}`)
 
-  if(comment.author.name !== bot.username) {
-    Logger.verbose(`Ignoring CorrectGIS as comment was not posted by the bot`)
+  if (comment.author.name !== bot.username) {
+    Logger.verbose('Ignoring CorrectGIS as comment was not posted by the bot')
     return false
   }
-  if(!await bot.isCommentAReply(comment)) {
-    Logger.verbose(`Ignoring CorrectGIS as comment is not a reply`)
+  if (!await bot.isCommentAReply(comment)) {
+    Logger.verbose('Ignoring CorrectGIS as comment is not a reply')
     return false
   }
-  const previouslyFoundOnGoogle = comment?.body?.toLowerCase().includes("found on google") || false
-  const previouslyForced = comment?.body?.toLowerCase().includes("manually approved") || false
+  const previouslyFoundOnGoogle = comment?.body?.toLowerCase().includes('found on google') || false
+  const previouslyForced = comment?.body?.toLowerCase().includes('manually approved') || false
   Logger.verbose(`Post was originally ${previouslyFoundOnGoogle ? '' : 'not '}found on Google, ${previouslyFoundOnGoogle ? 'increasing' : 'reducing'} points`)
 
   const correctionComment = (await bot.fetchComment(comment.parent_id))()
-  if(!await bot.isCommentAReply(correctionComment)) return false // ?? bot replied to a top level comment ??
+  if (!await bot.isCommentAReply(correctionComment)) return false // ?? bot replied to a top level comment ??
   const guessComment = (await bot.fetchComment(correctionComment.parent_id))() // yuck
 
   // @ts-expect-error
   const submission = await bot.fetchPostFromComment(comment)
   const submitter = await submission.author.name
-  const guesser =  guessComment.author.name
+  const guesser = guessComment.author.name
 
-  if(bot.readOnly) {
-    Logger.warn(`Skipping command actions as bot is in read-only mode`)
+  if (bot.readOnly) {
+    Logger.warn('Skipping command actions as bot is in read-only mode')
     return true
   }
 

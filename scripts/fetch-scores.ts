@@ -1,14 +1,14 @@
 import yargs from 'yargs'
-import { Logger, LogLevel } from '../src/Logger';
-import DatabaseManager from '../src/scores/database/DatabaseManager';
-import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve, totalGamesSolved, totalGuessers, totalSubmitters } from '../src/scores/database/queries/high-scores';
-import { formatMillisecondsAsTime } from '../src/scores/Scoreboards';
-import { TimeRange } from '../src/types';
+import { Logger, LogLevel } from '../src/Logger'
+import DatabaseManager from '../src/scores/database/DatabaseManager'
+import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve, totalGamesSolved, totalGuessers, totalSubmitters } from '../src/scores/database/queries/high-scores'
+import { formatMillisecondsAsTime } from '../src/scores/Scoreboards'
+import { TimeRange } from '../src/types'
 
 const userScore = async (args) => {
   let range: Partial<TimeRange> = {}
-  if(args.from) range.from = new Date(args.from)
-  if(args.to) range.to = new Date(args.to)
+  if (args.from) range.from = new Date(args.from)
+  if (args.to) range.to = new Date(args.to)
 
   const db = await DatabaseManager()
   const scores = [
@@ -23,7 +23,7 @@ const userScore = async (args) => {
   console.log(`  - ${scores[2]} submissions`)
 }
 
-const highScores = async (args) =>  {
+const highScores = async (args) => {
   const range: TimeRange = {
     from: new Date(args.from),
     to: new Date(args.to)
@@ -54,8 +54,8 @@ const highScores = async (args) =>  {
 }
 
 const args = yargs(process.argv.slice(2))
-  .command('user <username> [from] [to]', `check user's points total`, {}, userScore)
-  .command('highscores <from> <to>', `fetch high scores`, {}, highScores)
+  .command('user <username> [from] [to]', 'check user\'s points total', {}, userScore)
+  .command('highscores <from> <to>', 'fetch high scores', {}, highScores)
   .option('limit', {alias: 'l', type: 'number', description: 'number of high scores to return', default: 5})
   .option('log-level', {alias: 'll', choices: Object.values(LogLevel), default: LogLevel.INFO})
   .option('read-only', {type: 'boolean', alias: 'r', description: 'block the bot from making real changes to reddit'})

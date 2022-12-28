@@ -1,6 +1,6 @@
-import { Logger } from "../Logger";
-import { RedditBot } from "../RedditBot";
-import { ScoreManager } from "../types";
+import { Logger } from '../Logger'
+import { RedditBot } from '../RedditBot'
+import { ScoreManager } from '../types'
 
 const thresholds: [number, string][] = [
   [1, '#7EFF7B'], [5, '#68B4E7'], [10, '#FFE47B'],
@@ -23,9 +23,9 @@ const getThresholdInfo = (points: number) => [...thresholds].reverse().find(thre
 
 export default (bot: RedditBot, scoreManager?: ScoreManager) => {
   const setPoints = async (user: string, amount: number): Promise<void> => {
-    if(bot.readOnly) return
+    if (bot.readOnly) return
 
-    if(amount < 0 || !amount) amount = 0
+    if (amount < 0 || !amount) amount = 0
 
     const [ threshold, colour ] = getThresholdInfo(amount)
 
@@ -44,7 +44,7 @@ export default (bot: RedditBot, scoreManager?: ScoreManager) => {
   return {
     setPoints,
     syncPoints: async (username: string) => {
-      if(!scoreManager) return
+      if (!scoreManager) return
       await setPoints(username, await scoreManager.getUserPoints(username))
     }
   }

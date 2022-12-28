@@ -1,4 +1,4 @@
-import newPostProcessor from '../src/NewPostProcessor';
+import newPostProcessor from '../src/NewPostProcessor'
 
 import { getConfig } from '../src/config'
 import DatabaseManager from '../src/scores/database/DatabaseManager'
@@ -50,7 +50,7 @@ describe('NewPostProcessor', () => {
     mockSubmission.title = '[meta] post title'
 
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'meta-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'meta-template')
   })
 
   it('does not reply if the post is tagged meta', async () => {
@@ -63,31 +63,31 @@ describe('NewPostProcessor', () => {
   it('flairs the post if it has an easy difficilty flair', async () => {
     mockSubmission.title = '[easy] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template')
 
     mockSubmission.title = 'post title [easy]'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template')
   })
 
   it('flairs the post if it has a hard difficilty flair', async () => {
     mockSubmission.title = '[hard] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template')
 
     mockSubmission.title = 'post title [hard]'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'hard-template')
   })
 
   it('prioritises the right flairs if the title has multiple', async () => {
     mockSubmission.title = '[easy] [hard] [meta] post title'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'meta-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'meta-template')
 
     mockSubmission.title = '[hard] post title [easy]'
     await newPostProcessor(redditBot).processNewSubmission(mockSubmission)
-    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template' )
+    expect(redditBot.setPostFlair).toHaveBeenCalledWith(mockSubmission, 'easy-template')
   })
 
   it('does not reply if the bot is the submission author', async () => {

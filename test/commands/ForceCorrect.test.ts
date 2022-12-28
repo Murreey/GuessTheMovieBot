@@ -2,7 +2,7 @@ import ForceCorrect from '../../src/commands/ForceCorrect'
 
 import WinProcessor from '../../src/WinProcessor'
 
-import { RedditBot, create } from '../../src/RedditBot'
+import { RedditBot } from '../../src/RedditBot'
 import { Comment } from 'snoowrap'
 
 jest.mock('../../src/WinProcessor')
@@ -68,28 +68,27 @@ describe('CorrectGIS', () => {
   })
 })
 
-
 const mockComment = (is_submitter = true, body?: string) => ({
   is_submitter,
   body
 } as unknown as Comment)
 
 const mockRedditBot = (confirmationComment = {}, guessComment = {}, submission = {}) => ({
-  username: "bot-username",
+  username: 'bot-username',
   readOnly: false,
   isCommentAReply: jest.fn().mockResolvedValue(true),
   fetchPostFromComment: jest.fn().mockResolvedValueOnce({
-    id: "post-id",
-    author: { name: "submitter" },
+    id: 'post-id',
+    author: { name: 'submitter' },
     is_self: false,
-    url: "https://url",
+    url: 'https://url',
     ...submission
   }),
   hasReplied: jest.fn().mockResolvedValue(false),
   fetchComment: jest.fn()
     .mockResolvedValueOnce(() => confirmationComment)
     .mockResolvedValueOnce(() => ({
-      author: { name: "guesser" },
+      author: { name: 'guesser' },
       ...guessComment
     }))
 }) as unknown as jest.Mocked<RedditBot>
