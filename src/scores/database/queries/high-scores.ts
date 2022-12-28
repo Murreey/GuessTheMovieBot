@@ -2,8 +2,11 @@ import sqlite3 from 'sqlite3'
 import { Database } from 'sqlite'
 import { Score, SpeedRecord, TimeRange } from '../../../types'
 
-const singleQuery = <T>(query: string) => async (db: Database<sqlite3.Database, sqlite3.Statement>, timeRange: TimeRange): Promise<T> => await db.get(query, timeRange.from.getTime(), timeRange.to.getTime())
-const multiQuery = <T>(query: string) => async (db: Database<sqlite3.Database, sqlite3.Statement>, timeRange: TimeRange, limit = 5): Promise<T[]> => await db.all(query, timeRange.from.getTime(), timeRange.to.getTime(), limit)
+const singleQuery = <T>(query: string, column?: string) => async (db: Database<sqlite3.Database, sqlite3.Statement>, timeRange: TimeRange) => {
+  const result = await db.get<T>(query, timeRange.from.getTime(), timeRange.to.getTime())
+  return column ? result?.[column] : result
+}
+const multiQuery = <T>(query: string) => async (db: Database<sqlite3.Database, sqlite3.Statement>, timeRange: TimeRange, limit = 5) => await db.all<T[]>(query, timeRange.from.getTime(), timeRange.to.getTime(), limit)
 
 export const getAllScores = multiQuery<Score>(`
   SELECT username, SUM(points) AS score
@@ -53,3 +56,21 @@ export const longestSolve = singleQuery<SpeedRecord>(`
   ORDER BY time DESC
   LIMIT 1
 `)
+
+export const totalGamesSolved = singleQuery<number>(`
+  SELECT COUNT(*) AS total
+  FROM wins
+  WHERE solved_at >= ? AND solved_at < ?
+`, 'total')
+
+export const totalSubmitters = singleQuery<number>(`
+  SELECT COUNT(DISTINCT submitter_id) AS total
+  FROM wins
+  WHERE created_at >= ? AND created_at < ?
+`, 'total')
+
+export const totalGuessers = singleQuery<number>(`
+  SELECT COUNT(DISTINCT guesser_id) AS total
+  FROM wins
+  WHERE solved_at >= ? AND solved_at < ?
+`, 'total')

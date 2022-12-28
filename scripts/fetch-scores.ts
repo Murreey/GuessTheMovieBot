@@ -1,7 +1,7 @@
 import yargs from 'yargs'
 import { Logger, LogLevel } from '../src/Logger';
 import DatabaseManager from '../src/scores/database/DatabaseManager';
-import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve } from '../src/scores/database/queries/high-scores';
+import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve, totalGamesSolved, totalGuessers, totalSubmitters } from '../src/scores/database/queries/high-scores';
 import { formatMillisecondsAsTime } from '../src/scores/Scoreboards';
 import { TimeRange } from '../src/types';
 
@@ -32,6 +32,9 @@ const highScores = async (args) =>  {
   const db = (await DatabaseManager()).db
 
   console.log(`  High scores from ${range.from.toUTCString()} to ${range.to.toUTCString()}`)
+  console.log('')
+  console.log(`  Total of ${await totalGamesSolved(db, range)} games solved, posted by ${await totalSubmitters(db, range)} submitters and solved by ${await totalGuessers(db, range)} guessers`)
+  console.log('')
   console.log('  Top Scores:')
   await getAllScores(db, range, args.limit).then(scores => scores.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`)))
   console.log('')
@@ -43,10 +46,10 @@ const highScores = async (args) =>  {
   console.log('')
   console.log('  Fastest Solve:')
   const fastest = await fastestSolve(db, range)
-  console.log(`  - ${fastest?.username} on https://redd.it/${fastest?.postId} in ${formatMillisecondsAsTime(fastest?.time)}`)
+  console.log(`  - ${fastest?.username} on https://redd.it/${fastest?.postId} in ${formatMillisecondsAsTime(fastest!.time)}`)
   console.log('  Slowest Solve:')
   const slowest = await longestSolve(db, range)
-  console.log(`  - ${slowest?.username} on https://redd.it/${slowest?.postId} in ${formatMillisecondsAsTime(slowest?.time)}`)
+  console.log(`  - ${slowest?.username} on https://redd.it/${slowest?.postId} in ${formatMillisecondsAsTime(slowest!.time)}`)
   console.log('')
 }
 
