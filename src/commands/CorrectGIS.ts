@@ -1,7 +1,7 @@
 import { RedditBot } from '../RedditBot'
 import { Comment } from 'snoowrap'
 import { Logger } from '../Logger'
-import { createWinComment } from '../WinProcessor'
+import { createWinComment } from '../wins/processor'
 import { getSearchUrl } from '../GoogleImageSearcher'
 import { ScoreManager } from '../types'
 import ScoreFlairManager from '../scores/ScoreFlairManager'

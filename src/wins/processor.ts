@@ -2,11 +2,11 @@ import path from 'path'
 import { readFileSync, existsSync } from 'fs'
 import snoowrap from 'snoowrap'
 import Mustache from 'mustache'
-import { getConfig } from './config'
-import { RedditBot } from './RedditBot'
-import { Logger } from './Logger'
-import { checkGoogleForImage, getSearchUrl } from './GoogleImageSearcher'
-import { ScoreManager, WinComment } from './types'
+import { getConfig } from '../config'
+import { RedditBot } from '../RedditBot'
+import { Logger } from '../Logger'
+import { checkGoogleForImage, getSearchUrl } from '../GoogleImageSearcher'
+import { ScoreManager, WinComment } from '../types'
 
 export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: snoowrap.Comment, winCommentArgs: Partial<WinComment> = {}): Promise<void> => {
   //@ts-expect-error

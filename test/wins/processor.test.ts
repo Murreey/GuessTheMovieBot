@@ -1,13 +1,13 @@
-import processWin from '../src/WinProcessor'
+import processWin from '../../src/wins/processor'
 
 import fs from 'fs'
-import { checkGoogleForImage } from '../src/GoogleImageSearcher'
-import { getScores } from '../src/scores/Scores'
-import { getConfig } from '../src/config'
+import { checkGoogleForImage } from '../../src/GoogleImageSearcher'
+import { getScores } from '../../src/scores/Scores'
+import { getConfig } from '../../src/config'
 
-jest.mock('../src/scores/Scores')
-jest.mock('../src/GoogleImageSearcher')
-jest.mock('../src/config')
+jest.mock('../../src/scores/Scores')
+jest.mock('../../src/GoogleImageSearcher')
+jest.mock('../../src/config')
 
 jest.mock('fs')
 const mockFs = jest.mocked(fs)

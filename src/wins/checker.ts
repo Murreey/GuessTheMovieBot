@@ -1,9 +1,9 @@
 import snoowrap from 'snoowrap'
-import { RedditBot } from './RedditBot'
-import { trimImageURL } from './GoogleImageSearcher'
-import { Logger } from './Logger'
-import { getConfig } from './config'
-import { ScoreManager } from './types'
+import { RedditBot } from '../RedditBot'
+import { trimImageURL } from '../GoogleImageSearcher'
+import { Logger } from '../Logger'
+import { getConfig } from '../config'
+import { ScoreManager } from '../types'
 
 const confirmationFormat = /^[^a-z0-9]*correct/i
 

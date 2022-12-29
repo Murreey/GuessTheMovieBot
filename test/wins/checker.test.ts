@@ -1,9 +1,9 @@
-import WinChecker from '../src/WinChecker'
-import { getConfig } from '../src/config'
+import WinChecker from '../../src/wins/checker'
+import { getConfig } from '../../src/config'
 
 import { Comment } from 'snoowrap'
 
-jest.mock('../src/config')
+jest.mock('../../src/config')
 
 describe('WinChecker', () => {
   let redditBot

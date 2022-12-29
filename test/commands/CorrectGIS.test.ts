@@ -1,12 +1,12 @@
 import CorrectGIS from '../../src/commands/CorrectGIS'
 
-import { createWinComment } from '../../src/WinProcessor'
+import { createWinComment } from '../../src/wins/processor'
 import { getSearchUrl } from '../../src/GoogleImageSearcher'
 import ScoreFlairManager from '../../src/scores/ScoreFlairManager'
 
 import { Comment } from 'snoowrap'
 
-jest.mock('../../src/WinProcessor')
+jest.mock('../../src/wins/processor')
 jest.mock('../../src/GoogleImageSearcher')
 jest.mock('../../src/scores/ScoreFlairManager')
 

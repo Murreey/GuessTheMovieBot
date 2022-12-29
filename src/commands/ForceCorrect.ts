@@ -1,6 +1,6 @@
 import { RedditBot } from '../RedditBot'
 import { Comment } from 'snoowrap'
-import WinProcessor from '../WinProcessor'
+import WinProcessor from '../wins/processor'
 import { Logger } from '../Logger'
 import { ScoreManager } from '../types'
 

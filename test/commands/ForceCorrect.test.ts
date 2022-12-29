@@ -1,11 +1,11 @@
 import ForceCorrect from '../../src/commands/ForceCorrect'
 
-import WinProcessor from '../../src/WinProcessor'
+import WinProcessor from '../../src/wins/processor'
 
 import { RedditBot } from '../../src/RedditBot'
 import { Comment } from 'snoowrap'
 
-jest.mock('../../src/WinProcessor')
+jest.mock('../../src/wins/processor')
 
 const mockWinProcessor = jest.fn()
 jest.mocked(WinProcessor).mockReturnValue(mockWinProcessor)
