@@ -98,6 +98,8 @@ describe('WinProcessor', () => {
     expect(mockScoreManager.recordWin).toHaveBeenCalledWith(redditBot.mockSubmission, redditBot.mockGuessComment, true)
   })
 
+  it.todo('checks the quote matcher if it should add a quote')
+
   it('replies with the correctly formatted reply', async () => {
     await processWin(redditBot, mockScoreManager)(mockComment)
     expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining('/u/guesser gets +8'))
