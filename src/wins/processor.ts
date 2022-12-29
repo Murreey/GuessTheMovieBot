@@ -18,9 +18,6 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
     return
   }
 
-  Logger.verbose('Updating post flair')
-  await updateFlairToIdentified(bot, submission)
-
   const guesser = await guessComment.author.name
   const submitter = await submission.author.name
 
@@ -30,6 +27,9 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
 
   Logger.debug('Sending win to ScoreManager')
   const points = await scoreManager.recordWin(submission, guessComment, !!foundOnGoogle)
+
+  Logger.verbose('Updating post flair')
+  await updateFlairToIdentified(bot, submission)
 
   Logger.info(`Posting confirmation comment on ${bot.shortlink(submission)}`)
   bot.reply(comment, createWinComment({
