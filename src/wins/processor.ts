@@ -7,6 +7,7 @@ import { RedditBot } from '../RedditBot'
 import { Logger } from '../Logger'
 import { checkGoogleForImage, getSearchUrl } from '../GoogleImageSearcher'
 import { ScoreManager, WinComment } from '../types'
+import getQuote from './quote-matcher'
 
 export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: snoowrap.Comment, winCommentArgs: Partial<WinComment> = {}): Promise<void> => {
   //@ts-expect-error
@@ -25,6 +26,9 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
   const foundOnGoogle = await checkGoogleForImage(imageUrl)
   Logger.verbose(`Image was ${foundOnGoogle ? '' : 'not '}found on Google`)
 
+  const quote = getQuote(await guessComment.body)
+  if (quote) Logger.debug(`Matched movie from comment ${await guessComment.body} - using quote "${quote}"`)
+
   Logger.debug('Sending win to ScoreManager')
   const points = await scoreManager.recordWin(submission, guessComment, !!foundOnGoogle)
 
@@ -37,6 +41,7 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => async (comment: s
     guesser: { name: guesser, points: points.guesser },
     submitter: { name: submitter, points: points.submitter },
     googleUrl: foundOnGoogle ? getSearchUrl(imageUrl) : undefined,
+    quote,
     ...winCommentArgs
   }))
 }
@@ -57,7 +62,7 @@ const updateFlairToIdentified = async (bot: RedditBot, submission: snoowrap.Subm
 
 export const createWinComment = (args: WinComment): string => {
   const config = getConfig()
-  const templateFile = path.resolve(__dirname, `../templates/${config.replyTemplate}`)
+  const templateFile = path.resolve(__dirname, `../../templates/${config.replyTemplate}`)
   if (!existsSync(templateFile)) return undefined
   const replyTemplate = readFileSync(templateFile, 'utf-8')
   return Mustache.render(replyTemplate, {...args, subreddit: config.subreddit})

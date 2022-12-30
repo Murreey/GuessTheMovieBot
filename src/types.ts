@@ -68,6 +68,7 @@ export type WinComment = {
   guesser: { name: string, points: number },
   submitter: { name: string, points: number },
   googleUrl?: string,
+  quote?: string,
   forced?: boolean
 }
 

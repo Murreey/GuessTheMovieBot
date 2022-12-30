@@ -1,4 +1,4 @@
-**Guess confirmed!**
+**Guess confirmed!** {{#quote}} *{{ quote }}* {{/quote}}
 
 * winner **/u/{{ guesser.name }}** gets **+{{ guesser.points }} points**
 * poster **/u/{{ submitter.name }}** gets **+{{ submitter.points }} points**

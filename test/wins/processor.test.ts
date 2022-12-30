@@ -4,10 +4,12 @@ import fs from 'fs'
 import { checkGoogleForImage } from '../../src/GoogleImageSearcher'
 import { getScores } from '../../src/scores/Scores'
 import { getConfig } from '../../src/config'
+import getQuote from '../../src/wins/quote-matcher'
 
 jest.mock('../../src/scores/Scores')
 jest.mock('../../src/GoogleImageSearcher')
 jest.mock('../../src/config')
+jest.mock('../../src/wins/quote-matcher')
 
 jest.mock('fs')
 const mockFs = jest.mocked(fs)
@@ -21,6 +23,7 @@ describe('WinProcessor', () => {
 
   mockFs.existsSync.mockReturnValue(true)
   mockFs.readFileSync.mockReturnValue(`
+    {#quote} {{ quote }} {/quote}
     * winner /u/{{ guesser.name }} gets +{{ guesser.points }} points
     * poster /u/{{ submitter.name }} gets +{{ submitter.points }} points
   `)
@@ -39,11 +42,12 @@ describe('WinProcessor', () => {
   const mockGoogleSearcher = jest.mocked(checkGoogleForImage).mockResolvedValue(false)
 
   beforeEach(() => {
+    jest.clearAllMocks()
+
     redditBot = mockRedditBot({})
     mockScoreManager = {
       recordWin: jest.fn().mockResolvedValue({ guesser: 8, submitter: 5 }),
     }
-    mockGoogleSearcher.mockClear()
   })
 
   it('does nothing if any of the content has been deleted', async () => {
@@ -55,25 +59,6 @@ describe('WinProcessor', () => {
     expect(mockScoreManager.recordWin).not.toHaveBeenCalled()
     expect(redditBot.setPostFlair).not.toHaveBeenCalled()
     expect(redditBot.reply).not.toHaveBeenCalled()
-  })
-
-  describe('sets the correct flair', () => {
-    it('when the post has no flair', async () => {
-      await processWin(redditBot, mockScoreManager)(mockComment)
-      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'identifiedTemplate')
-    })
-
-    it('when the post has `easy` flair', async () => {
-      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('easy') })
-      await processWin(redditBot, mockScoreManager)(mockComment)
-      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'easyIdentifiedTemplate')
-    })
-
-    it('when the post has `hard` flair', async () => {
-      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('hard') })
-      await processWin(redditBot, mockScoreManager)(mockComment)
-      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'hardIdentifiedTemplate')
-    })
   })
 
   it('checks the image on google', async () => {
@@ -98,7 +83,43 @@ describe('WinProcessor', () => {
     expect(mockScoreManager.recordWin).toHaveBeenCalledWith(redditBot.mockSubmission, redditBot.mockGuessComment, true)
   })
 
-  it.todo('checks the quote matcher if it should add a quote')
+  describe('sets the correct flair', () => {
+    it('when the post has no flair', async () => {
+      await processWin(redditBot, mockScoreManager)(mockComment)
+      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'identifiedTemplate')
+    })
+
+    it('when the post has `easy` flair', async () => {
+      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('easy') })
+      await processWin(redditBot, mockScoreManager)(mockComment)
+      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'easyIdentifiedTemplate')
+    })
+
+    it('when the post has `hard` flair', async () => {
+      redditBot = mockRedditBot(null, { link_flair_text: Promise.resolve('hard') })
+      await processWin(redditBot, mockScoreManager)(mockComment)
+      expect(redditBot.setPostFlair).toHaveBeenCalledWith(expect.anything(), 'hardIdentifiedTemplate')
+    })
+  })
+
+  describe('quote matcher', () => {
+    const mockQuoteMatcher = jest.mocked(getQuote)
+
+    it('checks the quote matcher if it should add a quote', async () => {
+      await processWin(redditBot, mockScoreManager)(mockComment)
+      expect(mockQuoteMatcher).toHaveBeenCalledTimes(1)
+      expect(mockQuoteMatcher).toHaveBeenCalledWith('guess text')
+      expect(redditBot.reply).not.toHaveBeenCalledWith(mockComment, expect.stringContaining('movie quote'))
+    })
+
+    it('adds the quote to the reply if one was matched', async () => {
+      mockQuoteMatcher.mockReturnValueOnce('movie quote')
+      await processWin(redditBot, mockScoreManager)(mockComment)
+      expect(mockQuoteMatcher).toHaveBeenCalledTimes(1)
+      expect(mockQuoteMatcher).toHaveBeenCalledWith('guess text')
+      expect(redditBot.reply).toHaveBeenCalledWith(mockComment, expect.stringContaining('movie quote'))
+    })
+  })
 
   it('replies with the correctly formatted reply', async () => {
     await processWin(redditBot, mockScoreManager)(mockComment)
@@ -116,6 +137,7 @@ describe('WinProcessor', () => {
 const mockRedditBot = (guessComment = {}, submission = {}) => {
   const mockGuessComment = {
     is_submitter: false,
+    body: 'guess text',
     author: {
       name: 'guesser'
     },
