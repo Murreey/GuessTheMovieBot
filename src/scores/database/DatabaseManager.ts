@@ -141,7 +141,7 @@ export default async () => {
         AND wins.solved_at >= ?
         AND wins.solved_at < ?`, username.toString(), timeRange.from.getTime(), timeRange.to.getTime())
 
-      let result = data?.total ?? 0
+      let result = data?.count ?? 0
 
       if (timeRange.from.getTime() === defaultTimeRange.from.getTime()) {
         const legacyData = await db.get(`
