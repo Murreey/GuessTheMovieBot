@@ -39,6 +39,24 @@ export const getTopSubmitters = multiQuery<Score>(`
   LIMIT ?
 `)
 
+export const getNewScorersInTimeRange = multiQuery<Score>(`
+  SELECT username, SUM(points) AS score
+  FROM wins
+  INNER JOIN points ON wins.post_id = points.post_id
+  INNER JOIN users ON points.user_id = users.user_id
+  WHERE wins.created_at >= ?1 AND wins.created_at < ?2
+  AND username NOT IN (
+    SELECT username
+    FROM wins
+    INNER JOIN points ON wins.post_id = points.post_id
+    INNER JOIN users ON points.user_id = users.user_id
+    WHERE wins.created_at < ?1
+  )
+  GROUP BY users.user_id
+  ORDER BY score DESC
+  LIMIT ?3
+`)
+
 export const fastestSolve = singleQuery<SpeedRecord>(`
   SELECT post_id AS postId, username, (solved_at - created_at) AS time
   FROM wins

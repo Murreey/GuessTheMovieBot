@@ -1,7 +1,7 @@
 import yargs from 'yargs'
 import { Logger, LogLevel } from '../src/Logger'
 import DatabaseManager from '../src/scores/database/DatabaseManager'
-import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve, totalGamesSolved, totalGuessers, totalSubmitters } from '../src/scores/database/queries/high-scores'
+import { fastestSolve, getAllScores, getNewScorersInTimeRange, getTopGuessers, getTopSubmitters, longestSolve, totalGamesSolved, totalGuessers, totalSubmitters } from '../src/scores/database/queries/high-scores'
 import { formatMillisecondsAsTime } from '../src/scores/Scoreboards'
 import { TimeRange } from '../src/types'
 
@@ -43,6 +43,9 @@ const highScores = async (args) => {
   console.log('')
   console.log('  Top Submitters:')
   await getTopSubmitters(db, range, args.limit).then(scores => scores.forEach((score, index) => console.log(`  - ${index+1}. ${score.username}: ${score.score}`)))
+  console.log('')
+  console.log('  Top New Scorer:')
+  await getNewScorersInTimeRange(db, range, 1).then(scores => scores.forEach((score) => console.log(`  - ${score.username}: ${score.score}`)))
   console.log('')
   console.log('  Fastest Solve:')
   const fastest = await fastestSolve(db, range)
