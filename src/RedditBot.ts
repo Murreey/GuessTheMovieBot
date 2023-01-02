@@ -85,7 +85,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
         Logger.error(`Reply failed - ${ex.message}`)
       }
     },
-    createPost: async (title, text, sticky = false) => {
+    createPost: async (title, text, sticky) => {
       if (readOnly) {
         Logger.warn('createPost() ignored, read only mode is enabled')
         return
@@ -97,7 +97,7 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
         text,
         sendReplies: false
       }) as any)
-      if (post && sticky) await post.sticky({ num: 2 })
+      if (post && sticky && (sticky == 1 || sticky == 2)) await post.sticky({ num: sticky })
       Logger.verbose(`Created new self post - '${title}'`)
     },
     setPostFlair: async (post, template) => {
@@ -184,7 +184,7 @@ export type RedditBot = {
   fetchNewSubmissions: () => Promise<snoowrap.Submission[]>,
   fetchNewReports: () => Promise<snoowrap.Comment[]>,
   reply: (content: snoowrap.ReplyableContent<snoowrap.Submission | snoowrap.Comment>, body: string, sticky?: boolean) => Promise<void>,
-  createPost: (title: string, text: string, sticky: boolean) => Promise<void>,
+  createPost: (title: string, text: string, sticky?: number) => Promise<void>,
   setPostFlair: (post: snoowrap.Submission, template: string) => Promise<void>,
   getUserFlair: (username: string) => Promise<string>,
   setUserFlair: (username: string, options: { text?: string, css_class?: string, background_color?: string, text_color?: 'light' | 'dark' }) => Promise<void>,
