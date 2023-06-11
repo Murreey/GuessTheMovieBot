@@ -16,7 +16,7 @@ export const trimImageURL = (url: string): string => {
 export const getSearchUrl = (imageUrl: string): string => {
   const url = trimImageURL(imageUrl)
   if (!url) return undefined
-  return `https://images.google.com/searchbyimage?hl=en&gl=en&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
+  return `https://www.google.com/searchbyimage?sbisrc=gtm&safe=off&q=${encodeURIComponent('image -site:reddit.com')}&image_url=${encodeURIComponent(url)}`
 }
 
 export const checkGoogleForImage = async (url: string): Promise<boolean> => {
