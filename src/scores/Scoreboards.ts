@@ -59,7 +59,7 @@ export const formatMillisecondsAsTime = (input: number): string =>
   ]
     .map(format => {
       input = Math.floor(input / format.per)
-      return [format.name, format.max ? input % format.max : input]
+      return [format.name, format.max ? input % format.max : input] as const
     })
     .filter(format => format[1])
     .map(format => `${format[1]} ${format[0]}${format[1] > 1 ? 's' : ''}`)
