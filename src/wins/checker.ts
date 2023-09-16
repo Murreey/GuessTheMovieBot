@@ -5,7 +5,7 @@ import { Logger } from '../Logger'
 import { getConfig } from '../config'
 import { ScoreManager } from '../types'
 
-const confirmationFormat = /^[^a-z0-9]*correct/i
+const confirmationFormat = /^[^a-z0-9]*correct(?! year)(?! decade)(?! genre)/i
 
 export default (bot: RedditBot, scoreManager: ScoreManager) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {

@@ -60,6 +60,15 @@ describe('WinChecker', () => {
     expect(validWin).toBe(false)
   })
 
+  it.each([
+    'Correct year', 'Correct decade, but...', 'Correct genre'
+  ])('returns false for common words that accidentally follow correct', async (text) => {
+    mockComment.body = text
+
+    const validWin = await WinChecker(redditBot, mockScoreManager).isValidWin(mockComment)
+    expect(validWin).toBe(false)
+  })
+
   it('returns false if the comment was not posted by the submitter', async () => {
     mockComment.is_submitter = false
 
