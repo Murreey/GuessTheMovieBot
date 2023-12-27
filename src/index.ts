@@ -103,7 +103,18 @@ scheduler.schedule('1 0 1 * *', async () => {
   try {
     await Scoreboards(bot, await databaseManager).postMonthlyScoreboard()
   } catch (ex) {
-    Logger.error('Error posting scoreboard!')
+    Logger.error('Error posting monthly scoreboard!')
+    Logger.error(ex.stack)
+  }
+  running = false
+})
+
+scheduler.schedule('0 18 1 1 *', async () => {
+  running = true
+  try {
+    await Scoreboards(bot, await databaseManager).postAnnualScoreboard()
+  } catch (ex) {
+    Logger.error('Error posting annual scoreboard!')
     Logger.error(ex.stack)
   }
   running = false
