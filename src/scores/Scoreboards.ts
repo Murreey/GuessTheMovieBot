@@ -9,7 +9,7 @@ import { getConfig } from '../config'
 export default (bot: RedditBot, database: DatabaseManager) => ({
   postMonthlyScoreboard: async (month: Date = new Date()): Promise<void> => {
     const lastMonth = startOfMonth(month, -1)
-    Logger.verbose(`Generating scoreboard for ${lastMonth.toString()}`)
+    Logger.verbose(`Generating montly scoreboard for ${lastMonth.toString()}`)
     const timeRange: TimeRange = {
       from: lastMonth,
       to: startOfMonth(month)
@@ -45,10 +45,51 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
     const body = Mustache.render(postTemplate, scoreboardData)
     Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
     await bot.createPost(title, body, 1)
+  },
+  postAnnualScoreboard: async (year: Date = new Date()): Promise<void> => {
+    // Lots of opportunity for refactoring here
+    // Leaving for the future because the 31st is sneaking up fast
+    const lastYear = startOfYear(year, -1)
+    Logger.verbose(`Generating annual scoreboard for ${lastYear.getFullYear()}`)
+    const timeRange: TimeRange = {
+      from: lastYear,
+      to: startOfYear(year)
+    }
+
+    const rawData = await database.getHighScores(timeRange, 20)
+
+    if ([rawData.scores, rawData.guessers, rawData.submitters].some(d => d.length === 0)) {
+      Logger.warn('Failed to post scoreboard, database returned empty data')
+      return
+    }
+
+    const scoreboardData: ScoreboardData = {
+      month: timeRange.from.toLocaleString('en-GB', { month: 'long' }),
+      year: timeRange.from.toLocaleString('en-GB', { year: 'numeric' }),
+      points: rawData.scores,
+      guesses: rawData.guessers,
+      submissions: rawData.submitters,
+      fastest: rawData.fastest && {
+        ...rawData.fastest,
+        timeString: formatMillisecondsAsTime(rawData.fastest.time),
+      },
+      slowest: rawData.slowest && {
+        ...rawData.slowest,
+        timeString: formatMillisecondsAsTime(rawData.slowest.time),
+      }
+    }
+
+    const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/annual_scoreboard.md'), 'utf-8')
+    const title = `/r/${getConfig()?.subreddit || ''} Year in Review ${scoreboardData.year}!`
+    const body = Mustache.render(postTemplate, scoreboardData)
+    Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
+    await bot.createPost(title, body, 1)
   }
 })
 
 const startOfMonth = (start: Date, offset = 0): Date => new Date(Date.UTC(start.getFullYear(), start.getMonth() + offset, 1, 0))
+
+const startOfYear = (start: Date, offset = 0): Date => new Date(Date.UTC(start.getFullYear() + offset))
 
 export const formatMillisecondsAsTime = (input: number): string =>
   [
