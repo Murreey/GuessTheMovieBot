@@ -76,7 +76,8 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
       slowest: rawData.slowest && {
         ...rawData.slowest,
         timeString: formatMillisecondsAsTime(rawData.slowest.time),
-      }
+      },
+      total: await database.getPostTotals(timeRange)
     }
 
     const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/annual_scoreboard.md'), 'utf-8')

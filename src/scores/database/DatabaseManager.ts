@@ -4,7 +4,7 @@ import sqlite3 from 'sqlite3'
 import { Database, open } from 'sqlite'
 import { Scores } from '../Scores'
 import { TimeRange } from '../../types'
-import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve } from './queries/high-scores'
+import { fastestSolve, getAllScores, getTopGuessers, getTopSubmitters, longestSolve, totalGamesSolved, totalGuessers, totalSubmitters } from './queries/high-scores'
 
 const defaultTimeRange: TimeRange = {
   // Bit lazy, but is essentially 'no time range',
@@ -160,6 +160,11 @@ export default async () => {
       submitters: await getTopSubmitters(db, timeRange, limit),
       fastest: await fastestSolve(db, timeRange),
       slowest: await longestSolve(db, timeRange)
+    }),
+    getPostTotals: async(timeRange: TimeRange) => ({
+      solved: await totalGamesSolved(db, timeRange),
+      guessers: await totalGuessers(db, timeRange),
+      submitters: await totalSubmitters(db, timeRange)
     })
   }
 }

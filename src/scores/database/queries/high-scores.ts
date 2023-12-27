@@ -2,7 +2,7 @@ import sqlite3 from 'sqlite3'
 import { Database } from 'sqlite'
 import { Score, SpeedRecord, TimeRange } from '../../../types'
 
-const singleQuery = <T>(query: string, column?: string) => async (db: Database<sqlite3.Database, sqlite3.Statement>, timeRange: TimeRange) => {
+const singleQuery = <T>(query: string, column?: string) => async (db: Database<sqlite3.Database, sqlite3.Statement>, timeRange: TimeRange): Promise<T> => {
   const result = await db.get<T>(query, timeRange.from.getTime(), timeRange.to.getTime())
   return column ? result?.[column] : result
 }

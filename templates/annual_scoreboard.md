@@ -1,3 +1,5 @@
+Last year, you correctly guessed **{{total.solved}}** movies, posted by {{total.submitters}} submitters and solved by {{total.guessers}} guessers!
+
 {{#fastest}}
 The quickest correct guess of the year was by /u/{{fastest.username}} in just [**{{fastest.timeString}}**](https://redd.it/{{fastest.postId}}).
 {{/fastest}}

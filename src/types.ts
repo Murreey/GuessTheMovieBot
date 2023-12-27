@@ -47,6 +47,11 @@ export type ScoreboardData = {
   submissions: Score[],
   fastest?: SpeedRecord,
   slowest?: SpeedRecord,
+  total?: {
+    solved: number,
+    guessers: number,
+    submitters: number
+  }
   month: string
   year: string
 }
