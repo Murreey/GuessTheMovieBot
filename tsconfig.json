@@ -1,16 +1,13 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "ES2015",
-      "ES2017",
-      "ES2020",
-    ],
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "./dist",
   },
   "include": [
-    "src"
+    "src",
+    "scripts"
   ]
 }
