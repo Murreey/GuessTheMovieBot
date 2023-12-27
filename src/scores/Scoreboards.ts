@@ -56,7 +56,7 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
       to: startOfYear(year)
     }
 
-    const rawData = await database.getHighScores(timeRange, 20)
+    const rawData = await database.getHighScores(timeRange, 25)
 
     if ([rawData.scores, rawData.guessers, rawData.submitters].some(d => d.length === 0)) {
       Logger.warn('Failed to post scoreboard, database returned empty data')
@@ -77,7 +77,8 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
         ...rawData.slowest,
         timeString: formatMillisecondsAsTime(rawData.slowest.time),
       },
-      total: await database.getPostTotals(timeRange)
+      total: await database.getPostTotals(timeRange),
+      new: await database.getNewPlayers(timeRange)
     }
 
     const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/annual_scoreboard.md'), 'utf-8')

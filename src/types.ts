@@ -52,6 +52,10 @@ export type ScoreboardData = {
     guessers: number,
     submitters: number
   }
+  new?: {
+    count: number,
+    top: string
+  }
   month: string
   year: string
 }
