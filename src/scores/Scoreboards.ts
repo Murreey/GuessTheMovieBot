@@ -40,7 +40,7 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
       }
     }
 
-    const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/scoreboard_template.md'), 'utf-8')
+    const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/monthly_scoreboard.md'), 'utf-8')
     const title = `/r/${getConfig()?.subreddit || ''} ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
     const body = Mustache.render(postTemplate, scoreboardData)
     Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
