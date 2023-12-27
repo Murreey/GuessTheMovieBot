@@ -24,3 +24,8 @@ The longest running game was eventually solved by /u/{{slowest.username}}, in [*
 {{#submissions}}
 1. **/u/{{username}}** with {{score}} submissions
 {{/submissions}}
+
+{{#note}}
+---
+_{{note}}_
+{{/note}}

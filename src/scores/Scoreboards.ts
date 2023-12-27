@@ -42,7 +42,10 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
 
     const postTemplate = fs.readFileSync(path.resolve(__dirname, '../../templates/monthly_scoreboard.md'), 'utf-8')
     const title = `/r/${getConfig()?.subreddit || ''} ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
-    const body = Mustache.render(postTemplate, scoreboardData)
+    const body = Mustache.render(postTemplate, {
+      ...scoreboardData,
+      note: lastMonth.getMonth() === 11 ? `Stay tuned for the ${scoreboardData.year} scoreboard coming soon!` : undefined
+    })
     Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
     await bot.createPost(title, body, 1)
   },

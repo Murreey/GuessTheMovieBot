@@ -6,7 +6,7 @@ import Scoreboards from '../src/scores/Scoreboards'
 
 const postMonthlyScoreboard = async (args) => {
   const date = new Date()
-  date.setMonth(date.getMonth() - args.month + 1) // +1 because postMonthlyScoreboard removes 1
+  date.setMonth(date.getMonth() - args.ago + 1) // +1 because postMonthlyScoreboard removes 1
 
   console.log(`  Posting scoreboard for ${date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`)
   const bot = RedditBot.create({ debug: args['debug-requests'], readOnly: args['read-only'] })
@@ -23,7 +23,7 @@ const postAnnualScoreboard = async (args) => {
 
 const args = yargs(process.argv.slice(2))
   .command('monthly [ago]', 'post scoreboard for month that is `ago` before current month, defaulting to 1 (last month)', {
-    month: {
+    ago: {
       default: 1,
       number: true,
     }
