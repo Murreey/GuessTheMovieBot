@@ -44,7 +44,7 @@ export default (bot: RedditBot, database: DatabaseManager) => ({
     const title = `/r/${getConfig()?.subreddit || ''} ${scoreboardData.month} ${scoreboardData.year} Leaderboard`
     const body = Mustache.render(postTemplate, {
       ...scoreboardData,
-      note: lastMonth.getMonth() === 11 ? `Stay tuned for the ${scoreboardData.year} scoreboard coming soon!` : undefined
+      note: lastMonth.getMonth() === 11 ? `Stay tuned for the ${scoreboardData.year} review coming soon!` : undefined
     })
     Logger.info(`Posting new scoreboard for ${scoreboardData.month} ${scoreboardData.year}!`)
     await bot.createPost(title, body, 1)
