@@ -5,8 +5,8 @@ import { Logger } from '../Logger'
 import { ScoreManager } from '../types'
 
 export default async (bot: RedditBot, comment: Comment, scoreManager: ScoreManager): Promise<boolean> => {
-  if (!await comment.is_submitter) {
-    Logger.debug('Ignoring ForceCorrect as correction was not by the submitter')
+  if (!await comment.is_submitter && !await comment.distinguished) {
+    Logger.verbose('Ignoring ForceCorrect as correction was not by the submitter')
     return false
   }
   if (!bot.isCommentAReply(comment)) {

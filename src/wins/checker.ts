@@ -9,7 +9,7 @@ const confirmationFormat = /^[^a-z0-9]*correct(?! year)(?! decade)(?! genre)/i
 
 export default (bot: RedditBot, scoreManager: ScoreManager) => ({
   isValidWin: async (comment: snoowrap.Comment): Promise<boolean> => {
-    if (!comment.is_submitter) return Logger.debug('Rejected as comment was not by submitter') && false
+    if (!comment.is_submitter && !comment.distinguished) return Logger.debug('Rejected as comment was not by submitter') && false
     if (!confirmationFormat.test(comment?.body)) return Logger.debug('Rejected as comment did not match format') && false
     if (!bot.isCommentAReply(comment)) return Logger.debug('Rejected as comment was not a reply') && false
     if (await bot.hasReplied(comment)) return Logger.debug('Rejected as bot has already replied') && false
