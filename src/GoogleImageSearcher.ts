@@ -20,14 +20,18 @@ export const getSearchUrl = (imageUrl: string): string => {
 }
 
 export const checkGoogleForImage = async (url: string): Promise<boolean> => {
+  /**
   const client: AxiosInstance = axios.create({
     headers: { 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36' }
   })
 
   const searchUrl = getSearchUrl(url)
   if (!searchUrl) return false
-  Logger.debug('Checking GIS for image:')
-  Logger.debug(searchUrl)
+  Logger.verbose('Checking GIS for image:')
+  Logger.verbose(searchUrl)
   const searchResult = (await client.get(searchUrl)).data
   return searchResult.indexOf('Pages that include matching images') > -1
+  **/
+  Logger.verbose('Skipping GIS for rate limit reasons');
+  return false;
 }
