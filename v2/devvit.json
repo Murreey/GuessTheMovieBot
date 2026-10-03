@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "gtmbot2",
+  "permissions": {
+    "reddit": true
+  },
+  "server": {
+    "dir": "dist",
+    "entry": "index.js"
+  },
+  "triggers": {
+    "onCommentCreate": "/internal/triggers/on-comment-create"
+  },
+  "scripts": {
+    "dev": "npm run watch"
+  },
+  "dev": {
+    "subreddit": "gtmbot2_dev"
+  }
+}
