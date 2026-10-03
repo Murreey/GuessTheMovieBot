@@ -137,7 +137,9 @@ export const create = ({ readOnly, debug }: RedditBotOptions = { debug: false, r
       }
     },
     hasReplied: async (content) => {
+      Logger.verbose('Checking if bot already replied...')
       const expanded = await (await (content as any).expandReplies())
+      Logger.verbose('Got all expended comments, checking names...')
       return (expanded.comments || expanded.replies || [])
         .some((comment: any) => comment.author.name === config.bot_username && !comment.removed)
     },

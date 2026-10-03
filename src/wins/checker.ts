@@ -14,6 +14,8 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => ({
     if (!bot.isCommentAReply(comment)) return Logger.debug('Rejected as comment was not a reply') && false
     if (await bot.hasReplied(comment)) return Logger.debug('Rejected as bot has already replied') && false
 
+    Logger.verbose('Win not rejected, checking guess comment...')
+
     const guessComment = (await bot.fetchComment(comment.parent_id))()
 
     if (guessComment.is_submitter) return Logger.debug('Rejected as parent comment was by submitter') && false
@@ -25,6 +27,8 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => ({
       Logger.warn(`Could not check win on ${bot.shortlink(comment)}, looks like something was deleted`)
       return false
     }
+
+    Logger.verbose('Guess comment not rejected, checking post...')
 
     //@ts-expect-error
     const submission = await bot.fetchPostFromComment(comment)
@@ -63,6 +67,7 @@ export default (bot: RedditBot, scoreManager: ScoreManager) => ({
       }
     }
 
+    Logger.verbose('Win confirmed!')
     return true
   }
 })
